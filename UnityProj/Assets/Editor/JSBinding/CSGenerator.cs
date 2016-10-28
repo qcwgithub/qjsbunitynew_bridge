@@ -10,11 +10,11 @@ using System.Reflection;
 public class CSGenerator
 {
 	// input
-	static StringBuilder sb = null;
+//	static StringBuilder sb = null;
 	public static Type type = null;
 	public static string thisClassName = null;
 	
-	static string tempFile = JSBindingSettings.jsDir + "/temp" + JSBindingSettings.jsExtension;
+//	static string tempFile = JSBindingSettings.jsDir + "/temp" + JSBindingSettings.jsExtension;
 
 	// used for record information
 	public class ClassCallbackNames
@@ -57,7 +57,7 @@ public class CSGenerator
 	public static void Clear()
 	{
 		type = null;
-		sb = new StringBuilder();
+//		sb = new StringBuilder();
 	}
 	public static TextFile BuildFields(Type type, FieldInfo[] fields, int[] fieldsIndex, ClassCallbackNames ccbn)
 	{
@@ -100,7 +100,7 @@ public class CSGenerator
 			}
 
 			tfGet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
-			                                               features | JSDataExchangeEditor.MemberFeature.Get));
+			                                               features | JSDataExchangeEditor.MemberFeature.Get).Ch);
 			
 			tfGet.Add("{0}", JSDataExchangeEditor.Get_Return(field.FieldType, "result"));
 			
@@ -114,7 +114,7 @@ public class CSGenerator
 					var paramHandler = JSDataExchangeEditor.Get_ParamHandler(field);
 					tfSet.Add(paramHandler.getter);					
 					tfSet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
-					                                               features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName));
+					                                               features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
 				}
 				else
 				{
@@ -125,7 +125,7 @@ public class CSGenerator
 					
 					string getDelegate = JSDataExchangeEditor.Build_GetDelegate(getDelegateFuncitonName, field.FieldType);
 					tfSet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
-                                                                   features | JSDataExchangeEditor.MemberFeature.Set, getDelegate));
+					                                               features | JSDataExchangeEditor.MemberFeature.Set, getDelegate).Ch);
                 }
 				tfSet.BraceOut();
             }
@@ -133,7 +133,7 @@ public class CSGenerator
 			tfFun.BraceOut();
             ccbn.fields.Add(functionName);
 
-			tfAll.Add(tf);
+			tfAll.Add(tf.Ch);
         }
         
         return tfAll;
@@ -189,7 +189,7 @@ public class CSGenerator
 			bool isDelegate = JSDataExchangeEditor.IsDelegateDerived(property.PropertyType); ;// (typeof(System.Delegate).IsAssignableFrom(property.PropertyType));
 			if (isDelegate)
 			{
-				tf.Add(JSDataExchangeEditor.Build_DelegateFunction(type, property, property.PropertyType, i, 0));
+				tf.Add(JSDataExchangeEditor.Build_DelegateFunction(type, property, property.PropertyType, i, 0).Ch);
 			}
 			
 			// PropertyID
@@ -269,7 +269,7 @@ public class CSGenerator
 			
 			if (bGenericT)
 			{
-				tfFun.Add(tft);
+				tfFun.Add(tft.Ch);
 			}
 			for (int j = 0; j < ps.Length; j++)
 			{
@@ -293,7 +293,7 @@ public class CSGenerator
 			{
 				if (property.GetGetMethod() != null)
 				{
-					tfGet.Add(tfCall);
+					tfGet.Add(tfCall.Ch);
 					tfGet.Add("{0}", JSDataExchangeEditor.Get_Return(property.PropertyType, "result"));
 				}
 				else
@@ -315,7 +315,7 @@ public class CSGenerator
 					tfSet.Add(paramHandler.getter);
 					
 					tfSet.Add(JSDataExchangeEditor.BuildCallString(type, property, argActual.Format(cg.args.ArgsFormat.OnlyList),
-					                                               features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName));
+					                                               features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
 				}
 				else
 				{
@@ -326,14 +326,14 @@ public class CSGenerator
 					
 					string getDelegate = JSDataExchangeEditor.Build_GetDelegate(getDelegateFuncitonName, property.PropertyType);
 					tfSet.Add(JSDataExchangeEditor.BuildCallString(type, property, "" /* argList */,
-					                                               features | JSDataExchangeEditor.MemberFeature.Set, getDelegate));
+					                                               features | JSDataExchangeEditor.MemberFeature.Set, getDelegate).Ch);
 				}
 				tfSet.BraceOut();
 			}
 			
 			tfFun.BraceOut();
 			File.WriteAllText("D:\\22.txt", tf.Format(-1));
-			tfAll.Add(tf);
+			tfAll.Add(tf.Ch);
 			
 			ccbn.properties.Add(functionName);
 		}
@@ -633,10 +633,10 @@ public class CSGenerator
 
 				TextFile tfIf = tf.Add("{0}if (len == {1})", (j == minNeedParams) ? "" : "else ", j).BraceIn();
 				{
-					tfIf.Add(tfGetParam);
+					tfIf.Add(tfGetParam.Ch);
 					tfIf.Add(callAndReturn).AddLine();
 					if (tfUpdateRefParam.Ch.Count > 0)
-						tfIf.Add(tfUpdateRefParam);
+						tfIf.Add(tfUpdateRefParam.Ch);
 					tfIf.BraceOut();
 				}
 				
@@ -700,7 +700,7 @@ public class CSGenerator
 				
 				TextFile tfIf = tf.Add("{0}if (len == {1})", (j == minNeedParams) ? "" : "else ", j).BraceIn();
 				{
-					tfIf.Add(tfGetParam);
+					tfIf.Add(tfGetParam.Ch);
 					if (sbActualParamT_arr.Length > 0)
 					{
 						tfIf.Add(sbActualParamT_arr.ToString());
@@ -719,7 +719,7 @@ public class CSGenerator
 					{
 						tfIf.Add("JSMgr.changeJSObj(vc.jsObjID, argThis);");
 					}
-					tfIf.Add(tfUpdateRefParam);
+					tfIf.Add(tfUpdateRefParam.Ch);
 					tfIf.BraceOut();
 				}
 				
@@ -763,19 +763,6 @@ public class CSGenerator
 	}
 	public static TextFile BuildMethods(Type type, MethodInfo[] methods, int[] methodsIndex, int[] olInfo, ClassCallbackNames ccbn)
 	{
-		/*
-        * methods
-        * 0 function name
-        * 1 list<CSParam> generation
-        * 2 function call
-        */
-		string fmt = @"
-static bool {0}(JSVCall vc, int argc)
-[[
-{1}
-    return true;
-]]
-";
 		TextFile tfAll = new TextFile();
 		for (int i = 0; i < methods.Length; i++)
 		{
@@ -794,7 +781,7 @@ static bool {0}(JSVCall vc, int argc)
 				{
 					// StringBuilder sbD = JSDataExchangeEditor.BuildFunctionArg_DelegateFunction(type.Name, method.Name, paramS[j].ParameterType, i, j);
 					TextFile tfD = JSDataExchangeEditor.Build_DelegateFunction(type, method, paramS[j].ParameterType, i, j);					
-					tf.Add(tfD);
+					tf.Add(tfD.Ch);
 				}
 			}
 			
@@ -867,14 +854,14 @@ static bool {0}(JSVCall vc, int argc)
 			}
 			else
 			{
-				tfFun.Add(method.IsSpecialName ? BuildSpecialFunctionCall(paramS, type.Name, method.Name, method.IsStatic, returnVoid, method.ReturnType)
+				tfFun.Add(method.IsSpecialName ? BuildSpecialFunctionCall(paramS, type.Name, method.Name, method.IsStatic, returnVoid, method.ReturnType).Ch
 				                : BuildNormalFunctionCall(i, paramS, method.Name, method.IsStatic, method.ReturnType, 
 				                          false/* is constructor */, 
-				                          TCount));
+				                          TCount).Ch);
 			}
 			tfFun.BraceOut();
 			File.WriteAllText("D:\\22.txt", tf.Format(-1));
-			tfAll.Add(tf);
+			tfAll.Add(tf.Ch);
 			
 			ccbn.methods.Add(functionName);
 			ccbn.methodsCSParam.Add(GenListCSParam2(paramS).ToString());
@@ -900,7 +887,8 @@ static bool {0}(JSVCall vc, int argc)
 		thisClassName = JSNameMgr.GetTypeFileName(type) + "Generated";
 		//var sbFields = BuildFields(type, ti.fields, ti.fieldsIndex, ccbn);
 		//var sbProperties = BuildProperties(type, ti.properties, ti.propertiesIndex, ccbn);
-		var sbMethods = BuildMethods(type, ti.methods, ti.methodsIndex, ti.methodsOLInfo, ccbn);
+		//var sbMethods = 
+			BuildMethods(type, ti.methods, ti.methodsIndex, ti.methodsOLInfo, ccbn);
     }
     public static void GenerateClassBindings()
     {

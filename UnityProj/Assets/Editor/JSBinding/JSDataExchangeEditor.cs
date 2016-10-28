@@ -317,13 +317,6 @@ public class JSDataExchangeEditor : JSDataExchangeMgr
                     tf.Add("{0} _this = ({0})vc.csObj;", typeFullName);
                 }
 
-                var result = string.Empty;
-                if (bGet)
-                {
-                    // convention: name 'result'
-                    result = "var result = ";
-                }
-
 				string access = bIndexer
                      ? string.Format("{0}[{1}]", strThis, argList)
                      : string.Format("{0}.{1}", strThis, memberName);

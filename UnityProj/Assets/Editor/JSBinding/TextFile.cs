@@ -28,10 +28,9 @@ public class TextFile
         }
     }
 	// 在调用这个函数之前，tf必须已经填好了
-	public TextFile Add(TextFile tf)
+	public TextFile Add(List<TextFile> tfs)
 	{
-		// Ch.Add(tf);
-		Ch.AddRange(tf.Ch);
+		Ch.AddRange(tfs);
 		return this;
 	}
     public TextFile Add(string format, params object[] args)
