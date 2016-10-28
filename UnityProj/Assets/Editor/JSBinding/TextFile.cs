@@ -99,6 +99,10 @@ public class TextFile
     {
         return Out().Add("}");
     }
+    public TextFile BraceOutSC()
+    {
+        return Out().Add("};");
+    }
     public TextFile Out()
     {
         return parent;

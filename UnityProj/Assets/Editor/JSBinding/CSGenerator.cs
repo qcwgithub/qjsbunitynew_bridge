@@ -572,7 +572,7 @@ public class CSGenerator
 							{
 								tfIf.Add("var getDelegateFun{0} = typeof({1}).GetMethod(\"{2}\").MakeGenericMethod", i, thisClassName, delegateGetName)
 									.In().Add("(method.GetParameters()[{0}].ParameterType.GetGenericArguments());", i)
-									.Out().Add("return getDelegateFun{0}.Invoke(null, new object[][[{1}]]);", i, "JSApi.getFunctionS((int)JSApi.GetType.Arg)");
+									.Out().Add("return getDelegateFun{0}.Invoke(null, new object[]{{{1}}});", i, "JSApi.getFunctionS((int)JSApi.GetType.Arg)");
 
 								tfIf.BraceOut();
 							}
@@ -625,7 +625,7 @@ public class CSGenerator
 					sbCall.AppendFormat("new {0}({1})", JSNameMgr.GetTypeFullName(type), sbActualParam.ToString());
 				else
 				{
-					sbCall.AppendFormat("constructor.Invoke(null, new object[][[{0}]])", sbActualParam);
+					sbCall.AppendFormat("constructor.Invoke(null, new object[]{{{0}}})", sbActualParam);
 				}
 				
 				// string callAndReturn = JSDataExchangeEditor.Get_Return(type/*don't use returnType*/, sbCall.ToString());
@@ -634,24 +634,11 @@ public class CSGenerator
 				TextFile tfIf = tf.Add("{0}if (len == {1})", (j == minNeedParams) ? "" : "else ", j).BraceIn();
 				{
 					tfIf.Add(tfGetParam.Ch);
-					tfIf.Add(callAndReturn).AddLine();
+					tfIf.Add(callAndReturn);
 					if (tfUpdateRefParam.Ch.Count > 0)
 						tfIf.Add(tfUpdateRefParam.Ch);
 					tfIf.BraceOut();
 				}
-				
-				//                 sb.AppendFormat(@"    {0}if (len == {1}) 
-				//     [[
-				// {2}
-				//         {3}
-				// {4}
-				//     ]]
-				// ",
-				//                  (j == minNeedParams) ? "" : "else ", // [0] else
-				//                  j,                  // [1] param length
-				//                  sbGetParam,         // [2] get param
-				//                  callAndReturn,      // [3] 
-				//                  sbUpdateRefParam);  // [4] update ref/out params
 			}
 			else
 			{
@@ -672,7 +659,7 @@ public class CSGenerator
 				{
 					if (ps.Length > 0)
 					{
-						sbActualParamT_arr.AppendFormat("object[] arr_t = new object[][[ {0} ]];", sbActualParam);
+						sbActualParamT_arr.AppendFormat("object[] arr_t = new object[]{{{0}}};", sbActualParam);
 						// reflection call doesn't need out or ref modifier
 						sbActualParamT_arr.Replace(" out ", " ").Replace(" ref ", " ");
 					}
@@ -722,25 +709,7 @@ public class CSGenerator
 					tfIf.Add(tfUpdateRefParam.Ch);
 					tfIf.BraceOut();
 				}
-				
-				//                 sb.AppendFormat(@"    {0}if (len == {1}) 
-				//     [[
-				// {2}
-				//         {3}
-				//         {4}
-				//         {5}
-				// {6}
-				//     ]]
-				// ",
-				//                  (j == minNeedParams) ? "" : "else ",  // [0] else
-				//                  j, // [1] param count
-				//                  sbGetParam,        // [2] get param
-				//                  (type.IsValueType && !bStatic && TCount == 0 && !type.IsGenericTypeDefinition) ? sbStruct.ToString() : "",  // [3] if Struct, get argThis first
-				//                  callAndReturn,  // [4] function call and return to js
-				//                  (type.IsValueType && !bStatic && TCount == 0 && !type.IsGenericTypeDefinition) ? "JSMgr.changeJSObj(vc.jsObjID, argThis);" : "",  // [5] if Struct, update 'this' object
-				//                  sbUpdateRefParam); // [6] update ref/out param
-				
-			}
+            }
 		}
 		
 		return tf;
@@ -756,7 +725,7 @@ public class CSGenerator
 			Type t = p.ParameterType;
 			sb.AppendFormat(fmt, t.IsByRef ? "true" : "false", p.IsOptional ? "true" : "false", t.IsArray ? "true" : "false", "typeof(" + JSNameMgr.GetTypeFullName(t) + ")", t.IsByRef ? ".MakeByRefType()" : "", "null");
 		}
-		fmt = "new JSVCall.CSParam[][[{0}]]";
+		fmt = "new JSVCall.CSParam[][{0}]";
 		StringBuilder sbX = new StringBuilder();
 		sbX.AppendFormat(fmt, sb);
 		return sbX;
@@ -859,8 +828,8 @@ public class CSGenerator
 				                          false/* is constructor */, 
 				                          TCount).Ch);
 			}
+            tfFun.Add("return true;");
 			tfFun.BraceOut();
-			File.WriteAllText("D:\\22.txt", tf.Format(-1));
 			tfAll.Add(tf.Ch);
 			
 			ccbn.methods.Add(functionName);
@@ -868,6 +837,202 @@ public class CSGenerator
 		}
 		return tfAll;
 	}
+    public static TextFile BuildConstructors(Type type, ConstructorInfo[] constructors, int[] constructorsIndex, ClassCallbackNames ccbn)
+    {
+        TextFile tfAll = new TextFile();
+        // increase index if adding default constructor
+        //         int deltaIndex = 0;
+        if (JSBindingSettings.NeedGenDefaultConstructor(type))
+        {
+            //             deltaIndex = 1;
+        }
+
+        for (int i = 0; i < constructors.Length; i++)
+        {
+            TextFile tf = new TextFile();
+            ConstructorInfo cons = constructors[i];
+
+            if (cons == null)
+            {
+                tf.Add("public static ConstructorID constructorID{0} = new ConstructorID({1});", i, "null, null").AddLine();
+
+                // this is default constructor
+                //bool returnVoid = false;
+                //string functionName = type.Name + "_" + type.Name + "1";
+                int olIndex = i + 1; // for constuctors, they are always overloaded
+                string functionName = JSNameMgr.HandleFunctionName(type.Name + "_" + type.Name + (olIndex > 0 ? olIndex.ToString() : ""));
+
+                TextFile tfFun = tf.Add("static bool {0}(JSVCall vc, int argc)", functionName).BraceIn();
+                tfFun.Add(BuildNormalFunctionCall(0, new ParameterInfo[0], type.Name, false, null, true).Ch);
+                tfFun.BraceOut();
+                ccbn.constructors.Add(functionName);
+                ccbn.constructorsCSParam.Add(GenListCSParam2(new ParameterInfo[0]).ToString());
+            }
+            else
+            {
+                ParameterInfo[] paramS = cons.GetParameters();
+                int olIndex = i + 1; // for constuctors, they are always overloaded
+                int methodTag = i/* + deltaIndex*/;
+
+                for (int j = 0; j < paramS.Length; j++)
+                {
+                    if (JSDataExchangeEditor.IsDelegateDerived(paramS[j].ParameterType))
+                    {
+                        TextFile tfD = JSDataExchangeEditor.Build_DelegateFunction(type, cons, paramS[j].ParameterType, methodTag, j);
+                        tf.Add(tfD.Ch);
+                    }
+                }
+
+                // ConstructorID
+                if (type.IsGenericTypeDefinition)
+                {
+                    cg.args arg = new cg.args();
+                    cg.args arg1 = new cg.args();
+                    cg.args arg2 = new cg.args();
+
+                    foreach (ParameterInfo p in cons.GetParameters())
+                    {
+                        cg.args argFlag = ParameterInfo2TypeFlag(p);
+                        arg1.AddFormat("\"{0}\"", p.ParameterType.Name);
+                        arg2.Add(argFlag.Format(cg.args.ArgsFormat.Flag));
+                    }
+
+                    if (arg1.Count > 0)
+                        arg.AddFormat("new string[]{0}", arg1.Format(cg.args.ArgsFormat.Brace));
+                    else
+                        arg.Add("null");
+                    if (arg2.Count > 0)
+                        arg.AddFormat("new TypeFlag[]{0}", arg2.Format(cg.args.ArgsFormat.Brace));
+                    else
+                        arg.Add("null");
+                    tf.Add("public static ConstructorID constructorID{0} = new ConstructorID({1});", i, arg.ToString()).AddLine();
+                }
+
+                string functionName = JSNameMgr.HandleFunctionName(type.Name + "_" + type.Name + (olIndex > 0 ? olIndex.ToString() : "") + (cons.IsStatic ? "_S" : ""));
+
+                TextFile tfFun = tf.Add("static bool {0}(JSVCall vc, int argc)", functionName).BraceIn();
+                {
+                    tfFun.Add(BuildNormalFunctionCall(methodTag, paramS, cons.Name, cons.IsStatic, null, true, 0).Ch);
+                    tfFun.Add("return true;");
+                    tfFun.BraceOut();
+                }
+
+                ccbn.constructors.Add(functionName);
+                ccbn.constructorsCSParam.Add(GenListCSParam2(paramS).ToString());
+
+                tfAll.Add(tf.Ch);
+            }
+        }
+        return tfAll;
+    }
+    static TextFile BuildRegisterFunction(ClassCallbackNames ccbn, GeneratorHelp.ATypeInfo ti)
+    {
+        TextFile tf = new TextFile();
+        TextFile tfFun = tf.Add("public static void __Register()").BraceIn();
+        {
+            tfFun.Add("JSMgr.CallbackInfo ci = new JSMgr.CallbackInfo();");
+            tfFun.Add("ci.type = typeof({0});", JSNameMgr.GetTypeFullName(ccbn.type));
+
+            TextFile tfFields = tfFun.Add("ci.fields = new JSMgr.CSCallbackField[]").BraceIn();
+            {
+                for (int i = 0; i < ccbn.fields.Count; i++)
+                    tfFields.Add("{0},", ccbn.fields[i]);
+
+                tfFields.BraceOutSC();
+            }
+
+            TextFile tfProperties = tfFun.Add("ci.properties = new JSMgr.CSCallbackProperty[]").BraceIn();
+            {
+                for (int i = 0; i < ccbn.properties.Count; i++)
+                    tfProperties.Add("{0},", ccbn.properties[i]);
+
+                tfProperties.BraceOutSC();
+            }
+
+            TextFile tfConstructors = tfFun.Add("ci.constructors = new JSMgr.MethodCallBackInfo[]").BraceIn();
+            {
+                for (int i = 0; i < ccbn.constructors.Count; i++)
+                {
+                    if (ccbn.constructors.Count == 1 && ti.constructors.Length == 0) // no constructors   add a default  so ...
+                        tfConstructors.Add("new JSMgr.MethodCallBackInfo({0}, \"{1}\"),",
+                            ccbn.constructors[i],
+                            type.Name);
+                    else
+                        tfConstructors.Add("new JSMgr.MethodCallBackInfo({0}, \"{1}\"),",
+                            ccbn.constructors[i],
+                            ti.constructors[i] == null ? ".ctor" : ti.constructors[i].Name);
+                }
+
+                tfConstructors.BraceOutSC();
+            }
+
+            TextFile tfMethods = tfFun.Add("ci.methods = new JSMgr.MethodCallBackInfo[]").BraceIn();
+            {
+                for (int i = 0; i < ccbn.methods.Count; i++)
+                {
+                    // if method is not overloaded
+                    // don's save the cs param array
+                    tfMethods.Add("new JSMgr.MethodCallBackInfo({0}, \"{1}\"),",
+                        ccbn.methods[i],
+                        ti.methods[i].Name);
+                }
+
+                tfMethods.BraceOutSC();
+            }
+            tfFun.Add("JSMgr.allCallbackInfo.Add(ci);");
+        }
+        tfFun.BraceOut();
+        return tf;
+    }
+    public static TextFile BuildFile(Type type,
+        TextFile tfFields,
+        TextFile tfProperties,
+        TextFile tfMethods,
+        TextFile tfConstructors,
+        TextFile tfRegister)
+    {
+        TextFile tfFile = new TextFile();
+        tfFile.Add("using UnityEngine;");
+        tfFile.Add("using System;");
+        tfFile.Add("using System.Collections;");
+        tfFile.Add("using System.Collections.Generic;");
+        tfFile.Add("using System.IO;");
+        tfFile.Add("using System.Reflection;");
+
+        if (type.Namespace != null)
+        {
+            string ns = type.Namespace;
+            if (!(ns == "UnityEngine"
+                || ns == "System"
+                || ns == "System.Collections"
+                || ns == "System.Collections.Generic"
+                || ns == "System.IO"
+                || ns == "System.Reflection"))
+            {
+                tfFile.Add("using {0};", ns);
+            }
+        }
+        tfFile.Add("using jsval = JSApi.jsval;");
+        tfFile.Add("public class {0}", thisClassName);
+        TextFile tfClass = tfFile.BraceIn();
+        {
+            tfClass.Add("////////////////////// {0} ///////////////////////////////////////", type.Name);
+            tfClass.Add("// constructors").Add(tfConstructors.Ch);
+            tfClass.Add("// fields").Add(tfFields.Ch);
+            tfClass.Add("// properties").Add(tfProperties.Ch);
+            tfClass.Add("// methods").Add(tfMethods.Ch).AddLine();
+            tfClass.Add("// register").Add(tfRegister.Ch);
+
+            tfClass.BraceOut();
+        }
+
+        return tfFile;
+    }
+
+    static StreamWriter OpenFile(string fileName, bool bAppend = false)
+    {
+        return new StreamWriter(fileName, bAppend, Encoding.UTF8);
+    }
     public static void GenerateClass()
     {
         GeneratorHelp.ATypeInfo ti;
@@ -884,11 +1049,18 @@ public class CSGenerator
 			ccbn.methodsCSParam = new List<string>(ti.methods.Length);
         }
 		
-		thisClassName = JSNameMgr.GetTypeFileName(type) + "Generated";
-		//var sbFields = BuildFields(type, ti.fields, ti.fieldsIndex, ccbn);
-		//var sbProperties = BuildProperties(type, ti.properties, ti.propertiesIndex, ccbn);
-		//var sbMethods = 
-			BuildMethods(type, ti.methods, ti.methodsIndex, ti.methodsOLInfo, ccbn);
+		thisClassName = JSNameMgr.GetTypeFileName(type) + "G";
+		var tfFields = BuildFields(type, ti.fields, ti.fieldsIndex, ccbn);
+		var tfProperties = BuildProperties(type, ti.properties, ti.propertiesIndex, ccbn);
+		var tfMethods = BuildMethods(type, ti.methods, ti.methodsIndex, ti.methodsOLInfo, ccbn);
+        var tfCons = BuildConstructors(type, ti.constructors, ti.constructorsIndex, ccbn);
+        var tfRegister = BuildRegisterFunction(ccbn, ti);
+        var tfClass = BuildFile(type, tfFields, tfProperties, tfMethods, tfCons, tfRegister);
+
+        string fileName = string.Format("{0}/{1}G.cs", JSBindingSettings.csGeneratedDir, JSNameMgr.GetTypeFileName(type));
+        var w = OpenFile(fileName, false);
+        w.Write(tfClass.Format(-1));
+        w.Close();
     }
     public static void GenerateClassBindings()
     {

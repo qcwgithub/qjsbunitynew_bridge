@@ -266,7 +266,7 @@ public class JSBindingSettings
 	public static string jsGeneratedFiles { get { return jsDir + "/GeneratedFiles" + jsExtension; } }
 	// 
 	public static string csDir = Application.dataPath + "/JSBinding/CSharp";
-	public static string csGeneratedDir = Application.dataPath + "/JSBinding/Generated";
+	public static string csGeneratedDir = Application.dataPath + "/Standard Assets/JSBinding/G";
 	public static string sharpkitGeneratedFiles = JSBindingSettings.jsDir + "/SharpKitGeneratedFiles.javascript";
 	public static string monoBehaviour2JSComponentName = JSBindingSettings.jsDir + "/MonoBehaviour2JSComponentName.javascript";
 	public static string sharpKitGenFileDir = "StreamingAssets/JavaScript/SharpKitGenerated/";

@@ -26,5 +26,7 @@ public class Menus
 		JSDataExchangeEditor.reset();
 		UnityEngineManual.initManual();
 		CSGenerator.GenerateClassBindings();
+
+        AssetDatabase.Refresh();
     }
 }
