@@ -9,11 +9,6 @@ using System.Collections.Generic;
 /// </summary>
 public static class GeneratorHelp
 {
-    /// <summary>
-    /// usage
-    /// 1 used for generating javascript code
-    /// 2 used for generating c# code
-    /// </summary>
     public class ATypeInfo
     {
         public FieldInfo[] fields;
@@ -26,10 +21,10 @@ public static class GeneratorHelp
         public int[] constructorsIndex;
 
         public MethodInfo[] methods;
-        public int[] methodsIndex; // index of the method in array of type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
+        public int[] methodsIndex; // 函数在这个数组中的索引：type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
 
-        public int[] methodsOLInfo;//0 not overloaded >0 overloaded index
-        public int howmanyConstructors;//how many constructors actually, (before filtering).
+        public int[] methodsOLInfo;     // 0 不重载 >0 重载序号
+        public int howmanyConstructors; // 过滤前一共有几个构造函数
     }
     public static List<ATypeInfo> allTypeInfo = new List<ATypeInfo>();
 
@@ -82,43 +77,40 @@ public static class GeneratorHelp
             }
         }
         return false;
+    
+    }
+
+    // 与 Bridge 的排序方式保持一致！处理重载函数的后缀才不会有问题
+    static string MethodToString(MethodInfo m)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+        sb.Append(m.ReturnType.ToString()).Append(" ");
+        sb.Append(m.Name).Append(" ");
+        sb.Append(m.GetGenericArguments().Length).Append(" ");
+
+        foreach (var p in m.GetParameters())
+        {
+            sb.Append(p.ParameterType.ToString()).Append(" ");
+        }
+        return sb.ToString();
     }
     public static int MethodInfoComparison(MethodInfoAndIndex mi1, MethodInfoAndIndex mi2)
     {
         MethodInfo m1 = mi1.method;
         MethodInfo m2 = mi2.method;
 
+        // 实例函数在前
         if (!m1.IsStatic && m2.IsStatic)
             return -1;
         if (m1.IsStatic && !m2.IsStatic)
             return 1;
+
+        // 按名字字符串排序
         if (m1.Name != m2.Name)
             return string.Compare(m1.Name, m2.Name);
-        int max1 = 0;
-        {
-            ParameterInfo[] ps = m1.GetParameters();
-            if (ps.Length > 0) max1 = ps.Length;
-            for (int i = ps.Length - 1; i >= 0; i--)
-            {
-                if (!ps[i].IsOptional)
-                    break;
-                max1--;
-            }
-        }
-        int max2 = 0;
-        {
-            ParameterInfo[] ps = m2.GetParameters();
-            if (ps.Length > 0) max2 = ps.Length;
-            for (int i = ps.Length - 1; i >= 0; i--)
-            {
-                if (!ps[i].IsOptional)
-                    break;
-                max2--;
-            }
-        }
-        if (max1 > max2) return -1;
-        if (max2 > max1) return 1;
-        return 0;
+
+        return string.Compare(MethodToString(m1), MethodToString(m2));
     }
 
     public struct FieldInfoAndIndex
@@ -147,8 +139,8 @@ public static class GeneratorHelp
     }
     public static void FilterTypeInfo(Type type, ATypeInfo ti)
     {
-        bool bIsStaticClass = (type.IsClass && type.IsAbstract && type.IsSealed);
-        bool bIsAbstractClass = (type.IsClass && type.IsAbstract);
+        bool isStaticClass = (type.IsClass && type.IsAbstract && type.IsSealed);
+        bool isAbstractClass = (type.IsClass && type.IsAbstract);
 
         List<ConstructorInfoAndIndex> lstCons = new List<ConstructorInfoAndIndex>();
         List<FieldInfoAndIndex> lstField = new List<FieldInfoAndIndex>();
@@ -158,7 +150,7 @@ public static class GeneratorHelp
 
         for (int i = 0; i < ti.constructors.Length; i++)
         {
-            if (bIsAbstractClass)
+            if (isAbstractClass)
                 continue;
 
             if (ti.constructors[i] == null)
@@ -167,7 +159,7 @@ public static class GeneratorHelp
                 continue;
             }
 
-            // don't generate MonoBehaviour constructor
+            // 不要生成 MonoBehaviour 的构造函数
             if (type == typeof(UnityEngine.MonoBehaviour))
             {
                 continue;
@@ -233,7 +225,7 @@ public static class GeneratorHelp
             MethodInfo method = ti.methods[i];
 
             // skip non-static method in static class
-            if (bIsStaticClass && !method.IsStatic)
+            if (isStaticClass && !method.IsStatic)
             {
                 // NGUITools
                 //Debug.Log("........."+type.Name+"."+method.Name);
@@ -266,13 +258,13 @@ public static class GeneratorHelp
                 {
                     if (!method.IsStatic)
                     {
-                        Debug.Log("IGNORE not-static special-name function: " + type.Name + "." + method.Name);
+                        Debug.Log("忽略非静态特殊名字函数 " + type.Name + "." + method.Name);
                         continue;
                     }
                 }
                 else
                 {
-                    Debug.Log("IGNORE special-name function:" + type.Name + "." + method.Name);
+                    Debug.Log("忽略特殊名字函数 " + type.Name + "." + method.Name);
                     continue;
                 }
             }
@@ -284,11 +276,8 @@ public static class GeneratorHelp
             ParameterInfo[] ps;
             bool bDiscard = false;
 
-            //
-            // ignore static method who contains T coming from class type
-            // because there is no way to call it
-            // SharpKit doesn't give c# the type of T
-            //
+            // 忽略掉类型带 T 的静态方法
+            // 因为 SharpKit 调用时没有提供 T
             if (method.IsGenericMethodDefinition /* || method.IsGenericMethod*/
                 && method.IsStatic)
             {
@@ -312,12 +301,12 @@ public static class GeneratorHelp
                 }
                 if (bDiscard)
                 {
-                    Debug.LogWarning("Ignore static method " + type.Name + "." + method.Name);
+                    Debug.LogWarning("忽略静态函数 " + type.Name + "." + method.Name);
                     continue;
                 }
             }
 
-            // does it have unsafe parameter?
+            // 是否有 unsafe 的参数？
             bDiscard = false;
             ps = method.GetParameters();
             for (var k = 0; k < ps.Length; k++)
@@ -341,10 +330,9 @@ public static class GeneratorHelp
             }
             if (bDiscard)
             {
-                Debug.Log(type.Name + "." + method.Name + " was discard because it has unsafe parameter.");
+                Debug.Log(type.Name + "." + method.Name + " 忽略，因为他有 unsafe 的参数");
                 continue;
             }
-
 
             if (JSBindingSettings.IsDiscard(type, method))
                 continue;
@@ -356,7 +344,7 @@ public static class GeneratorHelp
             ti.methodsOLInfo = null;
         else
         {
-            // sort methods
+            // 函数排序
             lstMethod.Sort(MethodInfoComparison);
             ti.methodsOLInfo = new int[lstMethod.Count];
         }

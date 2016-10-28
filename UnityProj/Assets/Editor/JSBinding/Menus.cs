@@ -25,7 +25,8 @@ public class Menus
 		
 		JSDataExchangeEditor.reset();
 		UnityEngineManual.initManual();
-		CSGenerator.GenerateClassBindings();
+        CSGenerator.GenerateClassBindings();
+        JSGenerator.GenerateClassBindings();
 
         AssetDatabase.Refresh();
     }

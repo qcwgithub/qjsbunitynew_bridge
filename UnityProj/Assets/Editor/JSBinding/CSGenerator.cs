@@ -1049,7 +1049,7 @@ public class CSGenerator
 			ccbn.methodsCSParam = new List<string>(ti.methods.Length);
         }
 		
-		thisClassName = JSNameMgr.GetTypeFileName(type) + "G";
+		thisClassName = JSNameMgr.GetTypeFileName(type) + "_G";
 		var tfFields = BuildFields(type, ti.fields, ti.fieldsIndex, ccbn);
 		var tfProperties = BuildProperties(type, ti.properties, ti.propertiesIndex, ccbn);
 		var tfMethods = BuildMethods(type, ti.methods, ti.methodsIndex, ti.methodsOLInfo, ccbn);
@@ -1057,9 +1057,40 @@ public class CSGenerator
         var tfRegister = BuildRegisterFunction(ccbn, ti);
         var tfClass = BuildFile(type, tfFields, tfProperties, tfMethods, tfCons, tfRegister);
 
-        string fileName = string.Format("{0}/{1}G.cs", JSBindingSettings.csGeneratedDir, JSNameMgr.GetTypeFileName(type));
+        string fileName = string.Format("{0}/{1}_G.cs", JSBindingSettings.csGeneratedDir, JSNameMgr.GetTypeFileName(type));
         var w = OpenFile(fileName, false);
         w.Write(tfClass.Format(-1));
+        w.Close();
+    }
+    public static void GenerateRegisterAll()
+    {
+        TextFile tf = new TextFile();
+        tf.Add("using UnityEngine;");
+        tf.Add("public class CSharpGenerated");
+        TextFile tfClass = tf.BraceIn();
+        {
+            tfClass.Add("public static void RegisterAll()");
+            TextFile tfFun = tfClass.BraceIn();
+            {
+                tfFun.Add("if (JSMgr.allCallbackInfo.Count != 0)")
+                    .BraceIn()
+                    .Add("Debug.LogError(999777454);")
+                    .BraceOut();
+
+                tfFun.AddLine();
+                for (int i = 0; i < JSBindingSettings.classes.Length; i++)
+                {
+                    tfFun.Add("{0}_G.__Register();", JSNameMgr.GetTypeFileName(JSBindingSettings.classes[i]));
+                }
+
+                tfFun.BraceOut();
+            }
+
+            tfClass.BraceOut();
+        }
+        string fileName = string.Format("{0}/CSharp_G.cs", JSBindingSettings.csGeneratedDir);
+        var w = OpenFile(fileName, false);
+        w.Write(tf.Format(-1));
         w.Close();
     }
     public static void GenerateClassBindings()
@@ -1075,7 +1106,8 @@ public class CSGenerator
 		}
 		//GenerateRegisterAll();
 		//GenerateAllJSFileNames();
-		
+
+        GenerateRegisterAll();
 		CSGenerator.OnEnd();
 		
 		Debug.Log("Generate CS Bindings OK. total = " + JSBindingSettings.classes.Length.ToString());

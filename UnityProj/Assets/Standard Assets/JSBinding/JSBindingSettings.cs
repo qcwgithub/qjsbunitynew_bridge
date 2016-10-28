@@ -12,10 +12,7 @@ public class JSBindingSettings
 {
 	public static Type[] enums = new Type[]
 	{
-		/*
-         * No need to export enum anymore
-         * Enum should be 'compilied' by SharpKit only
-         */
+        typeof(BindingFlags),
 	};
 	
 	//
@@ -43,16 +40,16 @@ public class JSBindingSettings
     {
 		typeof(Qcw<>),
 //
-//        typeof(Debug),
-//        typeof(Input),
-//        typeof(GameObject),
+       typeof(Debug),
+       typeof(Input),
+       typeof(GameObject),
 //        typeof(Transform),
 //        typeof(Vector2),
 //        typeof(Vector3),
 //        typeof(MonoBehaviour),
 //        typeof(Behaviour),
 //        typeof(Component),
-//        typeof(UnityEngine.Object),
+        typeof(UnityEngine.Object),
 //        typeof(YieldInstruction),
 //        typeof(WaitForSeconds),
 //        typeof(WWW),
@@ -261,9 +258,9 @@ public class JSBindingSettings
 	public static string jscRelDir = "Assets/JSC";	
 	
 	// directory to save generated js files (gen by JSGenerateor2)
-	public static string jsGeneratedDir{ get { return jsDir + "/Generated"; } }
+	public static string jsGeneratedDir{ get { return jsDir + "/G"; } }
 	// a file to save generated js file names
-	public static string jsGeneratedFiles { get { return jsDir + "/GeneratedFiles" + jsExtension; } }
+	public static string jsGeneratedFiles { get { return jsDir + "/G" + jsExtension; } }
 	// 
 	public static string csDir = Application.dataPath + "/JSBinding/CSharp";
 	public static string csGeneratedDir = Application.dataPath + "/Standard Assets/JSBinding/G";
