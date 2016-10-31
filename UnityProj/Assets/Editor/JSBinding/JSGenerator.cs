@@ -26,7 +26,6 @@ public static class JSGenerator
             Directory.CreateDirectory(p.Substring(0, i));
         }
 		W = OpenFile(p, false);
-		W.Write("this.Enum = {};\n");
     }
     public static void OnEnd()
     {
@@ -505,7 +504,7 @@ _jstype.staticDefinition.{1} = function({2}) [[
         TextFile tf = new TextFile();
 
         string typeName = type.ToString();
-        tf.AddLine().Add("// {0}", typeName);
+        // tf.AddLine().Add("// {0}", typeName);
 
         // remove name space
         int lastDot = typeName.LastIndexOf('.');
@@ -517,14 +516,17 @@ _jstype.staticDefinition.{1} = function({2}) [[
         if (typeName.IndexOf('+') >= 0)
             return;
 
-        TextFile tfEnum = tf.Add("this.Enum.{0} = {{", typeName).In();
+        TextFile tfDef = tf.Add("Bridge.define(\"{0}\", {{", JSNameMgr.GetJSTypeFullName(type)).In();
+        tfDef.Add("$kind: \"enum\",");
+        TextFile tfSta = tfDef.Add("statics: {").In();
         
         FieldInfo[] fields = type.GetFields(BindingFlags.GetField | BindingFlags.Public | BindingFlags.Static);
         for (int i = 0; i < fields.Length; i++)
         {
-            tfEnum.Add("{0}: {1}{2}", fields[i].Name, (int)fields[i].GetValue(null), i == fields.Length - 1 ? "" : ",");
+            tfSta.Add("{0}: {1}{2}", fields[i].Name, (int)fields[i].GetValue(null), i == fields.Length - 1 ? "" : ",");
         }
-        tfEnum.BraceOutSC();
+        tfSta.BraceOut();
+        tfDef.BraceOutSC();
 
         W.Write(tf.Format(-1));
     }
