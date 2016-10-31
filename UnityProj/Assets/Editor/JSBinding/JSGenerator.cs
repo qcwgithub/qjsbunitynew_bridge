@@ -104,12 +104,15 @@ namespace jsb
         }
 
         public static void BuildFields(TextFile tfStatic, TextFile tfInst,
-            Type type, FieldInfo[] fields, int slot, List<string> lstNames)
+            Type type, List<MemberInfoEx> fields, int slot, List<string> lstNames)
         {
             var sb = new StringBuilder();
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 0; i < fields.Count; i++)
             {
-                FieldInfo field = fields[i];
+                MemberInfoEx infoEx = fields[i];
+                if (infoEx.Ignored)
+                    continue;
+                FieldInfo field = infoEx.member as FieldInfo;
 
                 lstNames.Add((field.IsStatic ? "Static_" : "") + field.Name);
 
@@ -121,11 +124,15 @@ namespace jsb
             }
         }
         public static void BuildProperties(TextFile tfStatic, TextFile tfInst,
-            Type type, PropertyInfo[] properties, int[] propertiesIndex, int slot, List<string> lstNames)
+            Type type, List<MemberInfoEx> properties, int slot, List<string> lstNames)
         {
-            for (int i = 0; i < properties.Length; i++)
+            for (int i = 0; i < properties.Count; i++)
             {
-                PropertyInfo property = properties[i];
+                MemberInfoEx infoEx = properties[i];
+                if (infoEx.Ignored)
+                    continue;
+
+                PropertyInfo property = infoEx.member as PropertyInfo;
 
                 ParameterInfo[] ps = property.GetIndexParameters();
                 string indexerParamA = string.Empty;
@@ -143,7 +150,7 @@ namespace jsb
                 bool isStatic = accessors[0].IsStatic;
 
                 // 特殊情况，当[]时，property.Name=Item
-                string mName = Member_AddSuffix(property.Name, propertiesIndex[i]);
+                string mName = Member_AddSuffix(property.Name, infoEx.GetOverloadIndex());
                 lstNames.Add((isStatic ? "Static_" : "") + "get" + mName);
                 lstNames.Add((isStatic ? "Static_" : "") + "set" + mName);
 
@@ -155,15 +162,19 @@ namespace jsb
                     mName, indexerParamB, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
             }
         }
-        public static void BuildConstructors(TextFile tfInst, Type type, ConstructorInfo[] constructors, int[] constructorsIndex, int slot, List<string> lstNames)
+        public static void BuildConstructors(TextFile tfInst, Type type, List<MemberInfoEx> constructors, int slot, List<string> lstNames)
         {
             var argActual = new args();
             var argFormal = new args();
 
-            for (int i = 0; i < constructors.Length; i++)
+            for (int i = 0; i < constructors.Count; i++)
             {
+                MemberInfoEx infoEx = constructors[i];
+                if (infoEx.Ignored)
+                    continue;
+                ConstructorInfo con = infoEx.member as ConstructorInfo;
+
                 TextFile tf = new TextFile();
-                ConstructorInfo con = constructors[i];
                 ParameterInfo[] ps = con == null ? new ParameterInfo[0] : con.GetParameters();
 
                 argActual.Clear().Add(
@@ -196,7 +207,7 @@ namespace jsb
                     argActual.Add("a" + j.ToString());
                 }
 
-                string mName = Member_AddSuffix("ctor", constructorsIndex[i]);
+                string mName = Member_AddSuffix("ctor", infoEx.GetOverloadIndex());
                 lstNames.Add(mName);
 
                 tf.Add("{0}: function ({1}) {{", mName, argFormal)
@@ -210,12 +221,15 @@ namespace jsb
 
         // can handle all methods
         public static void BuildMethods(TextFile tfStatic, TextFile tfInst,
-            Type type, MethodInfo[] methods, int slot, List<string> lstNames)
+            Type type, List<MemberInfoEx> methods, int slot, List<string> lstNames)
         {
-            for (int i = 0; i < methods.Length; i++)
+            for (int i = 0; i < methods.Count; i++)
             {
-                MethodInfo method = methods[i];
-                int overloadIndex = 0; // TODO
+                MemberInfoEx infoEx = methods[i];
+                if (infoEx.Ignored)
+                    continue;
+
+                MethodInfo method = infoEx.member as MethodInfo;
 
                 StringBuilder sbFormalParam = new StringBuilder();
                 StringBuilder sbActualParam = new StringBuilder();
@@ -249,10 +263,9 @@ namespace jsb
 
                 string methodName = method.Name;
 
-                // TODO
                 // if (methodName == "ToString") { methodName = "toString"; }
 
-                string mName = Member_AddSuffix(methodName, overloadIndex, TCount);
+                string mName = Member_AddSuffix(methodName, infoEx.GetOverloadIndex(), TCount);
                 lstNames.Add((method.IsStatic ? "Static_" : "") + mName);
 
                 TextFile tf = method.IsStatic ? tfStatic : tfInst;
@@ -301,14 +314,17 @@ namespace jsb
                         .Add(() =>
                         {
                             StringBuilder sb = new StringBuilder();
-                            if (ti.fields.Length == 0)
+                            if (ti.Fields.Count == 0)
                                 sb.Append("return true;");
                             else
                             {
-                                for (int f = 0; f < ti.fields.Length; f++)
+                                for (int f = 0; f < ti.Fields.Count; f++)
                                 {
-                                    sb.AppendFormat("Bridge.equals(this.{0}, o.{0})", ti.fields[f].Name);
-                                    if (f < ti.fields.Length - 1)
+                                    if (ti.Fields[f].Ignored)
+                                        continue;
+
+                                    sb.AppendFormat("Bridge.equals(this.{0}, o.{0})", ti.Fields[f].member.Name);
+                                    if (f < ti.Fields.Count - 1)
                                         sb.AppendFormat(" && ");
                                     else
                                         sb.Append(";");
@@ -324,9 +340,12 @@ namespace jsb
                         .Add(() =>
                         {
                             TextFile tf = new TextFile();
-                            for (int f = 0; f < ti.fields.Length; f++)
+                            for (int f = 0; f < ti.Fields.Count; f++)
                             {
-                                tf.Add("s.{0} = this.{0};", ti.fields[f].Name);
+                                if (ti.Fields[f].Ignored)
+                                    continue;
+
+                                tf.Add("s.{0} = this.{0};", ti.Fields[f].member.Name);
                             }
                             return tf.Ch;
                         })
@@ -334,10 +353,10 @@ namespace jsb
                     .BraceOutComma();
             }
 
-            BuildConstructors(tfInst, type, ti.constructors, ti.constructorsIndex, slot, memberNames);
-            BuildFields(tfStatic, tfInst, type, ti.fields, slot, memberNames);
-            BuildProperties(tfStatic, tfInst, type, ti.properties, ti.propertiesIndex, slot, memberNames);
-            BuildMethods(tfStatic, tfInst, type, ti.methods, slot, memberNames);
+            BuildConstructors(tfInst, type, ti.Cons, slot, memberNames);
+            BuildFields(tfStatic, tfInst, type, ti.Fields, slot, memberNames);
+            BuildProperties(tfStatic, tfInst, type, ti.Pros, slot, memberNames);
+            BuildMethods(tfStatic, tfInst, type, ti.Methods, slot, memberNames);
 
             W.Write(tfDef.Format(-1));
 

@@ -60,7 +60,7 @@ public class JSBindingSettings
     {
 		typeof(Qcw),
         typeof(ICloneable),
-        typeof(Vector3),
+        //typeof(Vector3),
 //
        //typeof(Debug),
        //typeof(Input),

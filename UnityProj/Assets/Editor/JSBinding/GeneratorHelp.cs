@@ -6,36 +6,55 @@ using System.Collections.Generic;
 
 namespace jsb
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    public class MemberInfoEx
+    {
+        public MemberInfo member;
+        public bool isStatic;
+        public bool Ignored = false;
+
+        List<MemberInfoEx> parent;
+        int overloadIndex = -1;
+        public int GetOverloadIndex()
+        {
+            if (overloadIndex != -1)
+                return overloadIndex;
+
+            int index = parent.IndexOf(this);
+            overloadIndex = 0;
+            for (int i = index - 1; i >= 0; i--)
+            {
+                if (parent[i].member == null || // 构造函数特殊情况
+                    (parent[i].member.Name == member.Name && parent[i].isStatic == isStatic)
+                    )
+                {
+                    overloadIndex++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return overloadIndex;
+        }
+        public MemberInfoEx(List<MemberInfoEx> par, FieldInfo m, bool isS) { parent = par; member = m; isStatic = isS; }
+        public MemberInfoEx(List<MemberInfoEx> par, PropertyInfo m, bool isS) { parent = par; member = m; isStatic = isS; }
+        public MemberInfoEx(List<MemberInfoEx> par, MethodInfo m, bool isS) { parent = par; member = m; isStatic = isS; }
+        public MemberInfoEx(List<MemberInfoEx> par, ConstructorInfo m, bool isS) { parent = par; member = m; isStatic = isS; }
+    }
+
     public static class GeneratorHelp
     {
         public class ATypeInfo
         {
-            public FieldInfo[] fields;
-            public int[] fieldsIndex;
-
-            public PropertyInfo[] properties;
-            public int[] propertiesIndex;
-
-            public ConstructorInfo[] constructors;
-            public int[] constructorsIndex;
-
-            public MethodInfo[] methods;
-            public int[] methodsIndex; // 函数在这个数组中的索引：type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
-
-            public int[] methodsOLInfo;     // 0 不重载 >0 重载序号
-            public int howmanyConstructors; // 过滤前一共有几个构造函数
+            public List<MemberInfoEx> Fields = new List<MemberInfoEx>();
+            public List<MemberInfoEx> Pros = new List<MemberInfoEx>();
+            public List<MemberInfoEx> Cons = new List<MemberInfoEx>();
+            public List<MemberInfoEx> Methods = new List<MemberInfoEx>();
         }
         public static List<ATypeInfo> allTypeInfo = new List<ATypeInfo>();
 
         public static void ClearTypeInfo()
         {
-            //         CallbackInfo cbi = new CallbackInfo();
-            //         cbi.fields = new List<CSCallbackField>();
-            //         cbi.fields.Add(Vector3Generated.Vector3_x);
-
             allTypeInfo.Clear();
         }
         public static int AddTypeInfo(Type type)
@@ -46,28 +65,14 @@ namespace jsb
 
         public static int AddTypeInfo(Type type, out ATypeInfo tiOut)
         {
-            ATypeInfo ti = new ATypeInfo();
-            ti.fields = type.GetFields(JSMgr.BindingFlagsField);
-            ti.properties = type.GetProperties(JSMgr.BindingFlagsProperty);
-            ti.methods = type.GetMethods(JSMgr.BindingFlagsMethod);
-            ti.constructors = type.GetConstructors();
-            if (JSBindingSettings.NeedGenDefaultConstructor(type))
-            {
-                // null means it's default constructor
-                var l = new List<ConstructorInfo>();
-                l.Add(null);
-                l.AddRange(ti.constructors);
-                ti.constructors = l.ToArray();
-            }
-            ti.howmanyConstructors = ti.constructors.Length;
-
-            FilterTypeInfo(type, ti);
+            ATypeInfo ti = CreateTypeInfo(type);
 
             int slot = allTypeInfo.Count;
             allTypeInfo.Add(ti);
             tiOut = ti;
             return slot;
         }
+
         public static bool IsMemberObsolete(MemberInfo mi)
         {
             object[] attrs = mi.GetCustomAttributes(true);
@@ -79,17 +84,50 @@ namespace jsb
                 }
             }
             return false;
-
         }
 
-        // 与 Bridge 的排序方式保持一致！处理重载函数的后缀才不会有问题
-        static string MethodToString(MethodInfo m)
+        static string PropertyToString(PropertyInfo m)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            sb.Append(m.ReturnType.ToString()).Append(" ");
+            sb.Append(m.PropertyType.ToString()).Append(" ");
             sb.Append(m.Name).Append(" ");
-            sb.Append(m.GetGenericArguments().Length).Append(" ");
+
+            foreach (var p in m.GetIndexParameters())
+            {
+                sb.Append(p.ParameterType.ToString()).Append(" ");
+            }
+            return sb.ToString();
+        }
+        static int PropertyInfoComparison(MemberInfoEx mi1, MemberInfoEx mi2)
+        {
+            PropertyInfo m1 = mi1.member as PropertyInfo;
+            PropertyInfo m2 = mi2.member as PropertyInfo;
+
+            // 实例函数在前
+            if (!m1.GetAccessors()[0].IsStatic && m2.GetAccessors()[0].IsStatic)
+                return -1;
+            if (m1.GetAccessors()[0].IsStatic && !m2.GetAccessors()[0].IsStatic)
+                return 1;
+
+            // 按名字字符串排序
+            if (m1.Name != m2.Name)
+                return string.Compare(m1.Name, m2.Name);
+
+            return string.Compare(PropertyToString(m1), PropertyToString(m2));
+        }
+        // 与 Bridge 的排序方式保持一致！处理重载函数的后缀才不会有问题
+        static string MethodToString(MethodBase m)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            if (m is MethodInfo)
+                sb.Append((m as MethodInfo).ReturnType.ToString()).Append(" ");
+
+            sb.Append(m.Name).Append(" ");
+
+            if (m is MethodInfo)
+                sb.Append(m.GetGenericArguments().Length).Append(" ");
 
             foreach (var p in m.GetParameters())
             {
@@ -97,10 +135,17 @@ namespace jsb
             }
             return sb.ToString();
         }
-        public static int MethodInfoComparison(MethodInfoAndIndex mi1, MethodInfoAndIndex mi2)
+        static int MethodBaseComparison(MemberInfoEx mi1, MemberInfoEx mi2)
         {
-            MethodInfo m1 = mi1.method;
-            MethodInfo m2 = mi2.method;
+            MethodBase m1 = mi1.member as MethodBase;
+            MethodBase m2 = mi2.member as MethodBase;
+
+            if (m1 == null && m2 != null)
+                return -1;
+            if (m1 != null && m2 == null)
+                return 1;
+            if (m1 == null && m2 == null)
+                return 0;
 
             // 实例函数在前
             if (!m1.IsStatic && m2.IsStatic)
@@ -115,83 +160,87 @@ namespace jsb
             return string.Compare(MethodToString(m1), MethodToString(m2));
         }
 
-        public struct FieldInfoAndIndex
+        public static ATypeInfo CreateTypeInfo(Type type)
         {
-            public FieldInfo method;
-            public int index;
-            public FieldInfoAndIndex(FieldInfo _m, int _i) { method = _m; index = _i; }
-        }
-        public struct MethodInfoAndIndex
-        {
-            public MethodInfo method;
-            public int index;
-            public MethodInfoAndIndex(MethodInfo _m, int _i) { method = _m; index = _i; }
-        }
-        public struct ConstructorInfoAndIndex
-        {
-            public ConstructorInfo method;
-            public int index;
-            public ConstructorInfoAndIndex(ConstructorInfo _m, int _i) { method = _m; index = _i; }
-        }
-        public struct PropertyInfoAndIndex
-        {
-            public PropertyInfo method;
-            public int index;
-            public PropertyInfoAndIndex(PropertyInfo _m, int _i) { method = _m; index = _i; }
-        }
-        public static void FilterTypeInfo(Type type, ATypeInfo ti)
-        {
+            ATypeInfo ti = new ATypeInfo();
+            {
+                var fields = type.GetFields(JSMgr.BindingFlagsField);
+                for (int i = 0; i < fields.Length; i++)
+                    ti.Fields.Add(new MemberInfoEx(ti.Fields, fields[i], fields[i].IsStatic));
+
+                var pros = type.GetProperties(JSMgr.BindingFlagsProperty);
+                for (int i = 0; i < pros.Length; i++)
+                    ti.Pros.Add(new MemberInfoEx(ti.Pros, pros[i], pros[i].GetAccessors()[0].IsStatic));
+
+                ti.Pros.Sort(PropertyInfoComparison);
+
+                var methods = type.GetMethods(JSMgr.BindingFlagsMethod);
+                for (int i = 0; i < methods.Length; i++)
+                    ti.Methods.Add(new MemberInfoEx(ti.Methods, methods[i], methods[i].IsStatic));
+
+                // 函数排序
+                ti.Methods.Sort(MethodBaseComparison);
+
+                var cons = type.GetConstructors();
+                if (JSBindingSettings.NeedGenDefaultConstructor(type))
+                {
+                    // null 表示默认构造函数
+                    var l = new List<ConstructorInfo>();
+                    l.Add(null);
+                    l.AddRange(cons);
+                    cons = l.ToArray();
+                }
+                for (int i = 0; i < cons.Length; i++)
+                    ti.Cons.Add(new MemberInfoEx(ti.Cons, cons[i], false));
+
+                ti.Cons.Sort(MethodBaseComparison);
+            }
+
             bool isStaticClass = (type.IsClass && type.IsAbstract && type.IsSealed);
             bool isAbstractClass = (type.IsClass && type.IsAbstract);
 
-            List<ConstructorInfoAndIndex> lstCons = new List<ConstructorInfoAndIndex>();
-            List<FieldInfoAndIndex> lstField = new List<FieldInfoAndIndex>();
-            List<PropertyInfoAndIndex> lstPro = new List<PropertyInfoAndIndex>();
             Dictionary<string, int> proAccessors = new Dictionary<string, int>();
-            List<MethodInfoAndIndex> lstMethod = new List<MethodInfoAndIndex>();
 
-            for (int i = 0; i < ti.constructors.Length; i++)
+            for (int i = 0; i < ti.Cons.Count; i++)
             {
-                if (isAbstractClass)
+                MemberInfoEx infoEx = ti.Cons[i];
+                ConstructorInfo con = infoEx.member as ConstructorInfo;
+                if (con == null)
                     continue;
 
-                if (ti.constructors[i] == null)
+                if (isAbstractClass ||
+                    type == typeof(UnityEngine.MonoBehaviour) ||
+                    IsMemberObsolete(con) ||
+                    JSBindingSettings.IsDiscard(type, con)
+                    )
                 {
-                    lstCons.Add(new ConstructorInfoAndIndex(null, i));
-                    continue;
-                }
-
-                // 不要生成 MonoBehaviour 的构造函数
-                if (type == typeof(UnityEngine.MonoBehaviour))
-                {
-                    continue;
-                }
-
-                if (!IsMemberObsolete(ti.constructors[i]) && !JSBindingSettings.IsDiscard(type, ti.constructors[i]))
-                {
-                    lstCons.Add(new ConstructorInfoAndIndex(ti.constructors[i], i));
+                    infoEx.Ignored = true;
                 }
             }
 
-            for (int i = 0; i < ti.fields.Length; i++)
+            for (int i = 0; i < ti.Fields.Count; i++)
             {
-                if (typeof(System.Delegate).IsAssignableFrom(ti.fields[i].FieldType.BaseType))
+                MemberInfoEx infoEx = ti.Fields[i];
+                FieldInfo field = infoEx.member as FieldInfo;
+
+                if (typeof(System.Delegate).IsAssignableFrom(field.FieldType.BaseType))
                 {
                     //Debug.Log("[field]" + type.ToString() + "." + ti.fields[i].Name + "is delegate!");
                 }
-                if (ti.fields[i].FieldType.ContainsGenericParameters)
-                    continue;
 
-                if (!IsMemberObsolete(ti.fields[i]) && !JSBindingSettings.IsDiscard(type, ti.fields[i]))
+                if (field.FieldType.ContainsGenericParameters ||
+                    IsMemberObsolete(field) ||
+                    JSBindingSettings.IsDiscard(type, field)
+                    )
                 {
-                    lstField.Add(new FieldInfoAndIndex(ti.fields[i], i));
+                    infoEx.Ignored = true;
                 }
             }
 
-
-            for (int i = 0; i < ti.properties.Length; i++)
+            for (int i = 0; i < ti.Pros.Count; i++)
             {
-                PropertyInfo pro = ti.properties[i];
+                MemberInfoEx infoEx = ti.Pros[i];
+                PropertyInfo pro = infoEx.member as PropertyInfo;
 
                 if (typeof(System.Delegate).IsAssignableFrom(pro.PropertyType.BaseType))
                 {
@@ -205,39 +254,26 @@ namespace jsb
                         proAccessors.Add(v.Name, 0);
                 }
 
-
-                //            if (pro.GetIndexParameters().Length > 0)
-                //                continue;
-                //            if (pro.Name == "Item") //[] not support
-                //                continue;
-
                 // Skip Obsolete
-                if (IsMemberObsolete(pro))
-                    continue;
-
-                if (JSBindingSettings.IsDiscard(type, pro))
-                    continue;
-
-                lstPro.Add(new PropertyInfoAndIndex(pro, i));
+                if (IsMemberObsolete(pro) ||
+                    JSBindingSettings.IsDiscard(type, pro)
+                    )
+                {
+                    infoEx.Ignored = true;
+                }
             }
 
-
-            for (int i = 0; i < ti.methods.Length; i++)
+            for (int i = 0; i < ti.Methods.Count; i++)
             {
-                MethodInfo method = ti.methods[i];
+                MemberInfoEx infoEx = ti.Methods[i];
+                MethodInfo method = infoEx.member as MethodInfo;
 
                 // skip non-static method in static class
-                if (isStaticClass && !method.IsStatic)
+                if ((isStaticClass && !method.IsStatic) ||
+                    (method.IsSpecialName && proAccessors.ContainsKey(method.Name))
+                    )
                 {
-                    // NGUITools
-                    //Debug.Log("........."+type.Name+"."+method.Name);
-                    continue;
-                }
-
-                // skip property accessor
-                if (method.IsSpecialName &&
-                    proAccessors.ContainsKey(method.Name))
-                {
+                    infoEx.Ignored = true;
                     continue;
                 }
 
@@ -261,19 +297,24 @@ namespace jsb
                         if (!method.IsStatic)
                         {
                             Debug.Log("忽略非静态特殊名字函数 " + type.Name + "." + method.Name);
+                            infoEx.Ignored = true;
                             continue;
                         }
                     }
                     else
                     {
                         Debug.Log("忽略特殊名字函数 " + type.Name + "." + method.Name);
+                        infoEx.Ignored = true;
                         continue;
                     }
                 }
 
                 // Skip Obsolete
                 if (IsMemberObsolete(method))
+                {
+                    infoEx.Ignored = true;
                     continue;
+                }
 
                 ParameterInfo[] ps;
                 bool bDiscard = false;
@@ -304,6 +345,7 @@ namespace jsb
                     if (bDiscard)
                     {
                         Debug.LogWarning("忽略静态函数 " + type.Name + "." + method.Name);
+                        infoEx.Ignored = true;
                         continue;
                     }
                 }
@@ -333,126 +375,18 @@ namespace jsb
                 if (bDiscard)
                 {
                     Debug.Log(type.Name + "." + method.Name + " 忽略，因为他有 unsafe 的参数");
+                    infoEx.Ignored = true;
                     continue;
                 }
 
                 if (JSBindingSettings.IsDiscard(type, method))
+                {
+                    infoEx.Ignored = true;
                     continue;
-
-                lstMethod.Add(new MethodInfoAndIndex(method, i));
-            }
-
-            if (lstMethod.Count == 0)
-                ti.methodsOLInfo = null;
-            else
-            {
-                // 函数排序
-                lstMethod.Sort(MethodInfoComparison);
-                ti.methodsOLInfo = new int[lstMethod.Count];
-            }
-
-            int overloadedIndex = 1;
-            bool bOL = false;
-            for (int i = 0; i < lstMethod.Count; i++)
-            {
-                ti.methodsOLInfo[i] = 0;
-                if (bOL)
-                {
-                    ti.methodsOLInfo[i] = overloadedIndex;
-                }
-
-                if (i < lstMethod.Count - 1 && lstMethod[i].method.Name == lstMethod[i + 1].method.Name &&
-                    ((lstMethod[i].method.IsStatic && lstMethod[i + 1].method.IsStatic) ||
-                    (!lstMethod[i].method.IsStatic && !lstMethod[i + 1].method.IsStatic)))
-                {
-                    if (!bOL)
-                    {
-                        overloadedIndex = 1;
-                        bOL = true;
-                        ti.methodsOLInfo[i] = overloadedIndex;
-                    }
-                    overloadedIndex++;
-                }
-                else
-                {
-                    bOL = false;
-                    overloadedIndex = 1;
                 }
             }
 
-            ti.constructors = new ConstructorInfo[lstCons.Count];
-            ti.constructorsIndex = new int[lstCons.Count];
-            for (var k = 0; k < lstCons.Count; k++)
-            {
-                ti.constructors[k] = lstCons[k].method;
-                ti.constructorsIndex[k] = lstCons[k].index;
-            }
-
-            // ti.fields = lstField.ToArray();
-            ti.fields = new FieldInfo[lstField.Count];
-            ti.fieldsIndex = new int[lstField.Count];
-            for (var k = 0; k < lstField.Count; k++)
-            {
-                ti.fields[k] = lstField[k].method;
-                ti.fieldsIndex[k] = lstField[k].index;
-            }
-
-            // ti.properties = lstPro.ToArray();
-            ti.properties = new PropertyInfo[lstPro.Count];
-            ti.propertiesIndex = new int[lstPro.Count];
-            for (var k = 0; k < lstPro.Count; k++)
-            {
-                ti.properties[k] = lstPro[k].method;
-                ti.propertiesIndex[k] = lstPro[k].index;
-            }
-
-            ti.methods = new MethodInfo[lstMethod.Count];
-            ti.methodsIndex = new int[lstMethod.Count];
-
-            for (var k = 0; k < lstMethod.Count; k++)
-            {
-                ti.methods[k] = lstMethod[k].method;
-                ti.methodsIndex[k] = lstMethod[k].index;
-            }
+            return ti;
         }
-
-        /// <summary>
-        /// Method is overloaded or not?
-        /// Used in JSGenerator2
-        /// No matter it's static or not
-        /// including NonPublic methods
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="methodName">Name of the method.</param>
-        /// <returns></returns>
-        public static bool MethodIsOverloaded(Type type, string methodName)
-        {
-            bool ret = MethodIsOverloaded2(type, methodName, JSMgr.BindingFlagsMethod2);
-            if (!ret)
-            {
-                if (MethodIsOverloaded2(type, methodName, JSMgr.BindingFlagsMethod3))
-                {
-                    ret = true;
-                    Debug.Log("NEW OVERLOAD " + type.Name + "." + methodName);
-                }
-            }
-            return ret;
-        }
-        public static bool MethodIsOverloaded2(Type type, string methodName, BindingFlags flag)
-        {
-            MethodInfo[] methods = type.GetMethods(flag);
-            int N = 0;
-            foreach (var m in methods)
-            {
-                if (m.Name == methodName)
-                {
-                    N++;
-                    if (N >= 2)
-                        return true;
-                }
-            }
-            return false;
-        }
-
     }
 }

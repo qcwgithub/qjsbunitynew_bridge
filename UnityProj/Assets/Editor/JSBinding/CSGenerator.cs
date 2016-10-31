@@ -61,13 +61,17 @@ namespace jsb
             type = null;
             //		sb = new StringBuilder();
         }
-        public static TextFile BuildFields(Type type, FieldInfo[] fields, int[] fieldsIndex, ClassCallbackNames ccbn)
+        public static TextFile BuildFields(Type type, List<MemberInfoEx> fields, ClassCallbackNames ccbn)
         {
             TextFile tfAll = new TextFile();
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 0; i < fields.Count; i++)
             {
+                MemberInfoEx infoEx = fields[i];
+                if (infoEx.Ignored)
+                    continue;
+
                 TextFile tf = new TextFile();
-                FieldInfo field = fields[i];
+                FieldInfo field = infoEx.member as FieldInfo;
                 bool isDelegate = JSDataExchangeEditor.IsDelegateDerived(field.FieldType);// (typeof(System.Delegate).IsAssignableFrom(field.FieldType));
                 if (isDelegate)
                 {
@@ -174,13 +178,17 @@ namespace jsb
 
             return argFlag;
         }
-        public static TextFile BuildProperties(Type type, PropertyInfo[] properties, int[] propertiesIndex, ClassCallbackNames ccbn)
+        public static TextFile BuildProperties(Type type, List<MemberInfoEx> properties, ClassCallbackNames ccbn)
         {
             TextFile tfAll = new TextFile();
-            for (int i = 0; i < properties.Length; i++)
+            for (int i = 0; i < properties.Count; i++)
             {
+                MemberInfoEx infoEx = properties[i];
+                if (infoEx.Ignored)
+                    continue;
+                PropertyInfo property = properties[i].member as PropertyInfo;
+
                 TextFile tf = new TextFile();
-                PropertyInfo property = properties[i];
                 MethodInfo[] accessors = property.GetAccessors();
                 bool isStatic = accessors[0].IsStatic;
                 JSDataExchangeEditor.MemberFeature features = 0;
@@ -732,13 +740,18 @@ namespace jsb
             sbX.AppendFormat(fmt, sb);
             return sbX;
         }
-        public static TextFile BuildMethods(Type type, MethodInfo[] methods, int[] methodsIndex, int[] olInfo, ClassCallbackNames ccbn)
+        public static TextFile BuildMethods(Type type, List<MemberInfoEx> methods, ClassCallbackNames ccbn)
         {
             TextFile tfAll = new TextFile();
-            for (int i = 0; i < methods.Length; i++)
+            for (int i = 0; i < methods.Count; i++)
             {
+                MemberInfoEx infoEx = methods[i];
+                if (infoEx.Ignored)
+                    continue;
+
+                MethodInfo method = infoEx.member as MethodInfo;
+
                 TextFile tf = new TextFile();
-                MethodInfo method = methods[i];
                 ParameterInfo[] paramS = method.GetParameters();
 
                 for (int j = 0; j < paramS.Length; j++)
@@ -795,10 +808,9 @@ namespace jsb
                     tf.Add("public static MethodID methodID{0} = new MethodID({1});", i, arg.ToString());
                 }
 
-                int olIndex = olInfo[i];
                 bool returnVoid = (method.ReturnType == typeof(void));
 
-                string functionName = type.Name + "_" + method.Name + (olIndex > 0 ? olIndex.ToString() : "") + (method.IsStatic ? "_S" : "");
+                string functionName = type.Name + "_" + method.Name + (infoEx.GetOverloadIndex() > 0 ? infoEx.GetOverloadIndex().ToString() : "") + (method.IsStatic ? "_S" : "");
 
                 int TCount = 0;
                 if (method.IsGenericMethodDefinition)
@@ -839,7 +851,7 @@ namespace jsb
             }
             return tfAll;
         }
-        public static TextFile BuildConstructors(Type type, ConstructorInfo[] constructors, int[] constructorsIndex, ClassCallbackNames ccbn)
+        public static TextFile BuildConstructors(Type type, List<MemberInfoEx> constructors, ClassCallbackNames ccbn)
         {
             TextFile tfAll = new TextFile();
             // increase index if adding default constructor
@@ -849,31 +861,32 @@ namespace jsb
                 //             deltaIndex = 1;
             }
 
-            for (int i = 0; i < constructors.Length; i++)
+            for (int i = 0; i < constructors.Count; i++)
             {
+                MemberInfoEx infoEx = constructors[i];
+                if (infoEx.Ignored)
+                    continue;
+
+                ConstructorInfo cons = infoEx.member as ConstructorInfo;
                 TextFile tf = new TextFile();
-                ConstructorInfo cons = constructors[i];
 
                 if (cons == null)
                 {
                     tf.Add("public static ConstructorID constructorID{0} = new ConstructorID({1});", i, "null, null").AddLine();
 
-                    // this is default constructor
-                    //bool returnVoid = false;
-                    //string functionName = type.Name + "_" + type.Name + "1";
-                    int olIndex = i + 1; // for constuctors, they are always overloaded
-                    string functionName = JSNameMgr.HandleFunctionName(type.Name + "_" + type.Name + (olIndex > 0 ? olIndex.ToString() : ""));
+                    string functionName = JSNameMgr.HandleFunctionName(type.Name + "_" + type.Name + (infoEx.GetOverloadIndex() > 0 ? infoEx.GetOverloadIndex().ToString() : ""));
 
                     TextFile tfFun = tf.Add("static bool {0}(JSVCall vc, int argc)", functionName).BraceIn();
                     tfFun.Add(BuildNormalFunctionCall(0, new ParameterInfo[0], type.Name, false, null, true).Ch);
+                    tfFun.Add("return true;");
                     tfFun.BraceOut();
+                    tfAll.Add(tf.Ch);
                     ccbn.constructors.Add(functionName);
                     ccbn.constructorsCSParam.Add(GenListCSParam2(new ParameterInfo[0]).ToString());
                 }
                 else
                 {
                     ParameterInfo[] paramS = cons.GetParameters();
-                    int olIndex = i + 1; // for constuctors, they are always overloaded
                     int methodTag = i/* + deltaIndex*/;
 
                     for (int j = 0; j < paramS.Length; j++)
@@ -910,7 +923,7 @@ namespace jsb
                         tf.Add("public static ConstructorID constructorID{0} = new ConstructorID({1});", i, arg.ToString()).AddLine();
                     }
 
-                    string functionName = JSNameMgr.HandleFunctionName(type.Name + "_" + type.Name + (olIndex > 0 ? olIndex.ToString() : "") + (cons.IsStatic ? "_S" : ""));
+                    string functionName = JSNameMgr.HandleFunctionName(type.Name + "_" + type.Name + (infoEx.GetOverloadIndex() > 0 ? infoEx.GetOverloadIndex().ToString() : "") + (cons.IsStatic ? "_S" : ""));
 
                     TextFile tfFun = tf.Add("static bool {0}(JSVCall vc, int argc)", functionName).BraceIn();
                     {
@@ -955,14 +968,14 @@ namespace jsb
                 {
                     for (int i = 0; i < ccbn.constructors.Count; i++)
                     {
-                        if (ccbn.constructors.Count == 1 && ti.constructors.Length == 0) // no constructors   add a default  so ...
+                        //if (ccbn.constructors.Count == 1 && ti.constructors.Length == 0) // no constructors   add a default  so ...
+                        //    tfConstructors.Add("new JSMgr.MethodCallBackInfo({0}, \"{1}\"),",
+                        //        ccbn.constructors[i],
+                        //        type.Name);
+                        //else
                             tfConstructors.Add("new JSMgr.MethodCallBackInfo({0}, \"{1}\"),",
                                 ccbn.constructors[i],
-                                type.Name);
-                        else
-                            tfConstructors.Add("new JSMgr.MethodCallBackInfo({0}, \"{1}\"),",
-                                ccbn.constructors[i],
-                                ti.constructors[i] == null ? ".ctor" : ti.constructors[i].Name);
+                                ti.Cons[i].member == null ? ".ctor" : ti.Cons[i].member.Name);
                     }
 
                     tfConstructors.BraceOutSC();
@@ -972,11 +985,9 @@ namespace jsb
                 {
                     for (int i = 0; i < ccbn.methods.Count; i++)
                     {
-                        // if method is not overloaded
-                        // don's save the cs param array
                         tfMethods.Add("new JSMgr.MethodCallBackInfo({0}, \"{1}\"),",
                             ccbn.methods[i],
-                            ti.methods[i].Name);
+                            ti.Methods[i].member.Name);
                     }
 
                     tfMethods.BraceOutSC();
@@ -1042,20 +1053,20 @@ namespace jsb
             ClassCallbackNames ccbn = new ClassCallbackNames();
             {
                 ccbn.type = type;
-                ccbn.fields = new List<string>(ti.fields.Length);
-                ccbn.properties = new List<string>(ti.properties.Length);
-                ccbn.constructors = new List<string>(ti.constructors.Length);
-                ccbn.methods = new List<string>(ti.methods.Length);
+                ccbn.fields = new List<string>(ti.Fields.Count);
+                ccbn.properties = new List<string>(ti.Pros.Count);
+                ccbn.constructors = new List<string>(ti.Cons.Count);
+                ccbn.methods = new List<string>(ti.Methods.Count);
 
-                ccbn.constructorsCSParam = new List<string>(ti.constructors.Length);
-                ccbn.methodsCSParam = new List<string>(ti.methods.Length);
+                ccbn.constructorsCSParam = new List<string>(ti.Cons.Count);
+                ccbn.methodsCSParam = new List<string>(ti.Methods.Count);
             }
 
             thisClassName = JSNameMgr.GetTypeFileName(type) + "_G";
-            var tfFields = BuildFields(type, ti.fields, ti.fieldsIndex, ccbn);
-            var tfProperties = BuildProperties(type, ti.properties, ti.propertiesIndex, ccbn);
-            var tfMethods = BuildMethods(type, ti.methods, ti.methodsIndex, ti.methodsOLInfo, ccbn);
-            var tfCons = BuildConstructors(type, ti.constructors, ti.constructorsIndex, ccbn);
+            var tfFields = BuildFields(type, ti.Fields, ccbn);
+            var tfProperties = BuildProperties(type, ti.Pros, ccbn);
+            var tfMethods = BuildMethods(type, ti.Methods , ccbn);
+            var tfCons = BuildConstructors(type, ti.Cons, ccbn);
             var tfRegister = BuildRegisterFunction(ccbn, ti);
             var tfClass = BuildFile(type, tfFields, tfProperties, tfMethods, tfCons, tfRegister);
 
