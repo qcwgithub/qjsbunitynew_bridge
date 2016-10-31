@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEditor;
+using jsb;
 
 public class Menus
 {
@@ -21,7 +22,6 @@ public class Menus
 		{
 			return;
 		}
-
 		
 		JSDataExchangeEditor.reset();
 		UnityEngineManual.initManual();
