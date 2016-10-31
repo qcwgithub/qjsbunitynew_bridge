@@ -342,7 +342,6 @@ namespace jsb
                 }
 
                 tfFun.BraceOut();
-                File.WriteAllText("D:\\22.txt", tf.Format(-1));
                 tfAll.Add(tf.Ch);
 
                 ccbn.properties.Add(functionName);

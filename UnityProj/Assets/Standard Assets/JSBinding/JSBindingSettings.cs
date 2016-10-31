@@ -68,9 +68,10 @@ public class JSBindingSettings
 //        typeof(Transform),
 //        typeof(Vector2),
 //        typeof(Vector3),
+        typeof(UnityEngine.Object),
         typeof(MonoBehaviour),
-//        typeof(Behaviour),
-//        typeof(Component),
+        typeof(Behaviour),
+        typeof(Component),
         //typeof(UnityEngine.Object),
 //        typeof(YieldInstruction),
 //        typeof(WaitForSeconds),
@@ -279,7 +280,7 @@ public class JSBindingSettings
 	public static string jscDir = Application.dataPath + "/JSC";
 	public static string jscRelDir = "Assets/JSC";	
 	
-	public static string jsGeneratedFiles { get { return jsDir + "/G" + jsExtension; } }
+	public static string jsGeneratedFiles { get { return jsDir + "/Gen" + jsExtension; } }
 	// 
 	public static string csDir = Application.dataPath + "/JSBinding/CSharp";
 	public static string csGeneratedDir = Application.dataPath + "/Standard Assets/JSBinding/G";
