@@ -97,14 +97,14 @@ public class JSDataExchangeMgr
             else
                 Debug.LogError("Unknown primitive type" + type.Name);
         }
-        else if (type == typeof(Vector2))
-        {
-            return JSApi.getVector2S(e);
-        }
-        else if (type == typeof(Vector3))
-        {
-            return JSApi.getVector3S(e);
-        }
+//         else if (type == typeof(Vector2))
+//         {
+//             return JSApi.getVector2S(e);
+//         }
+//         else if (type == typeof(Vector3))
+//         {
+//             return JSApi.getVector3S(e);
+//         }
         else
         {
             return JSApi.getObject(e);
@@ -126,15 +126,15 @@ public class JSDataExchangeMgr
             return JSApi.getStringS(e);
         else if (jsval.isObject(tag))
         {
-            if (JSApi.isVector2S(e))
-            {
-                return JSApi.getVector2S(e);
-            }
-            else if (JSApi.isVector3S(e))
-            {
-                return JSApi.getVector3S(e);
-            }
-            else
+//             if (JSApi.isVector2S(e))
+//             {
+//                 return JSApi.getVector2S(e);
+//             }
+//             else if (JSApi.isVector3S(e))
+//             {
+//                 return JSApi.getVector3S(e);
+//             }
+//             else
             {
                 return getObject(e);
             }
@@ -275,14 +275,14 @@ public class JSDataExchangeMgr
             else
                 Debug.LogError("Unknown primitive type");
         }
-        else if (type == typeof(Vector3))
-        {
-            JSApi.setVector3S(e, (Vector3)obj);
-        }
-        else if (type == typeof(Vector2))
-        {
-            JSApi.setVector2S(e, (Vector2)obj);
-        }
+//         else if (type == typeof(Vector3))
+//         {
+//             JSApi.setVector3S(e, (Vector3)obj);
+//         }
+//         else if (type == typeof(Vector2))
+//         {
+//             JSApi.setVector2S(e, (Vector2)obj);
+//         }
         else
         {
             setObject(e, obj);
@@ -748,10 +748,10 @@ public class JSDataExchangeMgr
         }
         else if (type == typeof(System.Object) || type.IsGenericParameter)
             ret = "JSMgr.datax.getWhatever";
-        else if (type == typeof(Vector3))
-            ret = "JSApi.getVector3S";
-        else if (type == typeof(Vector2))
-            ret = "JSApi.getVector2S";
+//         else if (type == typeof(Vector3))
+//             ret = "JSApi.getVector3S";
+//         else if (type == typeof(Vector2))
+//             ret = "JSApi.getVector2S";
         else
         {
             ret = "JSMgr.datax.getObject";
