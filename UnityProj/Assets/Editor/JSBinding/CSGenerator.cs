@@ -1201,7 +1201,7 @@ public class CSGenerator
 				
 				// 这个检查有点奇葩
 				// 有些接口带 <>，这里直接忽略，不检查他
-				if (!tiFullName.Contains("<") && tiFullName.Contains(">") && 
+				if (!tiFullName.Contains("<") && !tiFullName.Contains(">") && 
 				    !clrLibrary.ContainsKey(ti) && !dict.ContainsKey(ti))
 				{
 					sb.AppendFormat("\"{0}\"\'s interface \"{1}\" must also be in JSBindingSettings.classes.\n",

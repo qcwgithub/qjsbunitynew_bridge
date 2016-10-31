@@ -84,42 +84,16 @@ public static class JSGenerator
             name = type.Name;
         }
         return name;
-
     }
-    public static string SharpKitPropertyName(PropertyInfo property)
+    public static string Member_AddSuffix(string methodName, int overloadIndex, int TCounts = 0)
     {
-        string name = property.Name;
-        ParameterInfo[] ps = property.GetIndexParameters();
-        if (ps.Length > 0)
-        {
-            for (int i = 0; i < ps.Length; i++)
-            {
-                Type type = ps[i].ParameterType;
-                name += "$$" + SharpKitTypeName(type);
-            }
-            name = name.Replace("`", "$");
-        }
-        return name;
-    }
-    public static string SharpKitMethodName(string methodName, ParameterInfo[] paramS, bool overloaded, int TCounts = 0)
-    {
-//         if (!overloaded && TCounts > 0)
-//         {
-//             Debug.Log("");
-//         }
-
         string name = methodName;
-        if (TCounts > 0)
-            name += "$" + TCounts.ToString();
+        //if (TCounts > 0)
+        //    name += "$" + TCounts.ToString();
 
-        if (overloaded)
+        if (overloadIndex > 0)
         {
-            for (int i = 0; i < paramS.Length; i++)
-            {
-                Type type = paramS[i].ParameterType;
-                name += "$$" + SharpKitTypeName(type);
-            }
-            name = name.Replace("`", "$");
+            name += "$" + overloadIndex;
         }
         return name;
     }
@@ -128,19 +102,9 @@ public static class JSGenerator
         return JSNameMgr.GetJSTypeFullName(type);
     }
 
-    public static StringBuilder BuildFields(Type type, FieldInfo[] fields, int slot, List<string> lstNames)
+    public static void BuildFields(TextFile tfStatic, TextFile tfInst, 
+        Type type, FieldInfo[] fields, int slot, List<string> lstNames)
     {
-//        string fmt2 = @"
-// _jstype.{7}.get_{0} = function() [[ return CS.Call({1}, {3}, {4}, {5}{6}); ]]
-// _jstype.{7}.set_{0} = function(v) [[ return CS.Call({2}, {3}, {4}, {5}{6}, v); ]]
-// "; 
-        string fmt3 = @"
-_jstype.{7}.{0} =  [[ 
-            get: function() [[ return CS.Call({1}, {3}, {4}, {5}{6}); ]], 
-            set: function(v) [[ return CS.Call({2}, {3}, {4}, {5}{6}, v); ]] 
-        ]];
-";
-
         var sb = new StringBuilder();
         for (int i = 0; i < fields.Length; i++)
         {
@@ -148,30 +112,19 @@ _jstype.{7}.{0} =  [[
 
 			lstNames.Add((field.IsStatic ? "Static_" : "") + field.Name);
 
-            sb.AppendFormat(fmt3, 
-                field.Name, // [0]
-                (int)JSVCall.Oper.GET_FIELD, // [1]
-                (int)JSVCall.Oper.SET_FIELD, // [2]
-                slot, //[3]
-                i,//[4]
-                (field.IsStatic ? "true" : "false"),//[5]
-                (field.IsStatic ? "" : ", this"), //[6]
-                (field.IsStatic ? "staticFields" : "fields"));//[7]
+            TextFile tf = field.IsStatic ? tfStatic : tfInst;
+            tf.Add("{0}: {{", field.Name).In()
+                .Add("get: function () {{ return CS.Call({0}, {1}, {2}, {3}{4}); }},", (int)JSVCall.Oper.GET_FIELD, slot, i, (field.IsStatic ? "true" : "false"), (field.IsStatic ? "" : ", this"))
+                .Add("set: function (v) {{ return CS.Call({0}, {1}, {2}, {3}{4}, v); }}", (int)JSVCall.Oper.SET_FIELD, slot, i, (field.IsStatic ? "true" : "false"), (field.IsStatic ? "" : ", this"))
+            .Out().Add("},");
         }
-        return sb;
     }
-	public static StringBuilder BuildProperties(Type type, PropertyInfo[] properties, int slot, List<string> lstNames)
+    public static void BuildProperties(TextFile tfStatic, TextFile tfInst, 
+        Type type, PropertyInfo[] properties, int[] propertiesIndex, int slot, List<string> lstNames)
     {
-        string fmt2 = @"
-_jstype.{7}.get_{0} = function({9}) [[ return CS.Call({1}, {3}, {4}, {5}{6}{8}); ]]
-_jstype.{7}.set_{0} = function({10}v) [[ return CS.Call({2}, {3}, {4}, {5}{6}{8}, v); ]]
-";
-        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < properties.Length; i++)
         {
             PropertyInfo property = properties[i];
-//             if (property.Name == "Item") //[] not support
-//                 continue;
 
             ParameterInfo[] ps = property.GetIndexParameters();
             string indexerParamA = string.Empty;
@@ -185,122 +138,30 @@ _jstype.{7}.set_{0} = function({10}v) [[ return CS.Call({2}, {3}, {4}, {5}{6}{8}
                 indexerParamC += ", ind" + j.ToString();
             }
 
-
             MethodInfo[] accessors = property.GetAccessors();
             bool isStatic = accessors[0].IsStatic;
 
-			string mName = SharpKitPropertyName(property);
-			lstNames.Add((isStatic ? "Static_" : "") + "get_" + mName);
-			lstNames.Add((isStatic ? "Static_" : "") + "set_" + mName);
+            // 特殊情况，当[]时，property.Name=Item
+			string mName = Member_AddSuffix(property.Name, propertiesIndex[i]);
+			lstNames.Add((isStatic ? "Static_" : "") + "get" + mName);
+			lstNames.Add((isStatic ? "Static_" : "") + "set" + mName);
 
-            sb.AppendFormat(fmt2,
-			                mName, // [0]
-                (int)JSVCall.Oper.GET_PROPERTY, // [1] op
-                (int)JSVCall.Oper.SET_PROPERTY, // [2] op
-                slot,                           // [3]
-                i,                              // [4]
-                (isStatic ? "true" : "false"),  // [5] isStatic
-                (isStatic ? "" : ", this"),     // [6] this
-                (isStatic ? "staticDefinition" : "definition"),                // [7]
-                indexerParamC, // [8]
-                indexerParamA, 
-                indexerParamB);
+            TextFile tf = isStatic ? tfStatic : tfInst;
+            tf.Add("get{0}: function ({1}) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}); }},",
+                mName, indexerParamA, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
+
+            tf.Add("set{0}: function ({1}v) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}, v); }},",
+                mName, indexerParamB, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
         }
-        return sb;
     }
-    public static StringBuilder BuildTail()
+    public static void BuildConstructors(TextFile tfInst, Type type, ConstructorInfo[] constructors, int[] constructorsIndex, int slot, List<string> lstNames)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append(@"
-
-
-JsTypes.push(_jstype);");
-        return sb;
-    }
-    public static StringBuilder BuildHeader(Type type)
-    {
-        string jsTypeName = JSNameMgr.GetTypeFullName(type);
-        jsTypeName = jsTypeName.Replace('.', '$');
-        string fmt = @"if (typeof(JsTypes) == 'undefined')
-    var JsTypes = [];
-
-// {0}
-_jstype = 
-[[
-    definition: [[]],
-    staticDefinition: [[]],
-    fields: [[]],
-    staticFields: [[]],
-    assemblyName: '{1}',
-    Kind: '{2}',
-    fullname: '{3}', {4}
-    {5}
-]];
-
-var _found = false;
-for (var i = 0; i < JsTypes.length; i++) [[
-    if (JsTypes[i].fullname == _jstype.fullname) [[
-        JsTypes[i] = _jstype;
-        _found = true;
-        break;
-    ]]
-]]
-if (!_found) [[
-    JsTypes.push(_jstype);
-]]
-
-";
-
-        string assemblyName = "";
-        string Kind = "unknown";
-        if (type.IsClass) {
-			Kind = "Class";
-		} else if (type.IsEnum) {
-			Kind = "Enum";
-		} else if (type.IsValueType) {
-			Kind = "Struct";
-		} else if (type.IsInterface) {
-			Kind = "Interface";
-		}
-
-        string fullname = SharpKitClassName(type);
-        string baseTypeName = SharpKitClassName(type.BaseType);
-		Type[] interfaces = type.GetInterfaces();
-		StringBuilder sbI = new StringBuilder();
-		if (interfaces != null && interfaces.Length > 0)
-		{
-			sbI.Append("\n    interfaceNames: [");
-			for (int i = 0; i < interfaces.Length; i++)
-			{
-				sbI.AppendFormat("\'{0}\'", SharpKitClassName(interfaces[i]));
-				if (i < interfaces.Length - 1)
-					sbI.Append(", ");
-			}
-			sbI.Append("],");
-		}
-
-        StringBuilder sb = new StringBuilder();
-        sb.AppendFormat(fmt, 
-            jsTypeName,   // [0]
-            assemblyName, // [1]
-            Kind,         // [2] 
-            fullname,     // [3] full name
-			sbI.ToString(), // [4] interfaceNames
-            baseTypeName.Length > 0 ? "baseTypeName: '" + baseTypeName + "'" : ""); // [5] baseTypeName
-
-        return sb;
-    }
-    public static StringBuilder BuildConstructors(Type type, ConstructorInfo[] constructors, int slot, int howmanyConstructors, List<string> lstNames)
-    {
-        string fmt = @"
-_jstype.definition.{0} = function({1}) [[ CS.Call({2}); ]]";
-
-        StringBuilder sb = new StringBuilder();
         var argActual = new cg.args();
         var argFormal = new cg.args();
 
         for (int i = 0; i < constructors.Length; i++)
         {
+            TextFile tf = new TextFile();
             ConstructorInfo con = constructors[i];
             ParameterInfo[] ps = con == null? new ParameterInfo[0] : con.GetParameters();
 
@@ -334,56 +195,31 @@ _jstype.definition.{0} = function({1}) [[ CS.Call({2}); ]]";
                 argActual.Add("a" + j.ToString());
             }
 
-			string mName = SharpKitMethodName("ctor", ps, howmanyConstructors > 1);
+            string mName = Member_AddSuffix("ctor", constructorsIndex[i]);
 			lstNames.Add(mName);
 
-            sb.AppendFormat(fmt,
-                mName, // [0]
-                argFormal,    // [1]
-                argActual);    // [2]
+            tf.Add("{0}: function ({1}) {{", mName, argFormal)
+                .In()
+                    .Add("CS.Call({0});", argActual)
+                .Out().Add("},");
+
+            tfInst.Add(tf.Ch);
         }
-        return sb;
     }
 
     // can handle all methods
-	public static StringBuilder BuildMethods(Type type, MethodInfo[] methods, int slot, List<string> lstNames)
+    public static void BuildMethods(TextFile tfStatic, TextFile tfInst, 
+        Type type, MethodInfo[] methods, int slot, List<string> lstNames)
     {
-        string fmt = @"
-/* {6} */
-_jstype.definition.{1} = function({2}) [[ 
-    {9}
-    return CS.Call({7}, {3}, {4}, false, {8}{5}); 
-]]";
-        string fmtStatic = @"
-/* static {6} {8} */
-_jstype.staticDefinition.{1} = function({2}) [[ 
-    {9}
-    return CS.Call({7}, {3}, {4}, true{5}); 
-]]";
-
-        //bool bIsSystemObject = (type == typeof(System.Object));
-
-        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < methods.Length; i++)
         {
             MethodInfo method = methods[i];
-
-            bool bOverloaded = ((i > 0 && method.Name == methods[i - 1].Name) ||
-                (i < methods.Length - 1 && method.Name == methods[i + 1].Name));
-
-            if (!bOverloaded)
-            {
-                if (GeneratorHelp.MethodIsOverloaded(type, method.Name))
-                {
-                    bOverloaded = true;
-                    //Debug.Log("$$$ " + type.Name + "." + method.Name + (method.IsStatic ? " true" : " false"));
-                }
-            }
+            int overloadIndex = 0; // TODO
 
             StringBuilder sbFormalParam = new StringBuilder();
             StringBuilder sbActualParam = new StringBuilder();
             ParameterInfo[] paramS = method.GetParameters();
-            StringBuilder sbInitT = new StringBuilder();
+            TextFile tfInitT = new TextFile();
             int TCount = 0;
 
             // add T to formal param
@@ -396,107 +232,115 @@ _jstype.staticDefinition.{1} = function({2}) [[
                     if (j < TCount - 1 || paramS.Length > 0)
                         sbFormalParam.Append(", ");
 
-
-                    sbInitT.AppendFormat("    var native_t{0} = t{0}.getNativeType();\n", j);
-                    sbActualParam.AppendFormat(", native_t{0}", j);
+                    tfInitT.Add("var $tn{0} = Bridge.Reflection.getTypeFullName(t{0});", j);
+                    sbActualParam.AppendFormat(", $tn{0}", j);
                 }
             }
 
             int L = paramS.Length;
             for (int j = 0; j < L; j++)
             {
-                sbFormalParam.AppendFormat("a{0}/*{1}*/{2}", j, paramS[j].ParameterType.Name, (j == L - 1 ? "" : ", "));
-
-                ParameterInfo par = paramS[j];
-                if (par.ParameterType.IsArray && par.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0)
-                {
-                    sbActualParam.AppendFormat(", jsb_formatParamsArray({0}, a{0}, arguments)", j);
-                }
-                else
-                {
-                    sbActualParam.AppendFormat(", a{0}", j);
-                }
+                sbFormalParam.AppendFormat("a{0}{1}", j, (j == L - 1 ? "" : ", "));
+                sbActualParam.AppendFormat(", a{0}", j);
             }
 
             //int TCount = method.GetGenericArguments().Length;
 
             string methodName = method.Name;
-            if (methodName == "ToString") { methodName = "toString"; }
 
-			string mName = SharpKitMethodName(methodName, paramS, bOverloaded, TCount);
+            // TODO
+            // if (methodName == "ToString") { methodName = "toString"; }
+
+            string mName = Member_AddSuffix(methodName, overloadIndex, TCount);
 			lstNames.Add((method.IsStatic ? "Static_" : "") + mName);
 
-            if (!method.IsStatic)
-                sb.AppendFormat(fmt,
-                    className,
-				    mName, // [1] method name
-                    sbFormalParam.ToString(),  // [2] formal param
-                    slot,                      // [3] slot
-                    i,                         // [4] index
-                    sbActualParam,             // [5] actual param
-                    method.ReturnType.Name,    // [6] return type name
-                    (int)JSVCall.Oper.METHOD,  // [7] OP
-                    "this",                // [8] this
-                    sbInitT                    //[9] generic types init
-                    );
-            else
-                sb.AppendFormat(fmtStatic, 
-                    className,
-				    mName, 
-                    sbFormalParam.ToString(), 
-                    slot, 
-                    i, 
-                    sbActualParam, 
-                    method.ReturnType.Name, 
-                    (int)JSVCall.Oper.METHOD, 
-                    "",
-                    sbInitT);
+            TextFile tf = method.IsStatic ? tfStatic : tfInst;
+            tf.Add("{0}: function ({1}) {{", mName, sbFormalParam.ToString())
+                .In()
+                    .Add(tfInitT.Ch)
+                    .Add("return CS.Call({0}, {1}, {2}, {3}{4});", (int)JSVCall.Oper.METHOD, slot, i, (method.IsStatic ? "true" : "false"), (method.IsStatic ? "" : ", this") + sbActualParam.ToString())
+                .Out()
+                .Add("},");
         }
-        return sb;
-    }
-    public static StringBuilder BuildClass(Type type, StringBuilder sbFields, StringBuilder sbProperties, StringBuilder sbMethods, StringBuilder sbConstructors)
-    {
-        /*
-        * class
-        * 0 class name
-        * 1 fields
-        * 2 properties
-        * 3 methods
-        * 4 constructors
-        */
-        string fmt = @"
-{4}
-
-// fields
-{1}
-// properties
-{2}
-// methods
-{3}
-";
-        var sb = new StringBuilder();
-        sb.AppendFormat(fmt, className, sbFields.ToString(), sbProperties.ToString(), sbMethods.ToString(), sbConstructors.ToString());
-        return sb;
     }
 
     public static List<string> GenerateClass()
     {
-		List<string> memberNames = new List<string>();
+        List<string> memberNames = new List<string>();
 
         GeneratorHelp.ATypeInfo ti;
         int slot = GeneratorHelp.AddTypeInfo(type, out ti);
-        var sbHeader = BuildHeader(type);
-		var sbCons = sbHeader.Append(BuildConstructors(type, ti.constructors, slot, ti.howmanyConstructors, memberNames));
-		var sbFields = BuildFields(type, ti.fields, slot, memberNames);
-		var sbProperties = BuildProperties(type, ti.properties, slot, memberNames);
-		var sbMethods = BuildMethods(type, ti.methods, slot, memberNames);
-        //sbMethods.Append(BuildTail());
-        var sbClass = BuildClass(type, sbFields, sbProperties, sbMethods, sbCons);
-		HandleStringFormat(sbClass);
-		
-		W.Write(sbClass.ToString());
 
-		return memberNames;
+        TextFile tfDef = new TextFile();
+        tfDef.Add("Bridge.define(\"{0}\", {{", JSNameMgr.GetJSTypeFullName(type));
+        TextFile tfClass = tfDef.Add("");
+
+        if (type.IsInterface)
+            tfClass.In().Add("$kind: interface,");
+        else if (type.IsValueType)
+            tfClass.In().Add("$kind: struct,");
+
+        TextFile tfStatic = tfClass.In().Add("static: {").In();
+        tfStatic.Out().Add("},");
+
+        TextFile tfInst = tfClass.Add("").In();
+
+        tfDef.Add("});");
+
+        if (type.IsValueType)
+        {
+            tfStatic.Add("getDefaultValue: function () {{ return new {0}(); }},", JSNameMgr.GetJSTypeFullName(type));
+
+            tfInst.Add("equals: function (o) {")
+                .In()
+                    .Add("if (!Bridge.is(o, {0})) {{", JSNameMgr.GetJSTypeFullName(type))
+                    .In()
+                        .Add("return false;")
+                    .BraceOut()
+                    .Add(() =>
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        if (ti.fields.Length == 0)
+                            sb.Append("return true;");
+                        else
+                        {
+                            for (int f = 0; f < ti.fields.Length; f++)
+                            {
+                                sb.AppendFormat("Bridge.equals(this.{0}, o.{0})", ti.fields[f].Name);
+                                if (f < ti.fields.Length - 1)
+                                    sb.AppendFormat(" && ");
+                                else
+                                    sb.Append(";");
+                            }
+                        }
+                        return new TextFile().Add(sb.ToString()).Ch;
+                    })
+                .BraceOutComma();
+
+            tfInst.Add("$clone: function (to) {")
+                .In()
+                    .Add("var s = to || new {0}();", JSNameMgr.GetJSTypeFullName(type))
+                    .Add(() =>
+                    {
+                        TextFile tf = new TextFile();
+                        for (int f = 0; f < ti.fields.Length; f++)
+                        {
+                            tf.Add("s.{0} = this.{0};", ti.fields[f].Name);
+                        }
+                        return tf.Ch;
+                    })
+                    .Add("return s;")
+                .BraceOutComma();
+        }
+
+        BuildConstructors(tfInst, type, ti.constructors, ti.constructorsIndex, slot, memberNames);
+        BuildFields(tfStatic, tfInst, type, ti.fields, slot, memberNames);
+        BuildProperties(tfStatic, tfInst, type, ti.properties, ti.propertiesIndex, slot, memberNames);
+        BuildMethods(tfStatic, tfInst, type, ti.methods, slot, memberNames);
+
+        W.Write(tfDef.Format(-1));
+
+        return memberNames;
     }
 
     static void GenerateEnum()
@@ -590,8 +434,6 @@ using UnityEngine;
     public static Dictionary<Type, string> typeClassName = new Dictionary<Type, string>();
     static string className = string.Empty;
 
-
-    //[MenuItem("JSBinding/Generate JS Bindings")]
     public static void GenerateClassBindings()
     {
         JSGenerator.OnBegin();
@@ -623,105 +465,4 @@ using UnityEngine;
 
         Debug.Log("Generate JS Bindings OK. enum " + JSBindingSettings.enums.Length.ToString() + ", class " + JSBindingSettings.classes.Length.ToString());
     }
-
-	//[UnityEditor.MenuItem("JSB/Merge Generated JS and SharpKit Generated JS", false, 502)]
-	public static void MergeGeneratedJsAndSharpKitGeneratedJS()
-	{
-		string[] sourceDirs = new string[]
-		{
-			//JSBindingSettings.jsGeneratedDir,
-			JSBindingSettings.sharpKitGenFileFullDir,
-		};
-		string[] targetFiles = new string[]
-		{
-			//JSBindingSettings.GeneratedFilesAll,
-			JSBindingSettings.SharpkitGeneratedFilesAll,
-		};
-
-		for (var i = 0; i < sourceDirs.Length; i++)
-		{
-			string dir = sourceDirs[i];
-			string[] files = Directory.GetFiles(
-				dir,
-				"*.javascript", SearchOption.AllDirectories);
-
-			StringBuilder sb = new StringBuilder();
-			StringBuilder sbFileName = new StringBuilder();
-			foreach (var f in files)
-			{
-				string text = File.ReadAllText(f);
-				sb.Append(text);
-			}
-
-			File.WriteAllText(targetFiles[i], sb.ToString());
-
-			Debug.Log ("合并 " + dir + " ---> " + targetFiles[i]);
-		}		
-	}
-
-    //     [MenuItem("JS for Unity/Output All Types in UnityEngine")]
-    //     public static void OutputAllTypesInUnityEngine()
-    //     {
-    //         var asm = typeof(GameObject).Assembly;
-    //         var alltypes = asm.GetTypes();
-    //         var writer = new StreamWriter(tempFile, false, Encoding.UTF8);
-    // 
-    //         writer.WriteLine("// enum");
-    //         writer.WriteLine("");
-    //         for (int i = 0; i < alltypes.Length; i++)
-    //         {
-    //             if (!alltypes[i].IsPublic && !alltypes[i].IsNestedPublic)
-    //                 continue;
-    // 
-    //             if (alltypes[i].IsEnum)
-    //                 writer.WriteLine(alltypes[i].ToString());
-    //         }
-    // 
-    //         writer.WriteLine("");
-    //         writer.WriteLine("// interface");
-    //         writer.WriteLine("");
-    // 
-    //         for (int i = 0; i < alltypes.Length; i++)
-    //         {
-    //             if (!alltypes[i].IsPublic && !alltypes[i].IsNestedPublic)
-    //                 continue;
-    // 
-    //             if (alltypes[i].IsInterface)
-    //                 writer.WriteLine(alltypes[i].ToString());
-    //         }
-    // 
-    //         writer.WriteLine("");
-    //         writer.WriteLine("// class");
-    //         writer.WriteLine("");
-    // 
-    //         for (int i = 0; i < alltypes.Length; i++)
-    //         {
-    //             if (!alltypes[i].IsPublic && !alltypes[i].IsNestedPublic)
-    //                 continue;
-    // 
-    //             if ((!alltypes[i].IsEnum && !alltypes[i].IsInterface) &&
-    //                 alltypes[i].IsClass)
-    //                 writer.WriteLine(alltypes[i].ToString());
-    //         }
-    // 
-    // 
-    //         writer.WriteLine("");
-    //         writer.WriteLine("// ValueType");
-    //         writer.WriteLine("");
-    // 
-    //         for (int i = 0; i < alltypes.Length; i++)
-    //         {
-    //             if (!alltypes[i].IsPublic && !alltypes[i].IsNestedPublic)
-    //                 continue;
-    // 
-    //             if ((!alltypes[i].IsEnum && !alltypes[i].IsInterface) &&
-    //                 !alltypes[i].IsClass && alltypes[i].IsValueType)
-    //                 writer.WriteLine(alltypes[i].ToString());
-    //         }
-    // 
-    //         writer.Close();
-    // 
-    //         Debug.Log("Output All Types in UnityEngine finish, file: " + tempFile);
-    //         return;
-    //    }
 }

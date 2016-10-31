@@ -698,8 +698,9 @@ public class JSDataExchangeMgr
 //         isWhatever = (str == "Whatever");
 //         return str;
 //     }
-    public static string GetMetatypeKeyword(Type type)
+    public static string GetMetatypeKeyword(Type type, out bool needCast)
     {
+        needCast = false;
         string ret = string.Empty;
         if (type.IsArray)
         {
@@ -710,7 +711,10 @@ public class JSDataExchangeMgr
         if (type == typeof(string))
             ret = "JSApi.getStringS";
         else if (type.IsEnum)
+        {
             ret = "JSApi.getEnum";
+            needCast = true;
+        }
         else if (type.IsPrimitive)
         {
             if (type == typeof(System.Boolean))
@@ -749,7 +753,10 @@ public class JSDataExchangeMgr
         else if (type == typeof(Vector2))
             ret = "JSApi.getVector2S";
         else
+        {
             ret = "JSMgr.datax.getObject";
+            needCast = true;
+        }
 
         return ret;
     }
@@ -769,7 +776,8 @@ public class JSDataExchange_Arr
             //...error
         }
         StringBuilder sb = new StringBuilder();
-        string getVal = JSDataExchangeMgr.GetMetatypeKeyword(elementType);
+        bool needCast;
+        string getVal = JSDataExchangeMgr.GetMetatypeKeyword(elementType, out needCast);
 
         var arrayFullName = string.Empty;
         var elementFullName = string.Empty;
@@ -825,7 +833,8 @@ public class JSDataExchange_Arr
         }
 
         StringBuilder sb = new StringBuilder();
-        string getValMethod = JSDataExchangeMgr.GetMetatypeKeyword(elementType).Replace("get", "set");
+        bool needCast;
+        string getValMethod = JSDataExchangeMgr.GetMetatypeKeyword(elementType, out needCast).Replace("get", "set");
 
         // 2015.Sep.2
         // +判断arrRet为null的情况

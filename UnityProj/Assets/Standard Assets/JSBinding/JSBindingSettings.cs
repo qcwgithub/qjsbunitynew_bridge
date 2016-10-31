@@ -21,9 +21,13 @@ public class JSBindingSettings
 	//
 	// below there is another classes(commented out) having almost all types in UnityEngine
 	//
+
+    
 	
-	public class Qcw<T>
+	public class Qcw : ICloneable
 	{
+        public object Clone() { return null; }
+        public Qcw() { }
 //		public int y{get;set;}
 //		public int this[int index]
 //		{
@@ -34,22 +38,40 @@ public class JSBindingSettings
 //				//return
 //			}
 //		}
-		public int Get(int a, int b = 0, int c = 0){return 0;}
+        public int Get<T>(int a, int b = 0, int c = 0) { return 0; }
+        public static int SGet(int a, int b = 0, int c = 0) { return 0; }
+        public int V;
+        public static string X;
+        public string GV { get; set; }
+        public static string SGV { get; set; }
+
+        public int this[int i]
+        {
+            get { return 666; }
+            set { }
+        }
+        public int this[int i, int j]
+        {
+            get { return 777; }
+            set { }
+        }
 	}
     public static Type[] classes = new Type[]
     {
-		typeof(Qcw<>),
+		typeof(Qcw),
+        typeof(ICloneable),
+        typeof(Vector3),
 //
-       typeof(Debug),
-       typeof(Input),
-       typeof(GameObject),
+       //typeof(Debug),
+       //typeof(Input),
+       //typeof(GameObject),
 //        typeof(Transform),
 //        typeof(Vector2),
 //        typeof(Vector3),
 //        typeof(MonoBehaviour),
 //        typeof(Behaviour),
 //        typeof(Component),
-        typeof(UnityEngine.Object),
+        //typeof(UnityEngine.Object),
 //        typeof(YieldInstruction),
 //        typeof(WaitForSeconds),
 //        typeof(WWW),
@@ -257,9 +279,6 @@ public class JSBindingSettings
 	public static string jscDir = Application.dataPath + "/JSC";
 	public static string jscRelDir = "Assets/JSC";	
 	
-	// directory to save generated js files (gen by JSGenerateor2)
-	public static string jsGeneratedDir{ get { return jsDir + "/G"; } }
-	// a file to save generated js file names
 	public static string jsGeneratedFiles { get { return jsDir + "/G" + jsExtension; } }
 	// 
 	public static string csDir = Application.dataPath + "/JSBinding/CSharp";

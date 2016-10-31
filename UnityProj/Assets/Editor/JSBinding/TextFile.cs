@@ -33,6 +33,13 @@ public class TextFile
 		Ch.AddRange(tfs);
 		return this;
 	}
+    public TextFile Add(Func<List<TextFile>> func)
+    {
+        var lst = func();
+        if (lst != null)
+            Ch.AddRange(lst);
+        return this;
+    }
     public TextFile Add(string format, params object[] args)
     {
         Ch.Add(new TextFile(this, 
@@ -102,6 +109,10 @@ public class TextFile
     public TextFile BraceOutSC()
     {
         return Out().Add("};");
+    }
+    public TextFile BraceOutComma()
+    {
+        return Out().Add("},");
     }
     public TextFile Out()
     {

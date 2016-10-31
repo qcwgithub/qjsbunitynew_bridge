@@ -70,7 +70,8 @@ public class JSDataExchangeEditor : JSDataExchangeMgr
             {
                 type = type.GetElementType();
             }
-            string keyword = GetMetatypeKeyword(type);
+            bool needCast;
+            string keyword = GetMetatypeKeyword(type, out needCast);
             if (keyword == string.Empty)
             {
                 Debug.LogError("keyword is empty: " + type.Name);
@@ -93,9 +94,18 @@ public class JSDataExchangeEditor : JSDataExchangeMgr
             }
             else
             {
-                ph.getter = new StringBuilder()
-                    .AppendFormat("{0} {1} = ({0}){2}((int)JSApi.GetType.Arg);", typeFullName, ph.argName, keyword)
-                    .ToString();
+                if (needCast)
+                {
+                    ph.getter = new StringBuilder()
+                        .AppendFormat("{0} {1} = ({0}){2}((int)JSApi.GetType.Arg);", typeFullName, ph.argName, keyword)
+                        .ToString();
+                }
+                else
+                {
+                    ph.getter = new StringBuilder()
+                        .AppendFormat("{0} {1} = {2}((int)JSApi.GetType.Arg);", typeFullName, ph.argName, keyword)
+                        .ToString();
+                }
             }
 
             if (isOut || isRef)
@@ -150,7 +160,8 @@ public class JSDataExchangeEditor : JSDataExchangeMgr
         else
         {
             var sb = new StringBuilder();
-            var keyword = GetMetatypeKeyword(type);
+            bool needCast;
+            var keyword = GetMetatypeKeyword(type, out needCast);
 
             sb.AppendFormat("{0}((int)JSApi.GetType.JSFunRet)", keyword);
             return sb.ToString();
@@ -180,14 +191,15 @@ public class JSDataExchangeEditor : JSDataExchangeMgr
         else
         {
             var sb = new StringBuilder();
-            var keyword = GetMetatypeKeyword(type).Replace("get", "set");
-
+            bool needCast;
+            var keyword = GetMetatypeKeyword(type, out needCast).Replace("get", "set");
             if (type.IsPrimitive)
                 sb.AppendFormat("{0}((int)JSApi.SetType.Rval, ({1})({2}));", keyword, JSNameMgr.GetTypeFullName(type), expVar);
             else if (type.IsEnum)
                 sb.AppendFormat("{0}((int)JSApi.SetType.Rval, (int){1});", keyword, expVar);
             else
                 sb.AppendFormat("{0}((int)JSApi.SetType.Rval, {1});", keyword, expVar);
+
             return sb.ToString();
         }
     }
