@@ -269,12 +269,21 @@ namespace jsb
                 lstNames.Add((method.IsStatic ? "Static_" : "") + mName);
 
                 TextFile tf = method.IsStatic ? tfStatic : tfInst;
-                tf.Add("{0}: function ({1}) {{", mName, sbFormalParam.ToString())
-                    .In()
-                        .Add(tfInitT.Ch)
-                        .Add("return CS.Call({0}, {1}, {2}, {3}{4});", (int)JSVCall.Oper.METHOD, slot, i, (method.IsStatic ? "true" : "false"), (method.IsStatic ? "" : ", this") + sbActualParam.ToString())
-                    .Out()
-                    .Add("},");
+
+                string strReturn = string.Format("return CS.Call({0}, {1}, {2}, {3}{4});", (int)JSVCall.Oper.METHOD, slot, i, (method.IsStatic ? "true" : "false"), (method.IsStatic ? "" : ", this") + sbActualParam.ToString());
+                if (tfInitT.Ch.Count > 0)
+                {
+                    tf.Add("{0}: function ({1}) {{", mName, sbFormalParam.ToString())
+                                        .In()
+                                            .Add(tfInitT.Ch)
+                                            .Add(strReturn)
+                                        .Out()
+                                        .Add("},");
+                }
+                else
+                {
+                    tf.Add("{0}: function ({1}) {{{2}}}", mName, sbFormalParam.ToString(), strReturn);
+                }
             }
         }
 
@@ -288,6 +297,21 @@ namespace jsb
             TextFile tfDef = new TextFile();
             tfDef.Add("Bridge.define(\"{0}\", {{", JSNameMgr.GetJSTypeFullName(type));
             TextFile tfClass = tfDef.Add("");
+
+            // base type, interfaces
+            {
+                Type baseType = type.BaseType;
+                Type[] interfaces = type.GetInterfaces();
+                if (baseType != null || interfaces.Length > 0)
+                {
+                    args a = new args();
+                    if (baseType != null)
+                        a.Add(JSNameMgr.GetJSTypeFullName(baseType));
+                    foreach (var i in interfaces)
+                        a.Add(JSNameMgr.GetJSTypeFullName(i));
+                    tfClass.In().Add("inherits: [{0}],", a.ToString());
+                }
+            }
 
             if (type.IsInterface)
                 tfClass.In().Add("$kind: interface,");
