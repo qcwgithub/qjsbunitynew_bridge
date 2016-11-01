@@ -206,25 +206,38 @@ namespace jsb
 						OnNewType(ps[j].ParameterType);
 					}
 				}
-				
-				bool canGet = pro.GetGetMethod() != null && pro.GetGetMethod().IsPublic;
-				bool canSet = pro.GetSetMethod() != null && pro.GetSetMethod().IsPublic;
+
+                MethodInfo getm = pro.GetGetMethod();
+                MethodInfo setm = pro.GetSetMethod();
+
+                bool canGet = getm != null && getm.IsPublic;
+                bool canSet = setm != null && setm.IsPublic;
 
 				string getset = "";
 				if (canGet) getset += string.Format("get {{ return default({0}); }}", typefn(pro.PropertyType, type.Namespace));
 				if (canSet) getset += " set {}";
+
+                string vo = string.Empty;
+                if ((getm != null && getm.IsVirtual) ||
+                    (setm != null && setm.IsVirtual))
+                {
+                    vo = ((getm != null && getm.GetBaseDefinition() != getm) || (setm != null && setm.GetBaseDefinition() != setm))
+                        ? "override " : "virtual ";
+                }
 				
 				if (isIndexer)
 				{
-					tfClass.Add("public {0} this{1} {{ {2} }}",
+					tfClass.Add("public {3}{0} this{1} {{ {2} }}",
 					            typefn(pro.PropertyType, type.Namespace), iargs.Format(args.ArgsFormat.Indexer),
-					            getset);
+					            getset,
+                                vo);
                 }
                 else
                 {
-                    tfClass.Add("public {0} {1} {{ {2} }}",
+                    tfClass.Add("public {3}{0} {1} {{ {2} }}",
                                 typefn(pro.PropertyType, type.Namespace), pro.Name,
-					            getset);
+					            getset,
+                                vo);
 				}
 			};
             
@@ -268,9 +281,11 @@ namespace jsb
 				if (method.IsStatic)
 					sbDef.Append("static ");
 				sbDef.Append("extern ");
-				//if (method.IsAbstract)
+
 				if (method.GetBaseDefinition() != method)
 					sbDef.Append("override ");
+                else if (method.IsVirtual)
+                    sbDef.Append("virtual ");
 
 				if (!(method.IsSpecialName && method.Name == "op_Implicit"))
 					sbDef.Append(typefn(method.ReturnType, type.Namespace) + " ");
@@ -423,7 +438,8 @@ namespace jsb
 				
 				onNewType(field.FieldType);
             }
-			tfClass.AddLine();
+            if (ti.Fields.Count > 0)
+			    tfClass.AddLine();
 
 			for (int i = 0; i < ti.Cons.Count; i++)
 			{
@@ -449,10 +465,13 @@ namespace jsb
                     }
 				}
 			}
-			tfClass.AddLine();
+            if (ti.Cons.Count > 0)
+			    tfClass.AddLine();
 
-			handlePros(tfClass, type, ti, onNewType);			
-			tfClass.AddLine();
+            handlePros(tfClass, type, ti, onNewType);
+
+            if (ti.Pros.Count > 0)
+                tfClass.AddLine();
 
 			handleMethods(tfClass, type, ti, onNewType);
         }
@@ -568,14 +587,17 @@ namespace jsb
             }
 			
 			TextFile tfAll = new TextFile();
+            tfAll.Add("#pragma warning disable 626, 824");
 			foreach (var kv in dict)
 			{
 				if (kv.Value.status == TypeStatus.Status.Exported &&
 				    !kv.Value.IsInnerType)
 				{
 					tfAll.Add(kv.Value.tf.Ch);
+                    tfAll.AddLine();
 				}
-			}
+            }
+            tfAll.Add("#pragma warning restore 626, 824");
             File.WriteAllText("D:\\x.cs", tfAll.Format(-1));
         }
     }

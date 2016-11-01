@@ -140,6 +140,10 @@ public static class JSNameMgr
 			{
 				parentName = GetTypeFullName(type.DeclaringType, withT) + ".";
 			}
+            else if (!string.IsNullOrEmpty(type.Namespace))
+            {
+                parentName = type.Namespace + ".";
+            }
 			
 			string Name = type.Name;
 			int length = Name.Length;
