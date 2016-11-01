@@ -720,7 +720,10 @@ public class JSDataExchangeMgr
             if (type == typeof(System.Boolean))
                 ret = "JSApi.getBooleanS";
             else if (type == typeof(System.Char))
+            {                
                 ret = "JSApi.getChar";
+                needCast = true;
+            }
             else if (type == typeof(System.Byte))
                 ret = "JSApi.getByte";
             else if (type == typeof(System.SByte))

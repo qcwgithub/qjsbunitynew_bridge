@@ -105,8 +105,7 @@ namespace jsb
                         .BraceIn();
                 }
 
-                tfGet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
-                                                               features | JSDataExchangeEditor.MemberFeature.Get).Ch);
+                tfGet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */, features | JSDataExchangeEditor.MemberFeature.Get).Ch);
 
                 tfGet.Add("{0}", JSDataExchangeEditor.Get_Return(field.FieldType, "result"));
 
@@ -119,8 +118,7 @@ namespace jsb
                     {
                         var paramHandler = JSDataExchangeEditor.Get_ParamHandler(field);
                         tfSet.Add(paramHandler.getter);
-                        tfSet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
-                                                                       features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
+                        tfSet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */, features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
                     }
                     else
                     {
@@ -129,9 +127,9 @@ namespace jsb
                         //                     sb.Append(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
                         //                                 features | JSDataExchangeEditor.MemberFeature.Set, getDelegateFuncitonName + "(vc.getJSFunctionValue())"));
 
-                        string getDelegate = JSDataExchangeEditor.Build_GetDelegate(getDelegateFuncitonName, field.FieldType);
-                        tfSet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
-                                                                       features | JSDataExchangeEditor.MemberFeature.Set, getDelegate).Ch);
+                        TextFile tfGetDelegate = JSDataExchangeEditor.Build_GetDelegate(getDelegateFuncitonName, field.FieldType);
+                        TextFile tfCall = JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */, features | JSDataExchangeEditor.MemberFeature.Set, tfGetDelegate);
+                        tfSet.Add(tfCall.Ch);
                     }
                     tfSet.BraceOut();
                 }
@@ -287,8 +285,7 @@ namespace jsb
                 }
 
                 bool bReadOnly = (!property.CanWrite || property.GetSetMethod() == null);
-                TextFile tfCall = JSDataExchangeEditor.BuildCallString(type, property, argActual.Format(args.ArgsFormat.OnlyList),
-                                                                   features | JSDataExchangeEditor.MemberFeature.Get);
+                TextFile tfCall = JSDataExchangeEditor.BuildCallString(type, property, argActual.Format(args.ArgsFormat.OnlyList), features | JSDataExchangeEditor.MemberFeature.Get);
 
                 TextFile tfGet = tfFun;
                 if (!bReadOnly)
@@ -324,8 +321,7 @@ namespace jsb
                         var paramHandler = JSDataExchangeEditor.Get_ParamHandler(property.PropertyType, ParamIndex, false, false);
                         tfSet.Add(paramHandler.getter);
 
-                        tfSet.Add(JSDataExchangeEditor.BuildCallString(type, property, argActual.Format(args.ArgsFormat.OnlyList),
-                                                                       features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
+                        tfSet.Add(JSDataExchangeEditor.BuildCallString(type, property, argActual.Format(args.ArgsFormat.OnlyList), features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
                     }
                     else
                     {
@@ -334,9 +330,8 @@ namespace jsb
                         //                     sb.Append(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */,
                         //                                 features | JSDataExchangeEditor.MemberFeature.Set, getDelegateFuncitonName + "(vc.getJSFunctionValue())"));
 
-                        string getDelegate = JSDataExchangeEditor.Build_GetDelegate(getDelegateFuncitonName, property.PropertyType);
-                        tfSet.Add(JSDataExchangeEditor.BuildCallString(type, property, "" /* argList */,
-                                                                       features | JSDataExchangeEditor.MemberFeature.Set, getDelegate).Ch);
+                        TextFile tfGetDelegate = JSDataExchangeEditor.Build_GetDelegate(getDelegateFuncitonName, property.PropertyType);
+                        tfSet.Add(JSDataExchangeEditor.BuildCallString(type, property, "" /* argList */, features | JSDataExchangeEditor.MemberFeature.Set, tfGetDelegate).Ch);
                     }
                     tfSet.BraceOut();
                 }
@@ -592,16 +587,16 @@ namespace jsb
                                     tfElse.BraceOut();
                                 }
 
-                                tfAction.BraceOut();
+                                tfAction.BraceOut().Add(");");
                             }
                         }
                         else
                         {
-                            tfGetParam.Add("{0} arg{1} = {2};",
-                                                    JSNameMgr.GetTypeFullName(p.ParameterType), // [0]
-                                                    i, // [1]
-                                                    JSDataExchangeEditor.Build_GetDelegate(delegateGetName, p.ParameterType) // [2]
-                                                    );
+                            tfGetParam.Add("{0} arg{1} = ", JSNameMgr.GetTypeFullName(p.ParameterType), i)
+                                .In()
+                                    .Add(JSDataExchangeEditor.Build_GetDelegate(delegateGetName, p.ParameterType).Ch)
+                                .Out()
+                                .Add(";");
                         }
                     }
                     else
@@ -1223,6 +1218,17 @@ namespace jsb
                     }
                 }
 
+				if (type.DeclaringType != null)
+				{
+					if (!clrLibrary.ContainsKey(type.DeclaringType) && !dict.ContainsKey(type.DeclaringType))
+					{
+						sb.AppendFormat("\"{0}\" 的包装类 \"{1}\" 也得导出。\n",
+						                JSNameMgr.GetTypeFullName(type),
+						                JSNameMgr.GetTypeFullName(type.DeclaringType));
+						ret = false;
+                    }
+                }
+                
                 //             foreach (var Interface in type.GetInterfaces())
                 //             {
                 //                 if (!dict.ContainsKey(Interface))

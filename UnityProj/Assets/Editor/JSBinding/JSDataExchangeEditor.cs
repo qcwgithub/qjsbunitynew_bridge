@@ -212,16 +212,29 @@ namespace jsb
             sb.AppendFormat("{0}_{1}_GetDelegate_member{2}_arg{3}", classType.Name, methodName, methodTag, argIndex);
             return JSNameMgr.HandleFunctionName(sb.ToString());
         }
-        public static string Build_GetDelegate(string getDelegateFunctionName, Type delType)
+        public static TextFile Build_GetDelegate(string getDelegateFunctionName, Type delType)
         {
-            return new StringBuilder()
-                .AppendFormat("JSDataExchangeMgr.GetJSArg<{0}>(()=>[[\n", JSNameMgr.GetTypeFullName(delType))
-                .AppendFormat("    if (JSApi.isFunctionS((int)JSApi.GetType.Arg))\n")
-                .AppendFormat("        return {0}(JSApi.getFunctionS((int)JSApi.GetType.Arg));\n", getDelegateFunctionName)
-                .Append("    else\n")
-                .AppendFormat("        return ({0})JSMgr.datax.getObject((int)JSApi.GetType.Arg);\n", JSNameMgr.GetTypeFullName(delType))
-                .Append("]])\n")
-                .ToString();
+            TextFile tf = new TextFile();
+            TextFile tfFun = tf.Add("JSDataExchangeMgr.GetJSArg<{0}>(() => ", JSNameMgr.GetTypeFullName(delType)).BraceIn();
+            {
+                TextFile tfIf = tfFun.Add("if (JSApi.isFunctionS((int)JSApi.GetType.Arg))").BraceIn();
+                {
+                    tfIf.Add("return {0}(JSApi.getFunctionS((int)JSApi.GetType.Arg));", getDelegateFunctionName);
+
+                    tfIf.BraceOut();
+                }
+
+                TextFile tfElse = tfFun.Add("else").BraceIn();
+                {
+                    tfElse.Add("return ({0})JSMgr.datax.getObject((int)JSApi.GetType.Arg);", JSNameMgr.GetTypeFullName(delType));
+
+                    tfElse.BraceOut();
+                }
+
+                tfFun.BraceOut().Add(");");
+            }
+
+            return tf;
         }
         public static TextFile Build_DelegateFunction(Type classType, MemberInfo memberInfo, Type delType, int methodTag, int argIndex)
         {
@@ -283,7 +296,7 @@ namespace jsb
                     if (returnType != typeof(void))
                         tfAction.Add("return (" + JSNameMgr.GetTypeFullName(returnType) + ")" + JSDataExchangeEditor.Get_GetJSReturn(returnType) + ";");
 
-                    tfAction.BraceOut();
+                    tfAction.BraceOutSC();
                 }
 
                 tfFun.Add("JSMgr.addJSFunCSDelegateRel(objFunction.jsObjID, action);")
@@ -292,7 +305,7 @@ namespace jsb
                 tfFun.BraceOut();
             }
 
-            return tfFun;
+            return tf;
         }
         public enum MemberFeature
         {
@@ -304,7 +317,7 @@ namespace jsb
         //
         // arg: a,b,c
         //
-        public static TextFile BuildCallString(Type classType, MemberInfo memberInfo, string argList, MemberFeature features, string newValue = "")
+        public static TextFile BuildCallString(Type classType, MemberInfo memberInfo, string argList, MemberFeature features, object newValue = null /* string »ò TextFile */)
         {
             bool bGenericT = classType.IsGenericTypeDefinition;
             string memberName = memberInfo.Name;
@@ -340,7 +353,11 @@ namespace jsb
                     }
                     else
                     {
-                        tf.Add("{0} = {1};", access, newValue);
+                        if (newValue is string)
+                            tf.Add("{0} = {1};", access, newValue);
+                        else
+                            tf.Add("{0} = ").In().Add((newValue as TextFile).Ch).Out().Add(";");
+
                         if (!bStatic && bStruct)
                         {
                             tf.Add("JSMgr.changeJSObj(vc.jsObjID, _this);");
@@ -352,22 +369,61 @@ namespace jsb
                     // convention: name 'member'
                     if (bIndexer || !bIndexer) // both indexer and not indexer enters
                     {
+                        string objs = (bStatic ? "null" : "vc.csObj");
                         if (bProperty)
                         {
-                            tf.Add("{4}member.{0}({1}, {2}new object[][[{3}]]);",
-                                bGet ? "GetValue" : "SetValue",
-                                bStatic ? "null" : "vc.csObj",
-                                bSet ? newValue + ", " : "",
-                                argList,
-                                bGet ? "var result = " : "");
+                            if (bGet)
+                            {
+                                tf.Add("var result = member.GetValue({0}, new object[]{{{1}}});",
+                                    objs,
+                                    argList);
+                            }
+                            else
+                            {
+                                if (newValue is string)
+                                {
+                                    tf.Add("member.SetValue({0}, {1}, new object[]{{{2}}});",
+                                       objs,
+                                       newValue,
+                                       argList);
+                                }
+                                else
+                                {
+                                    tf.Add("member.SetValue({0}, ", objs)
+                                        .In()
+                                            .Add((newValue as TextFile).Ch)
+                                        .Out()
+                                        .Add(", new object[]{{{0}}});", argList);
+                                }
+                            }
+
+
+                            //tf.Add("{4}member.{0}({1}, {2}new object[]{{{3}}});",
+                            //    bGet ? "GetValue" : "SetValue",
+                            //    bStatic ? "null" : "vc.csObj",
+                            //    bSet ? newValue + ", " : "",
+                            //    argList,
+                            //    bGet ? "var result = " : "");
                         }
                         else
                         {
-                            tf.Add("{3}member.{0}({1}{2});",
-                                bGet ? "GetValue" : "SetValue",
-                                bStatic ? "null" : "vc.csObj",
-                                bSet ? ", " + newValue : "",
-                                bGet ? "var result = " : "");
+                            if (bGet)
+                            {
+                                tf.Add("var result = member.GetValue({0});", objs);
+                            }
+                            else
+                            {
+                                if (newValue is string)
+                                    tf.Add("member.SetValue({0}, {1});", objs, newValue);
+                                else
+                                    tf.Add("member.SetValue({0}, ", objs).In().Add((newValue as TextFile).Ch).Out().Add(");");
+                            }
+
+                            //tf.Add("{3}member.{0}({1}{2});",
+                            //    bGet ? "GetValue" : "SetValue",
+                            //    bStatic ? "null" : "vc.csObj",
+                            //    bSet ? ", " + newValue : "",
+                            //    bGet ? "var result = " : "");
                         }
                     }
                 }
