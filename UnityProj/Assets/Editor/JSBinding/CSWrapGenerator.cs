@@ -11,6 +11,66 @@ namespace jsb
 {
     class CSWrapGenerator
     {
+        static void GenDelegate(Type type, TypeStatus ts,
+                            Func<Type, TypeStatus> getParent, Action<Type> onNewType)
+        {
+            TextFile tfFile = null;
+            if (type.DeclaringType != null)
+            {
+                ts.IsInnerType = true;
+
+                TypeStatus tsParent = getParent(type.DeclaringType);
+                if (tsParent == null || tsParent.status == TypeStatus.Status.Wait)
+                {
+                    return;
+                }
+
+                if (tsParent.status == TypeStatus.Status.Ignored)
+                {
+                    ts.status = TypeStatus.Status.Ignored;
+                    return;
+                }
+
+                tfFile = tsParent.tf.FindByTag("epos");
+            }
+
+            if (tfFile == null)
+                tfFile = new TextFile();
+
+            ts.tf = tfFile;
+            ts.status = TypeStatus.Status.Exported;
+
+            StringBuilder sb = new StringBuilder();
+            TextFile tfNs = tfFile;
+
+            if (type.DeclaringType == null && 
+                !string.IsNullOrEmpty(type.Namespace))
+            {
+                tfNs = tfFile.Add("namespace {0}", type.Namespace).BraceIn();
+                tfNs.BraceOut();
+            }
+
+            if (type.IsPublic || type.IsNestedPublic)
+                sb.Append("public ");
+
+            sb.Append("delegate ");
+
+            MethodInfo method = type.GetMethod("Invoke");
+            sb.Append(typefn(method.ReturnType, type.Namespace));
+            sb.Append(" ");
+            onNewType(method.ReturnType);
+
+            ParameterInfo[] ps = method.GetParameters();
+            {
+                sb.AppendFormat("{0}({1});", type.Name, Ps2String(type, ps));
+
+                foreach (var p in ps)
+                    onNewType(p.ParameterType);
+            }
+
+            tfNs.Add(sb.ToString());
+        }
+
 		static void GenEnum(Type type, TypeStatus ts, 
 		                    Func<Type, TypeStatus> getParent)
 		{
@@ -304,7 +364,8 @@ namespace jsb
             TextFile tfNs = tfFile;
 
             //string dir = Dir;
-            if (!string.IsNullOrEmpty(type.Namespace))
+            if (type.DeclaringType == null &&
+                !string.IsNullOrEmpty(type.Namespace))
             {
                 tfNs = tfFile.Add("namespace {0}", type.Namespace).BraceIn();
                 tfNs.BraceOut();
@@ -482,7 +543,11 @@ namespace jsb
 					{
 						GenEnum(type, ts, getParent);
 					}
-					else
+                    else if (typeof(Delegate).IsAssignableFrom(type))
+                    {
+                        GenDelegate(type, ts, getParent, onNewType);
+                    }
+                    else
 					{
 						GenInterfaceOrStructOrClass(type, ts, getParent, onNewType);
 					}
