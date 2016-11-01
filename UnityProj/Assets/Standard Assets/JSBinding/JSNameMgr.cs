@@ -24,8 +24,49 @@ public static class JSNameMgr
 	public static string[] GenTSuffix = new string[] { "`1", "`2", "`3", "`4", "`5" };
 	public static string[] GenTSuffixReplaceCS = new string[] { "<>", "<,>", "<,,>", "<,,,>", "<,,,,>" };
 	public static string[] GenTSuffixReplaceJS = new string[] { "$1", "$2", "$3", "$4", "$5" };
-	
+
+	static Dictionary<string, string> typeShortName = null;
+	static string shortenName(string fn)
+	{
+		if (typeShortName == null)
+		{
+			typeShortName= new Dictionary<string, string>();
+
+			typeShortName.Add("System.Boolean", "bool");
+			typeShortName.Add("System.Byte", "byte");
+			typeShortName.Add("System.SByte", "sbyte");
+			typeShortName.Add("System.Int16", "short");
+			typeShortName.Add("System.UInt16", "ushort");
+			typeShortName.Add("System.Int32", "int");
+			typeShortName.Add("System.UInt32", "uint");
+			typeShortName.Add("System.Single", "float");
+			typeShortName.Add("System.Double", "double");
+			typeShortName.Add("System.String", "string");
+			typeShortName.Add("System.Object", "object");
+
+			typeShortName.Add("System.Void", "void");
+		}
+
+		if (typeShortName.ContainsKey(fn))
+			return typeShortName[fn];
+
+		if (fn.EndsWith("[]"))
+		{
+			string fn2 = fn.Substring(0, fn.Length - 2);
+			if (typeShortName.ContainsKey(fn2))
+				return typeShortName[fn2] + "[]";
+		}
+
+		return fn;
+	}
+
 	public static string GetTypeFullName(Type type, bool withT = false)
+	{
+		string fn = GetTypeFullNameInternal(type, withT);
+		return shortenName(fn);
+	}
+
+	static string GetTypeFullNameInternal(Type type, bool withT = false)
 	{
 		if (type == null) return "";
 		

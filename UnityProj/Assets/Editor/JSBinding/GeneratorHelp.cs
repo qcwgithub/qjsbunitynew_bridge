@@ -386,6 +386,16 @@ namespace jsb
                 }
             }
 
+			// 移除 Ignored 的项
+			foreach (List<MemberInfoEx> lst in 
+			         new List<MemberInfoEx>[]{ ti.Cons, ti.Fields, ti.Pros, ti.Methods })
+			{
+				for (int i = lst.Count - 1; i >= 0; i--)
+				{
+					if (lst[i].Ignored)
+						lst.RemoveAt(i);
+				}
+			}
             return ti;
         }
     }

@@ -8,70 +8,80 @@ using System.Collections;
 using System.IO;
 using System.Text.RegularExpressions;
 
+
+public class Qcw : ICloneable
+{
+	public enum QCWEn{
+		HELLO,
+		APPLE,
+		WORLD,
+	}
+	public QCWEn en;
+	public object Clone() { return null; }
+	public Qcw() { }
+	//		public int y{get;set;}
+	//		public int this[int index]
+	//		{
+	//			get{
+	//				return 0;
+	//			}
+	//			set {
+	//				//return
+	//			}
+	//		}
+	public int Get<T>(int a, int b = 0, int c = 0) { return 0; }
+	public static int SGet(int a, int b = 0, int c = 0) { return 0; }
+	public int V;
+	public static string X;
+	public string GV { get; set; }
+	public static string SGV { get; set; }
+	
+	public int this[int i]
+	{
+		get { return 666; }
+		set { }
+	}
+	public int this[int i, int j]
+	{
+		get { return 777; }
+		set { }
+	}
+}
 public class JSBindingSettings
 {
-	public static Type[] enums = new Type[]
-	{
-        typeof(BindingFlags),
-	};
-	
-	//
-	// types to export to JavaSciprt
+    public static Type[] enums = new Type[]
+    {
+//        typeof(BindingFlags),
+//		typeof(Qcw.QCWEn),
+    };
+    
+    //
+    // types to export to JavaSciprt
 	// only for samples!
 	//
 	// below there is another classes(commented out) having almost all types in UnityEngine
 	//
 
     
-	
-	public class Qcw : ICloneable
-	{
-        public object Clone() { return null; }
-        public Qcw() { }
-//		public int y{get;set;}
-//		public int this[int index]
-//		{
-//			get{
-//				return 0;
-//			}
-//			set {
-//				//return
-//			}
-//		}
-        public int Get<T>(int a, int b = 0, int c = 0) { return 0; }
-        public static int SGet(int a, int b = 0, int c = 0) { return 0; }
-        public int V;
-        public static string X;
-        public string GV { get; set; }
-        public static string SGV { get; set; }
 
-        public int this[int i]
-        {
-            get { return 666; }
-            set { }
-        }
-        public int this[int i, int j]
-        {
-            get { return 777; }
-            set { }
-        }
-	}
     public static Type[] classes = new Type[]
     {
-		typeof(Qcw),
+        typeof(Qcw),
         typeof(ICloneable),
-        //typeof(Vector3),
-//
-       //typeof(Debug),
-       //typeof(Input),
+        typeof(Color),
+        typeof(Vector3),
+////
+       typeof(Debug),
+       typeof(Input),
        //typeof(GameObject),
 //        typeof(Transform),
 //        typeof(Vector2),
 //        typeof(Vector3),
-        typeof(UnityEngine.Object),
-        typeof(MonoBehaviour),
-        typeof(Behaviour),
-        typeof(Component),
+        //typeof(UnityEngine.Object),
+        //typeof(MonoBehaviour),
+        //typeof(Behaviour),
+        //typeof(Component),
+        //typeof(UnityEngine.RaycastHit),
         //typeof(UnityEngine.Object),
 //        typeof(YieldInstruction),
 //        typeof(WaitForSeconds),

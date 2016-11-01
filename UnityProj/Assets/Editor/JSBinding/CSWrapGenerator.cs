@@ -11,12 +11,38 @@ namespace jsb
 {
     class CSWrapGenerator
     {
-        static TextFile GenEnum(Type type)
-        {
+		static void GenEnum(Type type, TypeStatus ts, 
+		                    Func<Type, TypeStatus> getParent)
+		{
+			TextFile tfFile = null;
+			if (type.DeclaringType != null)
+			{
+				ts.IsInnerType = true;
+
+				TypeStatus tsParent = getParent(type.DeclaringType);
+				if (tsParent == null || tsParent.status == TypeStatus.Status.Wait)
+				{
+					return;
+				}
+				
+				if (tsParent.status == TypeStatus.Status.Ignored)
+				{
+					ts.status = TypeStatus.Status.Ignored;
+					return;
+				}
+
+				tfFile = tsParent.tf.FindByTag("epos");
+			}
+
+			if (tfFile == null)
+				tfFile = new TextFile();
+
+			ts.tf = tfFile;
+			ts.status = TypeStatus.Status.Exported;
+
             GeneratorHelp.ATypeInfo ti = GeneratorHelp.CreateTypeInfo(type);
 
             StringBuilder sb = new StringBuilder();
-            TextFile tfFile = new TextFile();
             TextFile tfNs = tfFile;
 
             if (!string.IsNullOrEmpty(type.Namespace))
@@ -28,7 +54,7 @@ namespace jsb
             TextFile tfClass = null;
             sb.Remove(0, sb.Length);
             {
-                if (type.IsPublic)
+                if (type.IsPublic || type.IsNestedPublic)
                     sb.Append("public ");
 
                 sb.Append("enum ");
@@ -38,33 +64,243 @@ namespace jsb
                 tfClass.BraceOut();
             }
 
-            for (int i = 0; i < ti.Fields.Count; i++)
-            {
-                MemberInfoEx infoEx = ti.Fields[i];
-                FieldInfo field = infoEx.member as FieldInfo;
-                tfClass.Add("{0}: {1},", field.Name, field.GetValue(null));
-            }
-
-            return tfFile;
+			FieldInfo[] fields = type.GetFields(BindingFlags.GetField | BindingFlags.Public | BindingFlags.Static);
+			for (int i = 0; i < fields.Length; i++)
+			{
+				FieldInfo field = fields[i];
+				tfClass.Add("{0} = {1},", field.Name, (int)field.GetValue(null));
+			}
         }
 
-        static TextFile GenWrap(Type type)
-        {
-            if (type == null || 
-                type.IsPrimitive ||
-                (type.Namespace != null && (type.Namespace == "System" || type.Namespace.StartsWith("System.")))
-                )
-            {
-                return null;
-            }
+		static string typefn(Type tType, string eraseNs)
+		{
+			string fn = JSNameMgr.GetTypeFullName(tType);
+			if (!string.IsNullOrEmpty(eraseNs) &&
+			    fn.StartsWith(eraseNs + "."))
+			{
+				fn = fn.Substring(eraseNs.Length + 1);
+			}
+			return fn;
+		}
 
-            if (type.IsEnum)
-                return GenEnum(type);
+		static string Ps2String(Type type, ParameterInfo[] ps)
+		{
+			args f_args = new args();
+			for (int j = 0; j < ps.Length; j++)
+			{
+				ParameterInfo p = ps[j];
+				string s = "";
+				if (p.ParameterType.IsByRef)
+				{
+					if (p.IsOut)
+						s = "out ";
+					else
+						s = "ref ";
+				}
+				s += typefn(p.ParameterType, type.Namespace) + " ";
+				s += p.Name;
+				f_args.Add(s);
+			};
+			return f_args.ToString();
+		}
+
+		static string MethodNameString(Type type, MethodInfo method)
+		{
+			if (method.IsSpecialName)
+			{
+				switch (method.Name)
+				{
+				case "op_Addition": return "operator +";
+				case "op_Subtraction": return "operator -";
+				case "op_UnaryNegation": return "operator -";
+				case "op_Multiply": return "operator *";
+				case "op_Division": return "operator /";
+				case "op_Equality": return "operator ==";
+				case "op_Inequality": return "operator !=";
+					
+				case "op_LessThan": return "operator <";
+                case "op_LessThanOrEqual": return "operator <=";
+                case "op_GreaterThan": return "operator >";
+				case "op_GreaterThanOrEqual": return "operator >=";
+				case "op_Implicit": return "implicit operator " + typefn(method.ReturnType, type.Namespace);
+				default: return "operator ???";
+				}
+            }
+			return method.Name;
+        }
+
+		static void handlePros(TextFile tfClass, Type type, GeneratorHelp.ATypeInfo ti, Action<Type> OnNewType)
+		{
+			Action<PropertyInfo> action = (pro) =>
+			{
+				OnNewType(pro.PropertyType);
+				ParameterInfo[] ps = pro.GetIndexParameters();
+				
+				args iargs = new args();
+				bool isIndexer = (ps.Length > 0);
+				if (isIndexer)
+				{
+					for (int j = 0; j < ps.Length; j++)
+					{
+						iargs.AddFormat("{0} {1}", typefn(ps[j].ParameterType, type.Namespace), ps[j].Name);
+						OnNewType(ps[j].ParameterType);
+					}
+				}
+				
+				bool canGet = pro.GetGetMethod() != null && pro.GetGetMethod().IsPublic;
+				bool canSet = pro.GetSetMethod() != null && pro.GetSetMethod().IsPublic;
+
+				string getset = "";
+				if (canGet) getset += string.Format("get {{ return default({0}); }}", typefn(pro.PropertyType, type.Namespace));
+				if (canSet) getset += " set {}";
+				
+				if (isIndexer)
+				{
+					tfClass.Add("public {0} this{1} {{ {2} }}",
+					            typefn(pro.PropertyType, type.Namespace), iargs.Format(args.ArgsFormat.Indexer),
+					            getset);
+                }
+                else
+                {
+                    tfClass.Add("public {0} {1} {{ {2} }}",
+                                typefn(pro.PropertyType, type.Namespace), pro.Name,
+					            getset);
+				}
+			};
+            
+			bool hasNoneIndexer = false;
+            for (int i = 0; i < ti.Pros.Count; i++)
+			{
+				MemberInfoEx infoEx = ti.Pros[i];
+				PropertyInfo pro = infoEx.member as PropertyInfo;
+				if (pro.GetIndexParameters().Length == 0)
+				{
+					hasNoneIndexer = true;
+					action(pro);
+				}
+			}
+
+			if (hasNoneIndexer)
+				tfClass.AddLine();
+			
+			for (int i = 0; i < ti.Pros.Count; i++)
+			{
+				MemberInfoEx infoEx = ti.Pros[i];
+				PropertyInfo pro = infoEx.member as PropertyInfo;
+				if (pro.GetIndexParameters().Length > 0)
+				{
+                    action(pro);
+                }
+            }
+        }
+
+		static void handleMethods(TextFile tfClass, Type type, GeneratorHelp.ATypeInfo ti, Action<Type> OnNewType)
+		{
+			Action<MethodInfo> action = (method) => 
+			{
+				StringBuilder sbDef = new StringBuilder();
+				if (method.IsPublic)
+					sbDef.Append("public ");
+				else if (method.IsFamily)
+					sbDef.Append("protected ");
+				else if (method.IsAssembly)
+					sbDef.Append("internal ");
+				if (method.IsStatic)
+					sbDef.Append("static ");
+				sbDef.Append("extern ");
+				//if (method.IsAbstract)
+				if (method.GetBaseDefinition() != method)
+					sbDef.Append("override ");
+
+				if (!(method.IsSpecialName && method.Name == "op_Implicit"))
+					sbDef.Append(typefn(method.ReturnType, type.Namespace) + " ");
+
+				OnNewType(method.ReturnType);
+
+				sbDef.Append(MethodNameString(type, method));
+				
+				if (method.IsGenericMethodDefinition)
+				{
+					Type[] argus = method.GetGenericArguments();
+					args t_args = new args();
+					foreach (var a in argus)
+						t_args.Add(a.Name);
+					
+					sbDef.Append(t_args.Format(args.ArgsFormat.GenericT));
+				}
+				
+				sbDef.Append("(");
+				ParameterInfo[] ps = method.GetParameters();
+				{
+					sbDef.Append(Ps2String(type, ps));
+					sbDef.Append(");");
+
+					foreach (var p in ps)
+						OnNewType(p.ParameterType);
+				}
+				
+				tfClass.Add(sbDef.ToString());
+			};
+			
+			bool hasSpecial = false;
+			for (int i = 0; i < ti.Methods.Count; i++)
+			{
+				MemberInfoEx infoEx = ti.Methods[i];
+				MethodInfo method = infoEx.member as MethodInfo;
+				if (method.IsSpecialName)
+				{
+					hasSpecial = true;
+					action(method);
+                }
+            }
+            
+            if (hasSpecial)
+                tfClass.AddLine();
+            
+            for (int i = 0; i < ti.Methods.Count; i++)
+            {
+                MemberInfoEx infoEx = ti.Methods[i];
+                MethodInfo method = infoEx.member as MethodInfo;
+                
+                if (!method.IsSpecialName)
+                {
+                    action(method);
+                }
+            }
+        }
+        
+		static void GenInterfaceOrStructOrClass(Type type, TypeStatus ts, 
+		                                            Func<Type, TypeStatus> getParent, Action<Type> onNewType)
+		{
+			TextFile tfFile = null;
+			if (type.DeclaringType != null)
+			{
+				ts.IsInnerType = true;
+
+				TypeStatus tsParent = getParent(type.DeclaringType);
+				if (tsParent == null || tsParent.status == TypeStatus.Status.Wait)
+				{
+					return;
+				}
+				
+				if (tsParent.status == TypeStatus.Status.Ignored)
+				{
+					ts.status = TypeStatus.Status.Ignored;
+					return;
+				}
+				
+				tfFile = tsParent.tf.FindByTag("epos");
+			}
+			
+			if (tfFile == null)
+				tfFile = new TextFile();
+
+			ts.tf = tfFile;
+			ts.status = TypeStatus.Status.Exported;
 
             GeneratorHelp.ATypeInfo ti = GeneratorHelp.CreateTypeInfo(type);
 
             StringBuilder sb = new StringBuilder();
-            TextFile tfFile = new TextFile();
             TextFile tfNs = tfFile;
 
             //string dir = Dir;
@@ -77,7 +313,7 @@ namespace jsb
             TextFile tfClass = null;
             sb.Remove(0, sb.Length);
             {
-                if (type.IsPublic)
+				if (type.IsPublic || type.IsNestedPublic)
                     sb.Append("public ");
 
                 if (type.IsInterface)
@@ -89,98 +325,192 @@ namespace jsb
 
                 sb.Append(type.Name);
 
-                if (!type.IsEnum)
+                Type baseType = type.BaseType;
+                Type[] interfaces = type.GetInterfaces();
+                if ((baseType != null && baseType != typeof(System.ValueType) && baseType != typeof(object)) || 
+				    interfaces.Length > 0
+				    )
                 {
-                    Type baseType = type.BaseType;
-                    Type[] interfaces = type.GetInterfaces();
-                    if (baseType != null || interfaces.Length > 0)
-                    {
-                        sb.Append(" : ");
+                    sb.Append(" : ");
 
-                        args a = new args();
-                        if (baseType != null)
-                            a.Add(JSNameMgr.GetTypeFullName(baseType));
-                        foreach (var i in interfaces)
-                            a.Add(JSNameMgr.GetTypeFullName(i));
+                    args a = new args();
+                    if (baseType != null)
+					{
+						a.Add(typefn(baseType, type.Namespace));
+						onNewType(baseType);
+					}
+                    foreach (var i in interfaces)
+					{
+						a.Add(typefn(i, type.Namespace));
+						onNewType(i);
+					}
 
-                        sb.Append(a.ToString());
-                    }
+					sb.Append(a.ToString());
                 }
 
                 tfClass = tfNs.Add(sb.ToString()).BraceIn();
                 tfClass.BraceOut();
             }
 
+			tfClass.AddTag("epos");
+
             for (int i = 0; i < ti.Fields.Count; i++)
             {
                 MemberInfoEx infoEx = ti.Fields[i];
                 FieldInfo field = infoEx.member as FieldInfo;
-                tfClass.Add("public {0} {1};", JSNameMgr.GetTypeFullName(field.FieldType), field.Name);
+                tfClass.Add("public {0} {1};", typefn(field.FieldType, type.Namespace), field.Name);
+				
+				onNewType(field.FieldType);
             }
+			tfClass.AddLine();
 
-            for (int i = 0; i < ti.Pros.Count; i++)
-            {
-                MemberInfoEx infoEx = ti.Pros[i];
-                PropertyInfo pro = infoEx.member as PropertyInfo;
-                ParameterInfo[] ps = pro.GetIndexParameters();
+			for (int i = 0; i < ti.Cons.Count; i++)
+			{
+				MemberInfoEx infoEx = ti.Cons[i];
+				ConstructorInfo con = infoEx.member as ConstructorInfo;
 
-                args iargs = new args();
-                bool isIndexer = (ps.Length > 0);
-                if (isIndexer)
-                {
-                    for (int j = 0; j < ps.Length; j++)
-                    {
-                        iargs.AddFormat("{0} {1}", JSNameMgr.GetTypeFullName(ps[j].ParameterType), ps[j].Name);
+				if (type.IsValueType)
+				{
+					// 结构体不需要无参数构造函数
+					if (con == null || con.GetParameters().Length == 0)
+					{
+						continue;
+					}
+				}
+
+				tfClass.Add("public extern {0}({1});", type.Name, con == null ? "" : Ps2String(type, con.GetParameters()));
+
+				if (con != null)
+				{
+					foreach (var p in con.GetParameters())
+					{
+                        onNewType(p.ParameterType);
                     }
-                }
+				}
+			}
+			tfClass.AddLine();
 
-                bool canGet = pro.GetGetMethod() != null && pro.GetGetMethod().IsPublic;
-                bool canSet = pro.GetSetMethod() != null && pro.GetSetMethod().IsPublic;
+			handlePros(tfClass, type, ti, onNewType);			
+			tfClass.AddLine();
 
-                if (isIndexer)
-                {
-                    tfClass.Add("public extern {0} this{1} {{ {2} }}",
-                        JSNameMgr.GetTypeFullName(pro.PropertyType), iargs.Format(args.ArgsFormat.Indexer),
-                        canGet && canSet ? "get; set;" : (canGet ? "get;" : "set;"));
-                }
-                else
-                {
-                    tfClass.Add("public extern {0} {1} {{ {2} }}",
-                        JSNameMgr.GetTypeFullName(pro.PropertyType), pro.Name,
-                        canGet && canSet ? "get; set;" : (canGet ? "get;" : "set;"));
-                }
-            }
-
-            for (int i = 0; i < ti.Methods.Count; i++)
-            {
-                MemberInfoEx infoEx = ti.Methods[i];
-                MethodInfo method = infoEx.member as MethodInfo;
-
-                args aDef = new args();
-                if (method.IsPublic)
-                    aDef.Add("public");
-                if (method.IsStatic)
-                    aDef.Add("static");
-
-                aDef.Add(JSNameMgr.GetTypeFullName(method.ReturnType));
-
-                if (method.IsGenericMethod)
-                {
-
-                }
-            }
-            return tfFile;
+			handleMethods(tfClass, type, ti, onNewType);
         }
-        public static void GenWrap()
+
+		static bool ShouldIgnoreType(Type type)
+		{
+			if (type == null || 
+			    type.IsPrimitive ||
+			    (type.Namespace != null && (type.Namespace == "System" || type.Namespace.StartsWith("System.")))
+			    )
+			{
+				return true;
+			}
+			return false;
+		}
+
+		class TypeStatus
+		{
+			public enum Status { Wait, Exported, Ignored, }
+			public Status status = Status.Wait;
+			public TextFile tf = null;
+			public bool IsInnerType = false;
+		}
+
+        public static void GenWraps()
         {
             GeneratorHelp.ClearTypeInfo();
-            TextFile tfAll = new TextFile();
-            for (int i = 0; i < JSBindingSettings.classes.Length; i++)
-            {
-                TextFile tfFile = GenWrap(JSBindingSettings.classes[i]);
-                if (tfFile != null)
-                    tfAll.Add(tfFile.Ch);
+
+			Dictionary<Type, TypeStatus> dict = new Dictionary<Type, TypeStatus>();
+
+			Action<Type> onNewType = (nt) =>
+			{
+				while (true)
+				{
+					if (nt.IsByRef || nt.IsArray)
+					{
+						nt = nt.GetElementType();
+						continue;
+					}
+					if (nt.IsGenericParameter)
+						return;
+					break;
+				}
+
+				if (!dict.ContainsKey(nt))
+				{
+					dict.Add(nt, new TypeStatus());
+				}
+			};
+
+			Func<Type, TypeStatus> getParent = (type) =>
+			{
+				if (dict.ContainsKey(type))
+					return dict[type];
+				return null;
+			};
+
+			foreach (var type in JSBindingSettings.enums)
+			{
+				onNewType(type);
+			}
+
+			foreach (var type in JSBindingSettings.classes)
+			{
+				onNewType(type);
+			}
+
+			while (true)
+			{
+				Type[] keys = new Type[dict.Count];
+				dict.Keys.CopyTo(keys, 0);
+
+				foreach (Type type in keys)
+				{
+					TypeStatus ts = dict[type];
+					if (ts.status != TypeStatus.Status.Wait)
+					{
+						continue;
+					}
+
+					if (ShouldIgnoreType(type))
+					{
+						ts.status = TypeStatus.Status.Ignored;
+						continue;
+					}
+
+					if (type.IsEnum)
+					{
+						GenEnum(type, ts, getParent);
+					}
+					else
+					{
+						GenInterfaceOrStructOrClass(type, ts, getParent, onNewType);
+					}
+				}
+
+				bool bContinue = false;
+				foreach (var kv in dict)
+				{
+					if (kv.Value.status == TypeStatus.Status.Wait)
+					{
+						bContinue = true;
+						break;
+					}
+				}
+
+				if (!bContinue)
+					break;
             }
+			
+			TextFile tfAll = new TextFile();
+			foreach (var kv in dict)
+			{
+				if (kv.Value.status == TypeStatus.Status.Exported &&
+				    !kv.Value.IsInnerType)
+				{
+					tfAll.Add(kv.Value.tf.Ch);
+				}
+			}
             File.WriteAllText("D:\\x.cs", tfAll.Format(-1));
         }
     }

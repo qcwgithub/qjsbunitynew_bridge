@@ -27,7 +27,7 @@ public class Menus
 		UnityEngineManual.initManual();
         CSGenerator.GenerateClassBindings();
         JSGenerator.GenerateClassBindings();
-        CSWrapGenerator.GenWrap();
+        CSWrapGenerator.GenWraps();
 
         AssetDatabase.Refresh();
     }
