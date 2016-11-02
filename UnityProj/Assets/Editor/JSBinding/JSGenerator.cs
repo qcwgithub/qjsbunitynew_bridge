@@ -103,7 +103,7 @@ namespace jsb
         }
 
         public static void BuildFields(TextFile tfStatic, TextFile tfInst,
-            Type type, List<MemberInfoEx> fields, int slot, List<string> lstNames)
+            Type type, List<MemberInfoEx> fields, int slot)
         {
             TextFile tfStatic2 = null, tfInst2 = null;
             for (int i = 0; i < fields.Count; i++)
@@ -130,15 +130,12 @@ namespace jsb
                 }
             }
 
-            var sb = new StringBuilder();
             for (int i = 0; i < fields.Count; i++)
             {
                 MemberInfoEx infoEx = fields[i];
                 if (infoEx.Ignored)
                     continue;
                 FieldInfo field = infoEx.member as FieldInfo;
-
-                lstNames.Add((field.IsStatic ? "Static_" : "") + field.Name);
 
                 TextFile tf = field.IsStatic ? tfStatic2 : tfInst2;
                 tf.Add("{0}: {{", field.Name).In()
@@ -148,7 +145,7 @@ namespace jsb
             }
         }
         public static void BuildProperties(TextFile tfStatic, TextFile tfInst,
-            Type type, List<MemberInfoEx> properties, int slot, List<string> lstNames)
+            Type type, List<MemberInfoEx> properties, int slot)
         {
             for (int i = 0; i < properties.Count; i++)
             {
@@ -175,8 +172,6 @@ namespace jsb
 
                 // 特殊情况，当[]时，property.Name=Item
                 string mName = Member_AddSuffix(property.Name, infoEx.GetOverloadIndex());
-                lstNames.Add((isStatic ? "Static_" : "") + "get" + mName);
-                lstNames.Add((isStatic ? "Static_" : "") + "set" + mName);
 
                 TextFile tf = isStatic ? tfStatic : tfInst;
                 tf.Add("get{0}: function ({1}) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}); }},",
@@ -186,7 +181,7 @@ namespace jsb
                     mName, indexerParamB, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
             }
         }
-        public static void BuildConstructors(TextFile tfInst, Type type, List<MemberInfoEx> constructors, int slot, List<string> lstNames)
+        public static void BuildConstructors(TextFile tfInst, Type type, List<MemberInfoEx> constructors, int slot)
         {
             var argActual = new args();
             var argFormal = new args();
@@ -232,7 +227,6 @@ namespace jsb
                 }
 
                 string mName = Member_AddSuffix("ctor", infoEx.GetOverloadIndex());
-                lstNames.Add(mName);
 
                 // 特殊处理
                 if (type == typeof(MonoBehaviour))
@@ -252,7 +246,7 @@ namespace jsb
 
         // can handle all methods
         public static void BuildMethods(TextFile tfStatic, TextFile tfInst,
-            Type type, List<MemberInfoEx> methods, int slot, List<string> lstNames)
+            Type type, List<MemberInfoEx> methods, int slot)
         {
             for (int i = 0; i < methods.Count; i++)
             {
@@ -297,7 +291,6 @@ namespace jsb
                 // if (methodName == "ToString") { methodName = "toString"; }
 
                 string mName = Member_AddSuffix(methodName, infoEx.GetOverloadIndex(), TCount);
-                lstNames.Add((method.IsStatic ? "Static_" : "") + mName);
 
                 TextFile tf = method.IsStatic ? tfStatic : tfInst;
 
@@ -318,14 +311,12 @@ namespace jsb
             }
         }
 
-        public static List<string> GenerateClass(out TextFile tfDef)
+        public static TextFile GenerateClass()
         {
-            List<string> memberNames = new List<string>();
-
             GeneratorHelp.ATypeInfo ti;
             int slot = GeneratorHelp.AddTypeInfo(type, out ti);
 
-            tfDef = new TextFile();
+            TextFile tfDef = new TextFile();
             tfDef.Add("Bridge.define(\"{0}\", {{", JSNameMgr.JsFullName(type));
             TextFile tfClass = tfDef.Add("");
 
@@ -417,12 +408,12 @@ namespace jsb
                     .BraceOutComma();
             }
 
-            BuildConstructors(tfInst, type, ti.Cons, slot, memberNames);
-            BuildFields(tfStatic, tfInst, type, ti.Fields, slot, memberNames);
-            BuildProperties(tfStatic, tfInst, type, ti.Pros, slot, memberNames);
-            BuildMethods(tfStatic, tfInst, type, ti.Methods, slot, memberNames);
+            BuildConstructors(tfInst, type, ti.Cons, slot);
+            BuildFields(tfStatic, tfInst, type, ti.Fields, slot);
+            BuildProperties(tfStatic, tfInst, type, ti.Pros, slot);
+            BuildMethods(tfStatic, tfInst, type, ti.Methods, slot);
 
-            return memberNames;
+            return tfDef;
         }
 
         static TextFile GenEnum()
@@ -536,10 +527,6 @@ using UnityEngine;
                     tfFun.AddLine().Add(tf.Ch);
                 }
             }
-
-            // typeName -> member list
-            Dictionary<string, List<string>> allDefs = new Dictionary<string, List<string>>();
-
             // classes
             for (int i = 0; i < lst.Count; i++)
             {
@@ -548,11 +535,7 @@ using UnityEngine;
                 if (!typeClassName.TryGetValue(type, out className))
                     className = type.Name;
 
-                TextFile tf;
-                List<string> memberNames = JSGenerator.GenerateClass(out tf);
-                allDefs.Add(SharpKitClassName(type), memberNames);
-                //tfFun.Add("if ($hc < {0}) return;", hc++);
-
+                TextFile tf = JSGenerator.GenerateClass();
 
                 tfFun.AddLine().Add("if (jsb.findObj(\"{0}\") == null) {{", type.JsFullName())
                     .In()

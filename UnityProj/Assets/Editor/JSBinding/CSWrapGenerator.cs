@@ -100,7 +100,7 @@ namespace jsb
 			ts.tf = tfFile;
 			ts.status = TypeStatus.Status.Exported;
 
-            GeneratorHelp.ATypeInfo ti = GeneratorHelp.CreateTypeInfo(type);
+            //GeneratorHelp.ATypeInfo ti = GeneratorHelp.CreateTypeInfo(type);
 
             StringBuilder sb = new StringBuilder();
             TextFile tfNs = tfFile;
