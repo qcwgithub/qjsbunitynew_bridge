@@ -209,7 +209,7 @@ namespace jsb
                     continue;
 
                 if (isAbstractClass ||
-                    type == typeof(UnityEngine.MonoBehaviour) ||
+                    //type == typeof(UnityEngine.MonoBehaviour) ||
                     IsMemberObsolete(con) ||
                     JSBindingSettings.IsDiscard(type, con)
                     )

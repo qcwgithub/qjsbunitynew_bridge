@@ -177,7 +177,7 @@ public static class JSNameMgr
 			return (parentName + Name).Replace('+', '.');
 		}
 	}
-	public static string GetJSTypeFullName(Type type)
+	public static string JsFullName(this Type type)
 	{
 		if (type == null) return "";
 		

@@ -1100,7 +1100,7 @@ namespace jsb
             w.Write(tf.Format(-1));
             w.Close();
         }
-        public static void GenerateClassBindings(List<Type> lst)
+        public static void GenBindings(List<Type> lst)
         {
             CSGenerator.OnBegin();
             allClassCallbackNames = null;

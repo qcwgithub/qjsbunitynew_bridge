@@ -100,7 +100,7 @@ public class JSCache
             get
             {
                 if (jsTypeFullName == null)
-                    jsTypeFullName = JSNameMgr.GetJSTypeFullName(type);
+                    jsTypeFullName = JSNameMgr.JsFullName(type);
                 return jsTypeFullName;
             }
         }

@@ -58,8 +58,12 @@ namespace jsb
                 typeFullName = "object";
             else
                 typeFullName = JSNameMgr.CsFullName(type);
-
-            if (type.IsArray)
+			
+			if (isRef || isOut)
+			{
+				type = type.GetElementType();
+			}
+			if (type.IsArray)
             {
                 ph.getter = new StringBuilder()
                     .AppendFormat("{0} {1} = {2};", typeFullName, ph.argName, arrayExchange.Get_GetParam(type))
@@ -67,10 +71,6 @@ namespace jsb
             }
             else
             {
-                if (isRef || isOut)
-                {
-                    type = type.GetElementType();
-                }
                 bool needCast;
                 string keyword = GetMetatypeKeyword(type, out needCast);
                 if (keyword == string.Empty)

@@ -15,7 +15,6 @@ namespace jsb
         static StringBuilder sb = null;
         public static Type type = null;
 
-        static StreamWriter W;
         public static void OnBegin()
         {
             GeneratorHelp.ClearTypeInfo();
@@ -26,11 +25,11 @@ namespace jsb
                 int i = p.Replace('\\', '/').LastIndexOf('/');
                 Directory.CreateDirectory(p.Substring(0, i));
             }
-            W = OpenFile(p, false);
+            File.Delete(p);
         }
         public static void OnEnd()
         {
-            W.Close();
+            
         }
 
         public static string SharpKitTypeName(Type type)
@@ -100,7 +99,7 @@ namespace jsb
         }
         public static string SharpKitClassName(Type type)
         {
-            return JSNameMgr.GetJSTypeFullName(type);
+            return JSNameMgr.JsFullName(type);
         }
 
         public static void BuildFields(TextFile tfStatic, TextFile tfInst,
@@ -210,11 +209,18 @@ namespace jsb
                 string mName = Member_AddSuffix("ctor", infoEx.GetOverloadIndex());
                 lstNames.Add(mName);
 
-                tf.Add("{0}: function ({1}) {{", mName, argFormal)
-                    .In()
-                        .Add("CS.Call({0});", argActual)
-                    .Out().Add("},");
-
+                // 特殊处理
+                if (type == typeof(MonoBehaviour))
+                {
+                    tf.Add("{0}: function ({1}) {{}},", mName, argFormal);
+                }
+                else
+                {
+                    tf.Add("{0}: function ({1}) {{", mName, argFormal)
+                        .In()
+                            .Add("CS.Call({0});", argActual)
+                        .Out().Add("},");
+                }
                 tfInst.Add(tf.Ch);
             }
         }
@@ -287,15 +293,15 @@ namespace jsb
             }
         }
 
-        public static List<string> GenerateClass()
+        public static List<string> GenerateClass(out TextFile tfDef)
         {
             List<string> memberNames = new List<string>();
 
             GeneratorHelp.ATypeInfo ti;
             int slot = GeneratorHelp.AddTypeInfo(type, out ti);
 
-            TextFile tfDef = new TextFile();
-            tfDef.Add("Bridge.define(\"{0}\", {{", JSNameMgr.GetJSTypeFullName(type));
+            tfDef = new TextFile();
+            tfDef.Add("Bridge.define(\"{0}\", {{", JSNameMgr.JsFullName(type));
             TextFile tfClass = tfDef.Add("");
 
             // base type, interfaces
@@ -315,9 +321,9 @@ namespace jsb
                     //     extend = [Object].concat(interfaces);
                     // }
                     if (vBaseType != null)
-                        a.Add(JSNameMgr.GetJSTypeFullName(vBaseType));
+                        a.Add(JSNameMgr.JsFullName(vBaseType));
                     foreach (var i in interfaces)
-                        a.Add(JSNameMgr.GetJSTypeFullName(i));
+                        a.Add(JSNameMgr.JsFullName(i));
                     tfClass.In().Add("inherits: [{0}],", a.ToString());
                 }
             }
@@ -327,7 +333,7 @@ namespace jsb
             else if (type.IsValueType)
                 tfClass.In().Add("$kind: \"struct\",");
 
-            TextFile tfStatic = tfClass.In().Add("static: {").In();
+            TextFile tfStatic = tfClass.In().Add("statics: {").In();
             tfStatic.Out().Add("},");
 
             TextFile tfInst = tfClass.Add("").In();
@@ -336,11 +342,11 @@ namespace jsb
 
             if (type.IsValueType)
             {
-                tfStatic.Add("getDefaultValue: function () {{ return new {0}(); }},", JSNameMgr.GetJSTypeFullName(type));
+                tfStatic.Add("getDefaultValue: function () {{ return new {0}(); }},", JSNameMgr.JsFullName(type));
 
                 tfInst.Add("equals: function (o) {")
                     .In()
-                        .Add("if (!Bridge.is(o, {0})) {{", JSNameMgr.GetJSTypeFullName(type))
+                        .Add("if (!Bridge.is(o, {0})) {{", JSNameMgr.JsFullName(type))
                         .In()
                             .Add("return false;")
                         .BraceOut()
@@ -369,7 +375,7 @@ namespace jsb
 
                 tfInst.Add("$clone: function (to) {")
                     .In()
-                        .Add("var s = to || new {0}();", JSNameMgr.GetJSTypeFullName(type))
+                        .Add("var s = to || new {0}();", JSNameMgr.JsFullName(type))
                         .Add(() =>
                         {
                             TextFile tf = new TextFile();
@@ -391,12 +397,10 @@ namespace jsb
             BuildProperties(tfStatic, tfInst, type, ti.Pros, slot, memberNames);
             BuildMethods(tfStatic, tfInst, type, ti.Methods, slot, memberNames);
 
-            W.Write(tfDef.Format(-1));
-
             return memberNames;
         }
 
-        static void GenerateEnum()
+        static TextFile GenEnum()
         {
             TextFile tf = new TextFile();
 
@@ -411,9 +415,9 @@ namespace jsb
             }
 
             if (typeName.IndexOf('+') >= 0)
-                return;
+                return null;
 
-            TextFile tfDef = tf.Add("Bridge.define(\"{0}\", {{", JSNameMgr.GetJSTypeFullName(type)).In();
+            TextFile tfDef = tf.Add("Bridge.define(\"{0}\", {{", JSNameMgr.JsFullName(type)).In();
             tfDef.Add("$kind: \"enum\",");
             TextFile tfSta = tfDef.Add("statics: {").In();
 
@@ -425,7 +429,7 @@ namespace jsb
             tfSta.BraceOut();
             tfDef.BraceOutSC();
 
-            W.Write(tf.Format(-1));
+            return tf;
         }
 
         public static void Clear()
@@ -487,16 +491,25 @@ using UnityEngine;
         public static Dictionary<Type, string> typeClassName = new Dictionary<Type, string>();
         static string className = string.Empty;
 
-        public static void GenerateClassBindings(List<Type> lst)
+        public static void GenBindings(List<Type> lst)
         {
             JSGenerator.OnBegin();
+
+            TextFile tfAll = new TextFile();
+            TextFile tfFun = tfAll.Add("(function () {").In().Add("\"use strict\";");
+            //int hc = 1;
 
             // enums
             for (int i = 0; i < JSBindingSettings.enums.Length; i++)
             {
                 JSGenerator.Clear();
                 JSGenerator.type = JSBindingSettings.enums[i];
-                JSGenerator.GenerateEnum();
+                TextFile tf = JSGenerator.GenEnum();
+                if (tf != null)
+                {
+                    //tfFun.Add("if ($hc < {0}) return;", hc++);
+                    tfFun.AddLine().Add(tf.Ch);
+                }
             }
 
             // typeName -> member list
@@ -510,10 +523,19 @@ using UnityEngine;
                 if (!typeClassName.TryGetValue(type, out className))
                     className = type.Name;
 
-                List<string> memberNames = JSGenerator.GenerateClass();
+                TextFile tf;
+                List<string> memberNames = JSGenerator.GenerateClass(out tf);
                 allDefs.Add(SharpKitClassName(type), memberNames);
-            }
+                //tfFun.Add("if ($hc < {0}) return;", hc++);
 
+
+                tfFun.AddLine().Add("if (jsb.findObj(\"{0}\") == null) {{", type.JsFullName())
+                    .In()
+                        .Add(tf.Ch)
+                    .BraceOut();
+            }
+            tfFun.Out().Add("})();");
+            File.WriteAllText(JSBindingSettings.jsGenFiles, tfAll.Format(-1));
             JSGenerator.OnEnd();
 
             Debug.Log("Generate JS Bindings OK. enum " + JSBindingSettings.enums.Length.ToString() + ", class " + lst.Count.ToString());

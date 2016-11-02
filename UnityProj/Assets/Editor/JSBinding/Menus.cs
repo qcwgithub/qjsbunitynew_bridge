@@ -10,6 +10,10 @@ public class Menus
 	[MenuItem("JSB/Gen Bindings", false, 1)]
 	public static void GenBindings()
 	{
+        //var d = typeof(UnityEngine.MonoBehaviour).GetConstructors();
+        //Debug.Log("d.length=" + d.Length);
+        //return;
+
 		if (EditorApplication.isCompiling)
 		{
 			
@@ -28,8 +32,8 @@ public class Menus
 		
 		JSDataExchangeEditor.reset();
 		UnityEngineManual.initManual();
-        CSGenerator.GenerateClassBindings(lst);
-        JSGenerator.GenerateClassBindings(lst);
+        CSGenerator.GenBindings(lst);
+        JSGenerator.GenBindings(lst);
         CSWrapGenerator.GenWraps();
 
         AssetDatabase.Refresh();
