@@ -96,18 +96,8 @@ public partial class UnityEngineManual
         }
         else
         {
-            string jsComponentName = JSCache.GetMonoBehaviourJSComponentName(typeString);
-            Type jsComponentType = typeof(JSComponent);
-            if (string.IsNullOrEmpty(jsComponentName))
-            {
-                Debug.LogWarning(string.Format("\"{0}\" has no JSComponent_XX. Use JSComponent instead.", typeString));
-            }
-            else
-            {
-                jsComponentType = JSDataExchangeMgr.GetTypeByName(jsComponentName, jsComponentType);
-            }
-            
-            JSComponent jsComp = (JSComponent)go.AddComponent(jsComponentType);
+            // TODO
+            JSComponent jsComp = go.AddComponent<JSComponent>();
             jsComp.jsClassName = typeString;
             jsComp.jsFail = false;
             jsComp.init(true);

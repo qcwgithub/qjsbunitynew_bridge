@@ -140,8 +140,6 @@ public static class JSMgr
             onInitJSEngine(true);
             ret = true;
         }
-
-        JSCache.InitMonoBehaviourJSComponentName();
         InitJSEngine_ing = false;
         return ret;
     }
