@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor;
 using jsb;
 
@@ -17,16 +19,17 @@ public class Menus
 			                            );
 			return; 
 		}
-				
-		if (!CSGenerator.CheckClassBindings())
+
+        List<Type> lst = JSBindingSettings.CheckClasses();
+        if (lst == null)
 		{
 			return;
 		}
 		
 		JSDataExchangeEditor.reset();
 		UnityEngineManual.initManual();
-        CSGenerator.GenerateClassBindings();
-        JSGenerator.GenerateClassBindings();
+        CSGenerator.GenerateClassBindings(lst);
+        JSGenerator.GenerateClassBindings(lst);
         CSWrapGenerator.GenWraps();
 
         AssetDatabase.Refresh();

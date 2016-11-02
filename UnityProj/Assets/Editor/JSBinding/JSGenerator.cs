@@ -300,13 +300,22 @@ namespace jsb
 
             // base type, interfaces
             {
-                Type baseType = type.BaseType;
+                Type vBaseType = type.ValidBaseType();
                 Type[] interfaces = type.GetInterfaces();
-                if ((baseType != null && baseType != typeof(object)) || interfaces.Length > 0)
+                if (vBaseType != null || interfaces.Length > 0)
                 {
                     args a = new args();
-                    if (baseType != null && baseType != typeof(object))
-                        a.Add(JSNameMgr.GetJSTypeFullName(baseType));
+                    // 这里baseType要在前面
+                    // Bridge.js:
+                    // var noBase = extend ? extend[0].$kind === "interface" : true;
+                    // 
+                    // 可以忽略object基类
+                    // Bridge.js:
+                    // if (!extend) {
+                    //     extend = [Object].concat(interfaces);
+                    // }
+                    if (vBaseType != null)
+                        a.Add(JSNameMgr.GetJSTypeFullName(vBaseType));
                     foreach (var i in interfaces)
                         a.Add(JSNameMgr.GetJSTypeFullName(i));
                     tfClass.In().Add("inherits: [{0}],", a.ToString());
@@ -478,7 +487,7 @@ using UnityEngine;
         public static Dictionary<Type, string> typeClassName = new Dictionary<Type, string>();
         static string className = string.Empty;
 
-        public static void GenerateClassBindings()
+        public static void GenerateClassBindings(List<Type> lst)
         {
             JSGenerator.OnBegin();
 
@@ -494,10 +503,10 @@ using UnityEngine;
             Dictionary<string, List<string>> allDefs = new Dictionary<string, List<string>>();
 
             // classes
-            for (int i = 0; i < JSBindingSettings.classes.Length; i++)
+            for (int i = 0; i < lst.Count; i++)
             {
                 JSGenerator.Clear();
-                JSGenerator.type = JSBindingSettings.classes[i];
+                JSGenerator.type = lst[i];
                 if (!typeClassName.TryGetValue(type, out className))
                     className = type.Name;
 
@@ -507,7 +516,7 @@ using UnityEngine;
 
             JSGenerator.OnEnd();
 
-            Debug.Log("Generate JS Bindings OK. enum " + JSBindingSettings.enums.Length.ToString() + ", class " + JSBindingSettings.classes.Length.ToString());
+            Debug.Log("Generate JS Bindings OK. enum " + JSBindingSettings.enums.Length.ToString() + ", class " + lst.Count.ToString());
         }
     }
 }

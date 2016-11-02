@@ -10,9 +10,21 @@ using System.Text.RegularExpressions;
 
 public static class JSNameMgr
 {
+    public static Type ValidBaseType(this Type type)
+    {
+        Type baseType = type.BaseType;
+        if (baseType == null ||
+            baseType == typeof(System.ValueType) ||
+            baseType == typeof(System.Object))
+        {
+            return null;
+        }
+        return baseType;
+    }
+
 	public static string GetTypeFileName(Type type)
 	{
-		string fullName = GetTypeFullName(type);
+		string fullName = CsFullName(type);
 		return fullName.Replace('`', '_').Replace('.', '_').Replace('<', '7').Replace('>', '7').Replace(',', '_');
 	}
 	
@@ -60,7 +72,7 @@ public static class JSNameMgr
 		return fn;
 	}
 
-	public static string GetTypeFullName(Type type, bool withT = false)
+	public static string CsFullName(this Type type, bool withT = false)
 	{
 		string fn = GetTypeFullNameInternal(type, withT);
 		return shortenName(fn);
@@ -107,7 +119,7 @@ public static class JSNameMgr
 					ret += "<";
 					for (int i = 0; i < ts.Length; i++)
 					{
-						ret += GetTypeFullName(ts[i]); // it's T
+						ret += CsFullName(ts[i]); // it's T
 						if (i != ts.Length - 1)
 						{
 							ret += ", ";
@@ -138,7 +150,7 @@ public static class JSNameMgr
 			string parentName = string.Empty;
 			if (type.IsNested && type.DeclaringType != null)
 			{
-				parentName = GetTypeFullName(type.DeclaringType, withT) + ".";
+				parentName = CsFullName(type.DeclaringType, withT) + ".";
 			}
             else if (!string.IsNullOrEmpty(type.Namespace))
             {
@@ -154,7 +166,7 @@ public static class JSNameMgr
 				Name += "<";
 				for (int i = 0; i < ts.Length; i++)
 				{
-					Name += GetTypeFullName(ts[i]); // it's T
+					Name += CsFullName(ts[i]); // it's T
 					if (i != ts.Length - 1)
 					{
 						Name += ", ";

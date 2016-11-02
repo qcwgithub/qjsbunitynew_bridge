@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.IO;
 using System.Text.RegularExpressions;
-
+using System.Linq;
 
 public class Qcw : ICloneable
 {
@@ -67,8 +67,7 @@ public class JSBindingSettings
     public static Type[] classes = new Type[]
     {
         typeof(Qcw),
-        typeof(ICloneable),
-////
+
        typeof(Debug),
        typeof(Input),
        typeof(GameObject),
@@ -79,20 +78,12 @@ public class JSBindingSettings
         typeof(MonoBehaviour),
         typeof(Behaviour),
         typeof(Component),
-        typeof(IDisposable),
-        typeof(IConvertible),
-        typeof(IComparable),
-        typeof(IEnumerable),
-        typeof(IFormattable),
-//        typeof(YieldInstruction),
-//        typeof(WaitForSeconds),
         typeof(WWW),
         typeof(Application),
         typeof(UnityEngine.Time),
         typeof(Resources),
         typeof(TextAsset),
-//        
-        typeof(IEnumerator),
+
 //        typeof(List<>),
 //        typeof(List<>.Enumerator),
 //        typeof(Dictionary<,>),
@@ -281,93 +272,161 @@ public class JSBindingSettings
 		}
 	}
 	
-	// extension (including ".")
 	public static string jsExtension = ".javascript";
-	public static string jscExtension = ".bytes";
-	// directory to save js files
 	public static string jsDir = Application.streamingAssetsPath + "/JavaScript";
 	public static string jsRelDir = "Assets/StreamingAssets/JavaScript";
-	public static string mergedJsDir = Application.dataPath + "/../Temp/JavaScript_js";
-	public static string jscDir = Application.dataPath + "/JSC";
-	public static string jscRelDir = "Assets/JSC";	
-	
 	public static string jsGenFiles { get { return jsDir + "/Gen" + jsExtension; } }
-	// 
 	public static string csDir = Application.dataPath + "/JSBinding/CSharp";
 	public static string csGenDir = Application.dataPath + "/Standard Assets/JSBinding/G";
-	public static string monoBehaviour2JSComponentName = JSBindingSettings.jsDir + "/MonoBehaviour2JSComponentName.javascript";
 
-	/*
-     * Formula:
-     * All C# scripts - PathsNotToJavaScript + PathsToJavaScript = C# scripts to export to javascript
-     * see JSAnalyzer.MakeJsTypeAttributeInSrc for more information
-     */
-	public static string[] PathsNotToJavaScript = new string[]
-	{
-		"JSBinding/",
-		//"Stealth/",
-		"DaikonForge Tween (Pro)/",
-		"NGUI/",
-		"Scripts/Framework/"
-	};
-	public static string[] PathsToJavaScript = new string[]
-	{
-		"JSBinding/Samples/",
-		"JSBinding/JSImp/", // !!
-		"DaikonForge Tween (Pro)/Examples/Scripts",
-	};
-	/// <summary>
-	/// By default, menu
-	/// 
-	/// JSB | Check All Monos for all Prefabs and Scenes
-	/// JSB | Replace All Monos for all Prefabs and Scenes
-	/// 
-	/// handles all Prefabs and Scenes in whole project
-	/// add paths(directory or file name) to this array if you want to skip them
-	/// </summary>
-	public static string[] PathsNotToCheckOrReplace = new string[]
-	{
-		"JSBinding/",
-		"JSBinding/Prefabs/_JSEngine.prefab",
-		"Plugins/",
-		"Resources/",
-		"Src/",
-		"StreamingAssets/",
-		"UnityVS/",
-		"DaikonForge Tween (Pro)/",
-		"NGUI/",
-	};
-	
-	/// <summary>
-	/// Gets the type serialized properties.
-	/// 如果想要序列化某个类的Property，则得在这里配置，否则不序列化。
-	/// </summary>
-	/// <returns>The type serialized properties.</returns>
-	public static PropertyInfo[] GetTypeSerializedProperties(Type type)
-	{
-		PropertyInfo[] infos = null;
-		if (type == typeof(AnimationCurve))
-		{
-			infos = new PropertyInfo[]
-			{
-				type.GetProperty("keys"),
-				type.GetProperty("postWrapMode"),
-				type.GetProperty("preWrapMode")
-			};
-		}
-		else if (type == typeof(Keyframe))
-		{
-			infos = new PropertyInfo[]
-			{
-				type.GetProperty("inTangent"),
-				type.GetProperty("outTangent"),
-				type.GetProperty("tangentMode"),
-				type.GetProperty("time"),
-				type.GetProperty("value")
-			};
-		}
-		if (infos == null)
-			infos = new PropertyInfo[0];
-		return infos;
-	}
+    public static List<Type> CheckClasses()
+    {
+        HashSet<Type> skips = new HashSet<Type>();
+        {
+            skips.Add(typeof(System.Object));
+            skips.Add(typeof(System.Exception));
+            skips.Add(typeof(System.SystemException));
+            skips.Add(typeof(System.ValueType));
+        }
+
+        HashSet<Type> wanted = new HashSet<Type>();
+        var sb = new StringBuilder();
+        bool ok = true;
+
+        foreach (var type in classes)
+        {
+            if (typeof(System.Delegate).IsAssignableFrom(type))
+            {
+                sb.AppendFormat("Delegate \"{0}\" 不能导出.\n",
+                                JSNameMgr.CsFullName(type));
+                ok = false;
+
+                continue;
+            }
+
+            if (type.IsGenericType && !type.IsGenericTypeDefinition)
+            {
+                sb.AppendFormat("\"{0}\" 不能导出，换成 \"{1}\".\n",
+                    JSNameMgr.CsFullName(type), JSNameMgr.CsFullName(type.GetGenericTypeDefinition()));
+                ok = false;
+
+                continue;
+            }
+
+            if (type.IsInterface)
+            {
+                sb.AppendFormat("接口 \"{0}\" 不需要配置，会自动添加.\n",
+                    JSNameMgr.CsFullName(type));
+                ok = false;
+
+                continue;
+            }
+
+            if (wanted.Contains(type))
+            {
+                sb.AppendFormat("\"{0}\" 配了多个.\n",
+                    JSNameMgr.CsFullName(type));
+                ok = false;
+
+                continue;
+            }
+
+            if (!skips.Contains(type))
+            {
+                wanted.Add(type);
+            }
+        }
+
+        // 自动添加基类
+        foreach (var typeb in wanted.ToArray())
+        {
+            Type type = typeb;
+            Type vBaseType = type.ValidBaseType();
+            while (vBaseType != null)
+            {
+                if (!skips.Contains(vBaseType) && !wanted.Contains(vBaseType) &&
+                    !(vBaseType.IsGenericType && !vBaseType.IsGenericTypeDefinition)
+                    //&&
+                    //!IsDiscardType(baseType)
+                    )
+                {
+                    wanted.Add(vBaseType);
+                }
+                vBaseType = vBaseType.ValidBaseType();
+            }
+        }
+
+        // 自动添加接口
+        foreach (var typeb in wanted.ToArray())
+        {
+            Type type = typeb;
+            Type[] interfaces = type.GetInterfaces();
+            for (int i = 0; i < interfaces.Length; i++)
+            {
+                Type ti = interfaces[i];
+                string tiFullName = JSNameMgr.CsFullName(ti);
+
+                if (!tiFullName.Contains("<") && !tiFullName.Contains(">") &&
+                    !skips.Contains(ti) && !wanted.Contains(ti)
+                    //&&
+                    //!IsDiscardType(ti)
+                    )
+                {
+                    wanted.Add(ti);
+                }
+            }
+        }
+
+        if (!ok)
+        {
+            Debug.LogError(sb);
+            return null;
+        }
+
+        List<Type> lst = wanted.ToList();
+
+        // 对 lst 进行排序
+        // Bridge.js 假设基类在前
+        // var baseType = extend[j],
+        //   baseI = (baseType.$interfaces || []).concat(baseType.$baseInterfaces || []);
+        {
+            Dictionary<Type, int> d = new Dictionary<Type, int>();
+            foreach (var t in wanted)
+            {
+                d.Add(t, 0);
+            }
+
+            while (true)
+            {
+                bool bC = false;
+                foreach (Type t in d.Keys.ToArray())
+                {
+                    int v = d[t];
+                    if (v == 0)
+                    {
+                        if (t.ValidBaseType() == null)
+                            d[t] = 1;
+                        else if (d[t.ValidBaseType()] != 0)
+                            d[t] = d[t.ValidBaseType()] + 1;
+                        else
+                            bC = true;
+                    }
+                }
+                if (!bC)
+                    break;
+            }
+
+            lst.Sort((t1, t2) => (d[t1] < d[t2] ? -1 : (d[t1] > d[t2] ? 1 : 0)));
+        }
+
+        // 打印最终要导出的类型
+        sb.Remove(0, sb.Length);
+        sb.AppendLine("最终要导出的类型：");
+        foreach (var t in lst)
+        {
+            sb.AppendLine(JSNameMgr.CsFullName(t));
+        }
+        Debug.Log(sb.ToString());
+        return lst;
+    }
 }

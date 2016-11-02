@@ -134,7 +134,7 @@ namespace jsb
 
 		static string typefn(Type tType, string eraseNs)
 		{
-			string fn = JSNameMgr.GetTypeFullName(tType);
+			string fn = JSNameMgr.CsFullName(tType);
 			if (!string.IsNullOrEmpty(eraseNs) &&
 			    fn.StartsWith(eraseNs + "."))
 			{
@@ -401,19 +401,17 @@ namespace jsb
 
                 sb.Append(type.Name);
 
-                Type baseType = type.BaseType;
+                Type vBaseType = type.ValidBaseType();
                 Type[] interfaces = type.GetInterfaces();
-                if ((baseType != null && baseType != typeof(System.ValueType) && baseType != typeof(object)) || 
-				    interfaces.Length > 0
-				    )
+                if (vBaseType != null || interfaces.Length > 0)
                 {
                     sb.Append(" : ");
 
                     args a = new args();
-                    if (baseType != null)
+                    if (vBaseType != null)
 					{
-						a.Add(typefn(baseType, type.Namespace));
-						onNewType(baseType);
+						a.Add(typefn(vBaseType, type.Namespace));
+						onNewType(vBaseType);
 					}
                     foreach (var i in interfaces)
 					{

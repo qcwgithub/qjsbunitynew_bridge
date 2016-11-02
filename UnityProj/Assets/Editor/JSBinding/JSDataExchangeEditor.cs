@@ -57,7 +57,7 @@ namespace jsb
             if (bTOrContainsT)
                 typeFullName = "object";
             else
-                typeFullName = JSNameMgr.GetTypeFullName(type);
+                typeFullName = JSNameMgr.CsFullName(type);
 
             if (type.IsArray)
             {
@@ -195,7 +195,7 @@ namespace jsb
                 bool needCast;
                 var keyword = GetMetatypeKeyword(type, out needCast).Replace("get", "set");
                 if (type.IsPrimitive)
-                    sb.AppendFormat("{0}((int)JSApi.SetType.Rval, ({1})({2}));", keyword, JSNameMgr.GetTypeFullName(type), expVar);
+                    sb.AppendFormat("{0}((int)JSApi.SetType.Rval, ({1})({2}));", keyword, JSNameMgr.CsFullName(type), expVar);
                 else if (type.IsEnum)
                     sb.AppendFormat("{0}((int)JSApi.SetType.Rval, (int){1});", keyword, expVar);
                 else
@@ -215,7 +215,7 @@ namespace jsb
         public static TextFile Build_GetDelegate(string getDelegateFunctionName, Type delType)
         {
             TextFile tf = new TextFile();
-            TextFile tfFun = tf.Add("JSDataExchangeMgr.GetJSArg<{0}>(() => ", JSNameMgr.GetTypeFullName(delType)).BraceIn();
+            TextFile tfFun = tf.Add("JSDataExchangeMgr.GetJSArg<{0}>(() => ", JSNameMgr.CsFullName(delType)).BraceIn();
             {
                 TextFile tfIf = tfFun.Add("if (JSApi.isFunctionS((int)JSApi.GetType.Arg))").BraceIn();
                 {
@@ -226,7 +226,7 @@ namespace jsb
 
                 TextFile tfElse = tfFun.Add("else").BraceIn();
                 {
-                    tfElse.Add("return ({0})JSMgr.datax.getObject((int)JSApi.GetType.Arg);", JSNameMgr.GetTypeFullName(delType));
+                    tfElse.Add("return ({0})JSMgr.datax.getObject((int)JSApi.GetType.Arg);", JSNameMgr.CsFullName(delType));
 
                     tfElse.BraceOut();
                 }
@@ -268,7 +268,7 @@ namespace jsb
 
             // this function name is used in BuildFields, don't change
             TextFile tfFun = tf.Add("public static {0} {1}{2}(CSRepresentedObject objFunction)",
-                JSNameMgr.GetTypeFullName(delType, true),  // [0]
+                JSNameMgr.CsFullName(delType, true),  // [0]
                 getDelFunctionName, // [2]
                 stringTOfMethod  // [1]
                 )
@@ -281,7 +281,7 @@ namespace jsb
                         .AddLine();
 
 
-                tfFun.Add("{0} action = ({0})JSMgr.getJSFunCSDelegateRel(objFunction.jsObjID);", JSNameMgr.GetTypeFullName(delType, true));
+                tfFun.Add("{0} action = ({0})JSMgr.getJSFunCSDelegateRel(objFunction.jsObjID);", JSNameMgr.CsFullName(delType, true));
                 tfFun.Add("if (action != null)")
                     .In()
                         .Add("return action;")
@@ -294,7 +294,7 @@ namespace jsb
                     tfAction.Add("JSMgr.vCall.CallJSFunctionValue(0, objFunction.jsObjID{0}{1});", (argsParam.Count > 0) ? ", " : "", argsParam);
 
                     if (returnType != typeof(void))
-                        tfAction.Add("return (" + JSNameMgr.GetTypeFullName(returnType) + ")" + JSDataExchangeEditor.Get_GetJSReturn(returnType) + ";");
+                        tfAction.Add("return (" + JSNameMgr.CsFullName(returnType) + ")" + JSDataExchangeEditor.Get_GetJSReturn(returnType) + ";");
 
                     tfAction.BraceOutSC();
                 }
@@ -324,7 +324,7 @@ namespace jsb
             bool bIndexer = ((features & MemberFeature.Indexer) > 0);
             bool bStatic = ((features & MemberFeature.Static) > 0);
             bool bStruct = classType.IsValueType;
-            string typeFullName = JSNameMgr.GetTypeFullName(classType);
+            string typeFullName = JSNameMgr.CsFullName(classType);
             bool bField = (memberInfo is FieldInfo);
             bool bProperty = (memberInfo is PropertyInfo);
             bool bGet = ((features & MemberFeature.Get) > 0);

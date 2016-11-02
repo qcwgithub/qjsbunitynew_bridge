@@ -791,8 +791,8 @@ public class JSDataExchange_Arr
         }
         else
         {
-            arrayFullName = JSNameMgr.GetTypeFullName(t);
-            elementFullName = JSNameMgr.GetTypeFullName(elementType);
+            arrayFullName = JSNameMgr.CsFullName(t);
+            elementFullName = JSNameMgr.CsFullName(elementType);
         }
         sb.AppendFormat("JSDataExchangeMgr.GetJSArg<{0}>(() =>\n", arrayFullName)
             .Append("    [[\n")
@@ -853,7 +853,7 @@ public class JSDataExchange_Arr
         }
         else
         {
-            sb.AppendFormat("    var arrRet = ({0}[]){1};\n", JSNameMgr.GetTypeFullName(elementType), expVar)
+            sb.AppendFormat("    var arrRet = ({0}[]){1};\n", JSNameMgr.CsFullName(elementType), expVar)
             .AppendFormat("    for (int i = 0; arrRet != null && i < arrRet.Length; i++)\n")
             .Append("    [[\n")
             .AppendFormat("        {0}((int)JSApi.SetType.SaveAndTempTrace, {1}arrRet[i]);\n", getValMethod, elementType.IsEnum ? "(int)" : "")

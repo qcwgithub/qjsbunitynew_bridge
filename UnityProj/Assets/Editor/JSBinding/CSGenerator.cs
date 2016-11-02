@@ -434,7 +434,7 @@ namespace jsb
             else if (methodName == "op_GreaterThanOrEqual")
                 strCall = paramHandlers[0].argName + " >= " + paramHandlers[1].argName;
             else if (methodName == "op_Implicit")
-                strCall = "(" + JSNameMgr.GetTypeFullName(returnType) + ")" + paramHandlers[0].argName;
+                strCall = "(" + returnType.CsFullName() + ")" + paramHandlers[0].argName;
             else
                 Debug.LogError("Unknown special name: " + methodName);
 
@@ -467,7 +467,7 @@ namespace jsb
                     // Not generic method, but is generic type
 
                     tf.Add("ConstructorInfo constructor = JSDataExchangeMgr.makeGenericConstructor(typeof({0}), constructorID{1});",
-                                     JSNameMgr.GetTypeFullName(type), methodTag);
+                                     JSNameMgr.CsFullName(type), methodTag);
 
                     //sbMethodHitTest.AppendFormat("GenericTypeCache.getConstructor(typeof({0}), {2}.constructorID{1});\n", JSNameMgr.GetTypeFullName(type), methodTag, JSNameMgr.GetTypeFileName(type));
 
@@ -488,7 +488,7 @@ namespace jsb
                 else // static method
                 {
                     tf.Add("MethodInfo method = JSDataExchangeMgr.makeGenericMethod(typeof({0}), methodID{1}, {2});",
-                                     JSNameMgr.GetTypeFullName(type),
+                                     JSNameMgr.CsFullName(type),
                                      methodTag,
                                      TCount);
                 }
@@ -507,7 +507,7 @@ namespace jsb
                 {
                     // Debug.LogError("=================================ERROR");
                     tf.Add("MethodInfo method = GenericTypeCache.getMethod(typeof({0}), methodID{1});",
-                                     JSNameMgr.GetTypeFullName(type), // [0]
+                                     JSNameMgr.CsFullName(type), // [0]
                                      methodTag);
                 }
                 tf.Add("if (method == null)").In().Add("return true;").Out().AddLine();
@@ -592,7 +592,7 @@ namespace jsb
                         }
                         else
                         {
-                            tfGetParam.Add("{0} arg{1} = ", JSNameMgr.GetTypeFullName(p.ParameterType), i)
+                            tfGetParam.Add("{0} arg{1} = ", JSNameMgr.CsFullName(p.ParameterType), i)
                                 .In()
                                     .Add(JSDataExchangeEditor.Build_GetDelegate(delegateGetName, p.ParameterType).Ch)
                                 .Out()
@@ -626,7 +626,7 @@ namespace jsb
                     StringBuilder sbCall = new StringBuilder();
 
                     if (!type.IsGenericTypeDefinition)
-                        sbCall.AppendFormat("new {0}({1})", JSNameMgr.GetTypeFullName(type), sbActualParam.ToString());
+                        sbCall.AppendFormat("new {0}({1})", JSNameMgr.CsFullName(type), sbActualParam.ToString());
                     else
                     {
                         sbCall.AppendFormat("constructor.Invoke(null, new object[]{{{0}}})", sbActualParam);
@@ -653,9 +653,9 @@ namespace jsb
                     if (TCount == 0 && !type.IsGenericTypeDefinition)
                     {
                         if (bStatic)
-                            sbCall.AppendFormat("{0}.{1}({2})", JSNameMgr.GetTypeFullName(type), methodName, sbActualParam.ToString());
+                            sbCall.AppendFormat("{0}.{1}({2})", JSNameMgr.CsFullName(type), methodName, sbActualParam.ToString());
                         else if (!type.IsValueType)
-                            sbCall.AppendFormat("(({0})vc.csObj).{1}({2})", JSNameMgr.GetTypeFullName(type), methodName, sbActualParam.ToString());
+                            sbCall.AppendFormat("(({0})vc.csObj).{1}({2})", JSNameMgr.CsFullName(type), methodName, sbActualParam.ToString());
                         else
                             sbCall.AppendFormat("argThis.{0}({1})", methodName, sbActualParam.ToString());
                     }
@@ -686,7 +686,7 @@ namespace jsb
                     if (type.IsValueType && !bStatic && TCount == 0 && !type.IsGenericTypeDefinition)
                     {
                         sbStruct = new StringBuilder();
-                        sbStruct.AppendFormat("{0} argThis = ({0})vc.csObj;", JSNameMgr.GetTypeFullName(type));
+                        sbStruct.AppendFormat("{0} argThis = ({0})vc.csObj;", JSNameMgr.CsFullName(type));
                     }
 
                     TextFile tfIf = tf.Add("{0}if (len == {1})", (j == minNeedParams) ? "" : "else ", j).BraceIn();
@@ -727,7 +727,7 @@ namespace jsb
             {
                 ParameterInfo p = ps[i];
                 Type t = p.ParameterType;
-                sb.AppendFormat(fmt, t.IsByRef ? "true" : "false", p.IsOptional ? "true" : "false", t.IsArray ? "true" : "false", "typeof(" + JSNameMgr.GetTypeFullName(t) + ")", t.IsByRef ? ".MakeByRefType()" : "", "null");
+                sb.AppendFormat(fmt, t.IsByRef ? "true" : "false", p.IsOptional ? "true" : "false", t.IsArray ? "true" : "false", "typeof(" + JSNameMgr.CsFullName(t) + ")", t.IsByRef ? ".MakeByRefType()" : "", "null");
             }
             fmt = "new JSVCall.CSParam[][{0}]";
             StringBuilder sbX = new StringBuilder();
@@ -940,7 +940,7 @@ namespace jsb
             TextFile tfFun = tf.Add("public static void __Register()").BraceIn();
             {
                 tfFun.Add("JSMgr.CallbackInfo ci = new JSMgr.CallbackInfo();");
-                tfFun.Add("ci.type = typeof({0});", JSNameMgr.GetTypeFullName(ccbn.type));
+                tfFun.Add("ci.type = typeof({0});", JSNameMgr.CsFullName(ccbn.type));
 
                 TextFile tfFields = tfFun.Add("ci.fields = new JSMgr.CSCallbackField[]").BraceIn();
                 {
@@ -1069,7 +1069,7 @@ namespace jsb
             w.Write(tfClass.Format(-1));
             w.Close();
         }
-        public static void GenerateRegisterAll()
+        public static void GenerateRegisterAll(List<Type> lst)
         {
             TextFile tf = new TextFile();
             tf.Add("using UnityEngine;");
@@ -1085,9 +1085,9 @@ namespace jsb
                         .BraceOut();
 
                     tfFun.AddLine();
-                    for (int i = 0; i < JSBindingSettings.classes.Length; i++)
+                    for (int i = 0; i < lst.Count; i++)
                     {
-                        tfFun.Add("{0}_G.__Register();", JSNameMgr.GetTypeFileName(JSBindingSettings.classes[i]));
+                        tfFun.Add("{0}_G.__Register();", JSNameMgr.GetTypeFileName(lst[i]));
                     }
 
                     tfFun.BraceOut();
@@ -1100,153 +1100,24 @@ namespace jsb
             w.Write(tf.Format(-1));
             w.Close();
         }
-        public static void GenerateClassBindings()
+        public static void GenerateClassBindings(List<Type> lst)
         {
             CSGenerator.OnBegin();
             allClassCallbackNames = null;
-            allClassCallbackNames = new List<ClassCallbackNames>(JSBindingSettings.classes.Length);
-            for (int i = 0; i < JSBindingSettings.classes.Length; i++)
+            allClassCallbackNames = new List<ClassCallbackNames>(lst.Count);
+            for (int i = 0; i < lst.Count; i++)
             {
                 CSGenerator.Clear();
-                CSGenerator.type = JSBindingSettings.classes[i];
+                CSGenerator.type = lst[i];
                 CSGenerator.GenerateClass();
             }
             //GenerateRegisterAll();
             //GenerateAllJSFileNames();
 
-            GenerateRegisterAll();
+            GenerateRegisterAll(lst);
             CSGenerator.OnEnd();
 
-            Debug.Log("Generate CS Bindings OK. total = " + JSBindingSettings.classes.Length.ToString());
+            Debug.Log("Generate CS Bindings OK. total = " + lst.Count.ToString());
         }
-
-        public static bool CheckClassBindings()
-        {
-            Dictionary<Type, bool> clrLibrary = new Dictionary<Type, bool>();
-            {
-                //
-                // these types are defined in clrlibrary.javascript
-                //
-                clrLibrary.Add(typeof(System.Object), true);
-                clrLibrary.Add(typeof(System.Exception), true);
-                clrLibrary.Add(typeof(System.SystemException), true);
-                clrLibrary.Add(typeof(System.ValueType), true);
-            }
-
-            Dictionary<Type, bool> dict = new Dictionary<Type, bool>();
-            var sb = new StringBuilder();
-            bool ret = true;
-
-            // can not export a type twice
-            foreach (var type in JSBindingSettings.classes)
-            {
-                if (typeof(System.Delegate).IsAssignableFrom(type))
-                {
-                    sb.AppendFormat("\"{0}\" Delegate 不能导出.\n",
-                                    JSNameMgr.GetTypeFullName(type));
-                    ret = false;
-                }
-
-                // TODO
-                //			if (JSSerializerEditor.WillTypeBeTranslatedToJavaScript(type))
-                //			{
-                //				sb.AppendFormat("\"{0}\" has JsType attribute, it can not be in JSBindingSettings.classes at the same time.\n", 
-                //				                JSNameMgr.GetTypeFullName(type));
-                //				ret = false;
-                //			}
-
-                if (type.IsGenericType && !type.IsGenericTypeDefinition)
-                {
-                    sb.AppendFormat(
-                        "\"{0}\" 不能导出。 尝试换成 \"{1}\".\n",
-                        JSNameMgr.GetTypeFullName(type), JSNameMgr.GetTypeFullName(type.GetGenericTypeDefinition()));
-                    ret = false;
-                }
-
-                if (dict.ContainsKey(type))
-                {
-                    sb.AppendFormat(
-                        "JSBindingSettings.classes 有不止1个 \"{0}\"。\n",
-                        JSNameMgr.GetTypeFullName(type));
-                    ret = false;
-                }
-                else
-                {
-                    dict.Add(type, true);
-                }
-            }
-
-            // 基类导出了吗？基类也得导出的
-            foreach (var typeb in dict)
-            {
-                Type type = typeb.Key;
-                Type baseType = type.BaseType;
-                if (baseType == null)
-                {
-                    continue;
-                }
-
-                if (baseType.IsGenericType)
-                    baseType = baseType.GetGenericTypeDefinition();
-
-                // System.Object is already defined in SharpKit clrlibrary
-                if (!clrLibrary.ContainsKey(baseType) && !dict.ContainsKey(baseType))
-                {
-                    sb.AppendFormat("\"{0}\" 的基类 \"{1}\" 也得导出。\n",
-                                    JSNameMgr.GetTypeFullName(type),
-                                    JSNameMgr.GetTypeFullName(baseType));
-                    ret = false;
-                }
-
-                // 检查 interface 有没有配置		
-                Type[] interfaces = type.GetInterfaces();
-                for (int i = 0; i < interfaces.Length; i++)
-                {
-                    Type ti = interfaces[i];
-
-                    string tiFullName = JSNameMgr.GetTypeFullName(ti);
-
-                    // 这个检查有点奇葩
-                    // 有些接口带 <>，这里直接忽略，不检查他
-                    if (!tiFullName.Contains("<") && !tiFullName.Contains(">") &&
-                        !clrLibrary.ContainsKey(ti) && !dict.ContainsKey(ti))
-                    {
-                        sb.AppendFormat("\"{0}\"\'s interface \"{1}\" must also be in JSBindingSettings.classes.\n",
-                                        JSNameMgr.GetTypeFullName(type),
-                                        JSNameMgr.GetTypeFullName(ti));
-                        ret = false;
-                    }
-                }
-
-				if (type.DeclaringType != null)
-				{
-					if (!clrLibrary.ContainsKey(type.DeclaringType) && !dict.ContainsKey(type.DeclaringType))
-					{
-						sb.AppendFormat("\"{0}\" 的包装类 \"{1}\" 也得导出。\n",
-						                JSNameMgr.GetTypeFullName(type),
-						                JSNameMgr.GetTypeFullName(type.DeclaringType));
-						ret = false;
-                    }
-                }
-                
-                //             foreach (var Interface in type.GetInterfaces())
-                //             {
-                //                 if (!dict.ContainsKey(Interface))
-                //                 {
-                //                     sb.AppendFormat("Interface \"{0}\" of \"{1}\" must also be in JSBindingSettings.classes.",
-                //                         JSNameMgr.GetTypeFullName(Interface),
-                //                         JSNameMgr.GetTypeFullName(type));
-                //                     Debug.LogError(sb);
-                //                     return false;
-                //                 }
-                //             }
-            }
-            if (!ret)
-            {
-                Debug.LogError(sb);
-            }
-            return ret;
-        }
-
     }
 }
