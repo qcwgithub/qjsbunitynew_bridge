@@ -302,10 +302,10 @@ namespace jsb
             {
                 Type baseType = type.BaseType;
                 Type[] interfaces = type.GetInterfaces();
-                if (baseType != null || interfaces.Length > 0)
+                if ((baseType != null && baseType != typeof(object)) || interfaces.Length > 0)
                 {
                     args a = new args();
-                    if (baseType != null)
+                    if (baseType != null && baseType != typeof(object))
                         a.Add(JSNameMgr.GetJSTypeFullName(baseType));
                     foreach (var i in interfaces)
                         a.Add(JSNameMgr.GetJSTypeFullName(i));
@@ -314,9 +314,9 @@ namespace jsb
             }
 
             if (type.IsInterface)
-                tfClass.In().Add("$kind: interface,");
+                tfClass.In().Add("$kind: \"interface\",");
             else if (type.IsValueType)
-                tfClass.In().Add("$kind: struct,");
+                tfClass.In().Add("$kind: \"struct\",");
 
             TextFile tfStatic = tfClass.In().Add("static: {").In();
             tfStatic.Out().Add("},");
