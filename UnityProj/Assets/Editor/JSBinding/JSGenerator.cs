@@ -105,6 +105,31 @@ namespace jsb
         public static void BuildFields(TextFile tfStatic, TextFile tfInst,
             Type type, List<MemberInfoEx> fields, int slot, List<string> lstNames)
         {
+            TextFile tfStatic2 = null, tfInst2 = null;
+            for (int i = 0; i < fields.Count; i++)
+            {
+                MemberInfoEx infoEx = fields[i];
+                if (infoEx.Ignored)
+                    continue;
+                FieldInfo field = infoEx.member as FieldInfo;
+                if (field.IsStatic)
+                {
+                    if (tfStatic2 == null)
+                    {
+                        tfStatic2 = tfStatic.Add("$fields: {").In();
+                        tfStatic2.Out().Add("},");
+                    }
+                }
+                else
+                {
+                    if (tfInst2 == null)
+                    {
+                        tfInst2 = tfInst.Add("$fields: {").In();
+                        tfInst2.Out().Add("},");
+                    }
+                }
+            }
+
             var sb = new StringBuilder();
             for (int i = 0; i < fields.Count; i++)
             {
@@ -115,7 +140,7 @@ namespace jsb
 
                 lstNames.Add((field.IsStatic ? "Static_" : "") + field.Name);
 
-                TextFile tf = field.IsStatic ? tfStatic : tfInst;
+                TextFile tf = field.IsStatic ? tfStatic2 : tfInst2;
                 tf.Add("{0}: {{", field.Name).In()
                     .Add("get: function () {{ return CS.Call({0}, {1}, {2}, {3}{4}); }},", (int)JSVCall.Oper.GET_FIELD, slot, i, (field.IsStatic ? "true" : "false"), (field.IsStatic ? "" : ", this"))
                     .Add("set: function (v) {{ return CS.Call({0}, {1}, {2}, {3}{4}, v); }}", (int)JSVCall.Oper.SET_FIELD, slot, i, (field.IsStatic ? "true" : "false"), (field.IsStatic ? "" : ", this"))

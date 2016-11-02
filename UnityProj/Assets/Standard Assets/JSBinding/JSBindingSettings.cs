@@ -31,8 +31,8 @@ public class Qcw : ICloneable
 	//		}
 	public int Get<T>(int a, int b = 0, int c = 0) { return 0; }
 	public static int SGet(int a, int b = 0, int c = 0) { return 0; }
-	public int V;
-	public static string X;
+	public int V = 999;
+	public static string X = "yyyy this";
 	public string GV { get; set; }
 	public static string SGV { get; set; }
 	
@@ -62,9 +62,17 @@ public class JSBindingSettings
 	// below there is another classes(commented out) having almost all types in UnityEngine
 	//
 
+	
+	public static Type[] classes = new Type[]
+	{
+		typeof(Qcw),
+		typeof(UnityEngine.Object),
+		typeof(MonoBehaviour),
+		typeof(Behaviour),
+		typeof(Component),
+    };
     
-
-    public static Type[] classes = new Type[]
+    public static Type[] classes2 = new Type[]
     {
         typeof(Qcw),
 

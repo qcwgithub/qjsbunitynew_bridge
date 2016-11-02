@@ -1330,6 +1330,16 @@
             var m = t.$getMetadata ? t.$getMetadata() : t.$metadata;
 
             return m;
+        },
+                
+        definePropertyForFields: function (obj, $fields) {
+            var f;
+            for (f in $fields) {
+                Object.defineProperty(obj, f, {
+                    get: $fields[f].get,
+                    set: $fields[f].set
+                });
+            }
         }
     };
 
@@ -2663,6 +2673,8 @@
                     Class[ctorName].prototype = prototype;
                     Class[ctorName].prototype.constructor = Class;
                     prototype[ctorName] = prop[name];
+                } else if (name == "$fields") {
+                    Bridge.definePropertyForFields(prototype, prop[name]);
                 } else {
                     prototype[ctorName] = prop[name];
                 }
@@ -2674,6 +2686,8 @@
                 for (name in statics) {
                     if (name === "ctor") {
                         Class["$ctor"] = statics[name];
+                    } else if (name == "$fields") {
+                        Bridge.definePropertyForFields(Class, statics[name]);
                     } else {
                         Class[name] = statics[name];
                     }

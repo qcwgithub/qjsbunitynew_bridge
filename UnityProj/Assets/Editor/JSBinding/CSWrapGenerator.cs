@@ -432,7 +432,7 @@ namespace jsb
             {
                 MemberInfoEx infoEx = ti.Fields[i];
                 FieldInfo field = infoEx.member as FieldInfo;
-                tfClass.Add("public {0} {1};", typefn(field.FieldType, type.Namespace), field.Name);
+                tfClass.Add("public {0}{1} {2};", (field.IsStatic ? "static " : ""), typefn(field.FieldType, type.Namespace), field.Name);
 				
 				onNewType(field.FieldType);
             }

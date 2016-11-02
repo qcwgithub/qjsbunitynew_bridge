@@ -1,6 +1,14 @@
 CS.require("Bridge");
 
 jsb = {
+    printStack: function () {
+        try { 
+            throw new Error(""); 
+        }
+        catch(ex) {
+            print("STACK " + ex.stack);
+        }
+    },
     findObj: function (name) {
         var ns = Bridge.global, arr = name.split('.');
         for (var i = 0; i < arr.length ; i++) {
@@ -32,7 +40,11 @@ CS.require("Gen");
 Bridge.define("Test", {
     inherits: [UnityEngine.MonoBehaviour],
     Start: function () {
-        UnityEngine.MonoBehaviour.print("Start!");
+        UnityEngine.MonoBehaviour.print(System.String.concat("my name is ", this.getname()));
+
+        var q = new Qcw();
+        UnityEngine.MonoBehaviour.print("q.V = " + q.V);
+        UnityEngine.MonoBehaviour.print(System.String.concat("Qcw.X = ", Qcw.X));
     },
     Update: function () {
 
