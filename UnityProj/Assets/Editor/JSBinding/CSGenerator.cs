@@ -39,9 +39,9 @@ namespace jsb
         {
             GeneratorHelp.ClearTypeInfo();
 
-            if (Directory.Exists(JSBindingSettings.csGeneratedDir))
+            if (Directory.Exists(JSBindingSettings.csGenDir))
             {
-                string[] files = Directory.GetFiles(JSBindingSettings.csGeneratedDir);
+                string[] files = Directory.GetFiles(JSBindingSettings.csGenDir);
                 for (int i = 0; i < files.Length; i++)
                 {
                     File.Delete(files[i]);
@@ -49,7 +49,7 @@ namespace jsb
             }
             else
             {
-                Directory.CreateDirectory(JSBindingSettings.csGeneratedDir);
+                Directory.CreateDirectory(JSBindingSettings.csGenDir);
             }
         }
         public static void OnEnd()
@@ -1064,7 +1064,7 @@ namespace jsb
             var tfRegister = BuildRegisterFunction(ccbn, ti);
             var tfClass = BuildFile(type, tfFields, tfProperties, tfMethods, tfCons, tfRegister);
 
-            string fileName = string.Format("{0}/{1}_G.cs", JSBindingSettings.csGeneratedDir, JSNameMgr.GetTypeFileName(type));
+            string fileName = string.Format("{0}/{1}_G.cs", JSBindingSettings.csGenDir, JSNameMgr.GetTypeFileName(type));
             var w = OpenFile(fileName, false);
             w.Write(tfClass.Format(-1));
             w.Close();
@@ -1073,7 +1073,7 @@ namespace jsb
         {
             TextFile tf = new TextFile();
             tf.Add("using UnityEngine;");
-            tf.Add("public class CSharpGenerated");
+            tf.Add("public class CSharp_G");
             TextFile tfClass = tf.BraceIn();
             {
                 tfClass.Add("public static void RegisterAll()");
@@ -1095,7 +1095,7 @@ namespace jsb
 
                 tfClass.BraceOut();
             }
-            string fileName = string.Format("{0}/CSharp_G.cs", JSBindingSettings.csGeneratedDir);
+            string fileName = string.Format("{0}/CSharp_G.cs", JSBindingSettings.csGenDir);
             var w = OpenFile(fileName, false);
             w.Write(tf.Format(-1));
             w.Close();

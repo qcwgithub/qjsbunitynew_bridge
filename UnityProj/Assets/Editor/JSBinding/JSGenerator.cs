@@ -20,7 +20,7 @@ namespace jsb
         {
             GeneratorHelp.ClearTypeInfo();
             // clear generated enum files
-            string p = JSBindingSettings.jsGeneratedFiles;
+            string p = JSBindingSettings.jsGenFiles;
             if (!File.Exists(p))
             {
                 int i = p.Replace('\\', '/').LastIndexOf('/');
@@ -282,7 +282,7 @@ namespace jsb
                 }
                 else
                 {
-                    tf.Add("{0}: function ({1}) {{{2}}}", mName, sbFormalParam.ToString(), strReturn);
+                    tf.Add("{0}: function ({1}) {{ {2} }},", mName, sbFormalParam.ToString(), strReturn);
                 }
             }
         }

@@ -291,20 +291,12 @@ public class JSBindingSettings
 	public static string jscDir = Application.dataPath + "/JSC";
 	public static string jscRelDir = "Assets/JSC";	
 	
-	public static string jsGeneratedFiles { get { return jsDir + "/Gen" + jsExtension; } }
+	public static string jsGenFiles { get { return jsDir + "/Gen" + jsExtension; } }
 	// 
 	public static string csDir = Application.dataPath + "/JSBinding/CSharp";
-	public static string csGeneratedDir = Application.dataPath + "/Standard Assets/JSBinding/G";
-	public static string sharpkitGeneratedFiles = JSBindingSettings.jsDir + "/SharpKitGeneratedFiles.javascript";
+	public static string csGenDir = Application.dataPath + "/Standard Assets/JSBinding/G";
 	public static string monoBehaviour2JSComponentName = JSBindingSettings.jsDir + "/MonoBehaviour2JSComponentName.javascript";
-	public static string sharpKitGenFileDir = "StreamingAssets/JavaScript/SharpKitGenerated/";
-	
-	public static string sharpKitGenFileFullDir { get { return jsDir + "/SharpKitGenerated"; }}
-	
-	public static string SharpkitGeneratedFilesAll = JSBindingSettings.jsDir + "/SharpKitGeneratedFilesAll.javascript";
-	public static string GeneratedFilesAll = JSBindingSettings.jsDir + "/GeneratedFilesAll.javascript";
-	
-	
+
 	/*
      * Formula:
      * All C# scripts - PathsNotToJavaScript + PathsToJavaScript = C# scripts to export to javascript

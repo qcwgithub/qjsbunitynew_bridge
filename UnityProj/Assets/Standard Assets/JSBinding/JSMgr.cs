@@ -129,9 +129,9 @@ public static class JSMgr
         JSMgr.jsLoader = jsLoader;
 
         bool ret = false;
-        if (!RefCallStaticMethod("CSharpGenerated", "RegisterAll"))
+        if (!RefCallStaticMethod("CSharp_G", "RegisterAll"))
         {
-            Debug.LogError("Call CSharpGenerated.RegisterAll() failed. Did you forget to click menu [Assets | JSB | Generate JS and CS Bindings]?");
+            Debug.LogError("Call CSharp_G.RegisterAll() failed. Did you forget to click menu [Assets | JSB | Generate JS and CS Bindings]?");
             onInitJSEngine(false);
             ret = false;
         }

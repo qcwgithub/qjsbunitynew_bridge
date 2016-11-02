@@ -2221,7 +2221,7 @@
     System.Enum = enumMethods;
 
     // @source Browser.js
-
+/*
     var check = function (regex) {
             return regex.test(navigator.userAgent.toLowerCase());
         },
@@ -2344,7 +2344,7 @@
     };
 
     Bridge.Browser = browser;
-
+*/
     // @source Class.js
 
     var base = {
