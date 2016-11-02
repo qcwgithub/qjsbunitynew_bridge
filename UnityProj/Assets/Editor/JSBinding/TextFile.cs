@@ -40,6 +40,17 @@ public class TextFile
             Ch.AddRange(lst);
         return this;
     }
+
+    public TextFile AddStringOrTextFile(object obj)
+    {
+        if (obj is string)
+            Add(obj as string);
+        else if (obj is TextFile)
+            Add((obj as TextFile).Ch);
+        else
+            throw new Exception("obj should be string or TextFile");
+        return this;
+    }
     public TextFile Add(string format, params object[] args)
     {
         Ch.Add(new TextFile(this, 
@@ -47,6 +58,46 @@ public class TextFile
             ));
         return this;
     }
+
+    static int lineTabCount(string line)
+    {
+        int empty = 0;
+        for (int i = 0; i < line.Length; i++)
+        {
+            if (line[i] != ' ')
+                break;
+            empty++;
+        }
+        return empty / 4;
+    }
+    public TextFile AddMultiline(string format, params object[] args)
+    {
+        string s = args.Length > 0 ? string.Format(null, format, args) : format;
+        string[] arr = s.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        TextFile tf = this;
+        int lastTab = 0;
+        for (int i = 0; i < arr.Length; i++)
+        {
+//             int tab = lineTabCount(arr[i]);
+//             int t = tab;
+//             while (t > lastTab)
+//             {
+//                 tf = tf.In();
+//                 t--;
+//             }
+//             while (t < lastTab)
+//             {
+//                 tf = tf.Out();
+//                 t++;
+//             }
+//             tf.Add(arr[i]);
+//             lastTab = tab;
+
+            Add(arr[i]);
+        }
+        return this;
+    }
+
     public TextFile AddLine()
     {
         return Add(" ");
@@ -91,6 +142,8 @@ public class TextFile
 
     public TextFile In()
     {
+        if (Ch.Count == 0)
+            Add("");
         return Ch[Ch.Count - 1];
     }
 

@@ -9,6 +9,99 @@ using jsval = JSApi.jsval;
 
 namespace jsb
 {
+    public class JSDataExchange_Arr
+    {
+        public Type elementType = null;
+
+        public TextFile Get_GetParam(Type t)
+        {
+            elementType = t.GetElementType();
+            if (elementType.IsArray)
+            {
+                //...error
+            }
+            bool needCast;
+            string getVal = JSDataExchangeMgr.GetMetatypeKeyword(elementType, out needCast);
+
+            var arrayFullName = string.Empty;
+            var elementFullName = string.Empty;
+            if (elementType.IsGenericParameter)
+            {
+                arrayFullName = "object[]";
+                elementFullName = "object";
+            }
+            else
+            {
+                arrayFullName = JSNameMgr.CsFullName(t);
+                elementFullName = JSNameMgr.CsFullName(elementType);
+            }
+
+            TextFile tf = new TextFile();
+            tf.AddMultiline(@"JSDataExchangeMgr.GetJSArg<{0}>(() => 
+{{
+    int jsObjID = JSApi.getObject((int)JSApi.GetType.Arg);
+    if (jsObjID == 0)
+        return null;
+    int length = JSApi.getArrayLength(jsObjID);
+    var ret = new {1}[length];
+    for (var i = 0; i < length; i++)
+    {{
+        JSApi.getElement(jsObjID, i);
+        ret[i] = ({1}){2}((int)JSApi.GetType.SaveAndRemove);
+    }}
+    return ret;
+}})", 
+                arrayFullName, elementFullName, getVal);
+
+            return tf;
+        }
+
+        public string Get_GetJSReturn()
+        {
+            return "null";
+        }
+        public string Get_Return(string expVar)
+        {
+            if (elementType == null)
+            {
+                Debug.LogError("JSDataExchange_Arr elementType == null !!");
+                return "";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            bool needCast;
+            string getValMethod = JSDataExchangeMgr.GetMetatypeKeyword(elementType, out needCast).Replace("get", "set");
+
+            // 2015.Sep.2
+            // +判断arrRet为null的情况
+            if (elementType.ContainsGenericParameters)
+            {
+                sb.AppendFormat("    var arrRet = (Array){0};\n", expVar)
+                .AppendFormat("    for (int i = 0; arrRet != null && i < arrRet.Length; i++)\n")
+                .Append("    [[\n")
+                .AppendFormat("        {0}((int)JSApi.SetType.SaveAndTempTrace, arrRet.GetValue(i));\n", getValMethod)
+                .AppendFormat("        JSApi.moveSaveID2Arr(i);\n")
+                .AppendFormat("    ]]\n")
+                .AppendFormat("    JSApi.setArrayS((int)JSApi.SetType.Rval, (arrRet != null ? arrRet.Length : 0), true);");
+            }
+            else
+            {
+                sb.AppendFormat("    var arrRet = ({0}[]){1};\n", JSNameMgr.CsFullName(elementType), expVar)
+                .AppendFormat("    for (int i = 0; arrRet != null && i < arrRet.Length; i++)\n")
+                .Append("    [[\n")
+                .AppendFormat("        {0}((int)JSApi.SetType.SaveAndTempTrace, {1}arrRet[i]);\n", getValMethod, elementType.IsEnum ? "(int)" : "")
+                .AppendFormat("        JSApi.moveSaveID2Arr(i);\n")
+                .AppendFormat("    ]]\n")
+                .AppendFormat("    JSApi.setArrayS((int)JSApi.SetType.Rval, (arrRet != null ? arrRet.Length : 0), true);");
+            }
+
+            sb.Replace("[[", "{");
+            sb.Replace("]]", "}");
+
+            return sb.ToString();
+        }
+    }
+
     public class JSDataExchangeEditor : JSDataExchangeMgr
     {
         //static Dictionary<Type, JSDataExchange> dict;
@@ -26,8 +119,8 @@ namespace jsb
         public struct ParamHandler
         {
             public string argName; // argN
-            public string getter;
-            public string updater;
+            public TextFile getter;
+            public TextFile updater;
         }
 
         public static bool IsDelegateSelf(Type type)
@@ -65,9 +158,12 @@ namespace jsb
 			}
 			if (type.IsArray)
             {
-                ph.getter = new StringBuilder()
-                    .AppendFormat("{0} {1} = {2};", typeFullName, ph.argName, arrayExchange.Get_GetParam(type))
-                    .ToString();
+                ph.getter = new TextFile()
+                    .Add("{0} {1} = ", typeFullName, ph.argName)
+                    .In()
+                        .Add(arrayExchange.Get_GetParam(type).Ch)
+                    .Out()
+                    .Add(";");
             }
             else
             {
@@ -81,47 +177,44 @@ namespace jsb
 
                 if (isOut)
                 {
-                    ph.getter = new StringBuilder()
-                        .AppendFormat("int r_arg{0} = JSApi.incArgIndex();\n", paramIndex)
-                        .AppendFormat("        {0} {1}{2};", typeFullName, ph.argName, bTOrContainsT ? " = null" : "")
-                        .ToString();
+                    ph.getter = new TextFile()
+                        .Add("int r_arg{0} = JSApi.incArgIndex();", paramIndex)
+                        .Add("{0} {1}{2};", typeFullName, ph.argName, bTOrContainsT ? " = null" : "");
                 }
                 else if (isRef)
                 {
-                    ph.getter = new StringBuilder()
-                        .AppendFormat("int r_arg{0} = JSApi.getArgIndex();\n", paramIndex)
-                        .AppendFormat("{0} {1} = ({0}){2}((int)JSApi.GetType.ArgRef);", typeFullName, ph.argName, keyword)
-                        .ToString();
+                    ph.getter = new TextFile()
+                        .Add("int r_arg{0} = JSApi.getArgIndex();", paramIndex)
+                        .Add("{0} {1} = ({0}){2}((int)JSApi.GetType.ArgRef);", typeFullName, ph.argName, keyword);
                 }
                 else
                 {
                     if (needCast)
                     {
-                        ph.getter = new StringBuilder()
-                            .AppendFormat("{0} {1} = ({0}){2}((int)JSApi.GetType.Arg);", typeFullName, ph.argName, keyword)
-                            .ToString();
+                        ph.getter = new TextFile()
+                            .Add("{0} {1} = ({0}){2}((int)JSApi.GetType.Arg);", typeFullName, ph.argName, keyword);
                     }
                     else
                     {
-                        ph.getter = new StringBuilder()
-                            .AppendFormat("{0} {1} = {2}((int)JSApi.GetType.Arg);", typeFullName, ph.argName, keyword)
-                            .ToString();
+                        ph.getter = new TextFile()
+                            .Add("{0} {1} = {2}((int)JSApi.GetType.Arg);", typeFullName, ph.argName, keyword);
                     }
                 }
 
                 if (isOut || isRef)
                 {
-                    var _sb = new StringBuilder();
+                    TextFile tf = new TextFile();
                     if (bTOrContainsT)
                     {
                         // TODO
                         // sorry, 'arr_t' is written in CSGenerator2.cs
-                        _sb.AppendFormat("        {0} = arr_t[{1}];\n", ph.argName, paramIndex);
+                        tf.Add("{0} = arr_t[{1}];", ph.argName, paramIndex);
                     }
 
-                    ph.updater = _sb.AppendFormat("        JSApi.setArgIndex(r_arg{0});\n", paramIndex)
-                        .AppendFormat("        {0}((int)JSApi.SetType.ArgRef, {1});\n", keyword.Replace("get", "set"), ph.argName)
-                        .ToString();
+                    tf.Add("JSApi.setArgIndex(r_arg{0});", paramIndex)
+                        .Add("{0}((int)JSApi.SetType.ArgRef, {1});", keyword.Replace("get", "set"), ph.argName);
+
+                    ph.updater = tf;
                 }
             }
             return ph;

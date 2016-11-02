@@ -117,7 +117,7 @@ namespace jsb
                     if (!isDelegate)
                     {
                         var paramHandler = JSDataExchangeEditor.Get_ParamHandler(field);
-                        tfSet.Add(paramHandler.getter);
+                        tfSet.Add(paramHandler.getter.Ch);
                         tfSet.Add(JSDataExchangeEditor.BuildCallString(type, field, "" /* argList */, features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
                     }
                     else
@@ -281,7 +281,7 @@ namespace jsb
                 }
                 for (int j = 0; j < ps.Length; j++)
                 {
-                    tfFun.Add(paramHandlers[j].getter);
+                    tfFun.Add(paramHandlers[j].getter.Ch);
                 }
 
                 bool bReadOnly = (!property.CanWrite || property.GetSetMethod() == null);
@@ -319,7 +319,7 @@ namespace jsb
                         int ParamIndex = ps.Length;
 
                         var paramHandler = JSDataExchangeEditor.Get_ParamHandler(property.PropertyType, ParamIndex, false, false);
-                        tfSet.Add(paramHandler.getter);
+                        tfSet.Add(paramHandler.getter.Ch);
 
                         tfSet.Add(JSDataExchangeEditor.BuildCallString(type, property, argActual.Format(args.ArgsFormat.OnlyList), features | JSDataExchangeEditor.MemberFeature.Set, paramHandler.argName).Ch);
                     }
@@ -403,7 +403,7 @@ namespace jsb
             for (int i = 0; i < ps.Length; i++)
             {
                 paramHandlers[i] = JSDataExchangeEditor.Get_ParamHandler(ps[i], i);
-                tf.Add(paramHandlers[i].getter);
+                tf.Add(paramHandlers[i].getter.Ch);
             }
 
             string strCall = string.Empty;
@@ -601,7 +601,7 @@ namespace jsb
                     }
                     else
                     {
-                        tfGetParam.Add(paramHandlers[i].getter);
+                        tfGetParam.Add(paramHandlers[i].getter.Ch);
                     }
 
                     // value type array
@@ -612,7 +612,8 @@ namespace jsb
                         sbActualParam.AppendFormat("arg{0}{1}", i, (i == j - 1 ? "" : ", "));
 
                     // updater
-                    tfUpdateRefParam.Add(paramHandlers[i].updater);
+                    if (paramHandlers[i].updater != null)
+                        tfUpdateRefParam.Add(paramHandlers[i].updater.Ch);
                 }
 
                 /*
