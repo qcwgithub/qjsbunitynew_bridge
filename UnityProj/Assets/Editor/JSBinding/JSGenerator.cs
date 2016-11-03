@@ -537,7 +537,7 @@ using UnityEngine;
 
                 TextFile tf = JSGenerator.GenerateClass();
 
-                tfFun.AddLine().Add("if (jsb.findObj(\"{0}\") == null) {{", type.JsFullName())
+                tfFun.AddLine().Add("if (Bridge.findObj(\"{0}\") == null) {{", type.JsFullName())
                     .In()
                         .Add(tf.Ch)
                     .BraceOut();

@@ -1331,7 +1331,29 @@
 
             return m;
         },
-                
+        
+        // @qiucw
+             
+        printStack: function () {
+            try { 
+                throw new Error(""); 
+            }
+            catch(ex) {
+                print("STACK " + ex.stack);
+            }
+        },
+        
+        findObj: function (name) {
+            var ns = Bridge.global, arr = name.split('.');
+            for (var i = 0; i < arr.length ; i++) {
+                ns = ns[arr[i]];
+                if (!Bridge.hasValue(ns)) {
+                    return null;
+                }
+            }
+            return ns;
+        },
+        
         definePropertyForFields: function (obj, $fields) {
             var f;
             for (f in $fields) {
@@ -1340,7 +1362,35 @@
                     set: $fields[f].set
                 });
             }
-        }
+        },
+        
+        isInheritRel: function (baseName, subName) {
+            var cls = Bridge.findObj(subName);
+            if (cls == null) {
+                return false;
+            }
+            while (true) {
+                if (cls.$base == null) {
+                    return false;
+                }
+                cls = cls.$base.constructor;
+                if (cls == null) {
+                    return false;
+                }
+                if (cls.$$fullname === baseName) {
+                    return true;
+                }
+            }
+            return false;
+        },
+        
+        callObjCtor: function (name) {
+            var cls = Bridge.findObj(name);
+            if (cls && cls.ctor) {
+                return new obj.ctor();
+            }
+            return null;
+        },
     };
 
     globals.Bridge = core;
