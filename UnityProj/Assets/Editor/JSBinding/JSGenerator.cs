@@ -228,10 +228,20 @@ namespace jsb
 
                 string mName = Member_AddSuffix("ctor", infoEx.GetOverloadIndex());
 
-                // 特殊处理
+                // 特殊处理 - MonoBehaviour 不需要构造函数内容
                 if (type == typeof(MonoBehaviour))
                 {
                     tf.Add("{0}: function ({1}) {{}},", mName, argFormal);
+                }
+                // 再次特殊处理
+                else if (type == typeof(WaitForSeconds))
+                {
+                    tf.Add("{0}: function ({1}) {{", mName, argFormal)
+                        .In()
+                            .Add("this.$totalTime = a0;")
+                            .Add("this.$elapsedTime = 0;")
+                            .Add("this.$finished = false;")
+                        .Out().Add("},");
                 }
                 else
                 {
@@ -505,8 +515,8 @@ using UnityEngine;
             JSGenerator.OnBegin();
 
             TextFile tfAll = new TextFile();
-            TextFile tfFun = tfAll.Add("(function () {").In().Add("\"use strict\";");
-            //int hc = 1;
+            TextFile tfFun = tfAll.Add("(function ($hc) {").In().Add("\"use strict\";");
+            int hc = 1;
 
             // enums
             for (int i = 0; i < JSBindingSettings.enums.Length; i++)
@@ -516,7 +526,7 @@ using UnityEngine;
                 TextFile tf = JSGenerator.GenEnum();
                 if (tf != null)
                 {
-                    //tfFun.Add("if ($hc < {0}) return;", hc++);
+                    tfFun.Add("if ($hc < {0}) {{ return; }}", hc++);
                     tfFun.AddLine().Add(tf.Ch);
                 }
             }
@@ -530,12 +540,13 @@ using UnityEngine;
 
                 TextFile tf = JSGenerator.GenerateClass();
 
+                tfFun.Add("if ($hc < {0}) {{ return; }}", hc++);
                 tfFun.AddLine().Add("if (Bridge.findObj(\"{0}\") == null) {{", type.JsFullName())
                     .In()
                         .Add(tf.Ch)
                     .BraceOut();
             }
-            tfFun.Out().Add("})();");
+            tfFun.Out().Add("})(1000000);");
             File.WriteAllText(JSMgr.jsGenFiles, tfAll.Format(-1));
             JSGenerator.OnEnd();
 

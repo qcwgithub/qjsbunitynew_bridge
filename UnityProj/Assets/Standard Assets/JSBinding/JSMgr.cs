@@ -230,7 +230,7 @@ public static class JSMgr
     public static string jsExtension = ".javascript";
     public static string jsDir = Application.streamingAssetsPath + "/JavaScript";
     public static string jsRelDir = "Assets/StreamingAssets/JavaScript";
-    public static string jsGenFiles { get { return jsDir + "/Gen" + jsExtension; } }
+    public static string jsGenFiles { get { return jsDir + "/Gen1" + jsExtension; } }
 
     static public string getJSFullName(string shortName)
     {

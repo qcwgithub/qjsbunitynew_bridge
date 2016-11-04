@@ -1,20 +1,32 @@
-_jstype = undefined;
-for (var i = 0; i < JsTypes.length; i++) {
-    if (JsTypes[i].fullname == "UnityEngine.WaitForSeconds") {
-        _jstype = JsTypes[i];
-        break;
-    }
-}
+(function () {
+    var fullname = "UnityEngine.WaitForSeconds",
+        mb = Bridge.findObj(fullname),
+        pt = mb ? mb.prototype : null;
 
-if (_jstype) {
-
-    _jstype.definition.ctor = function(a0) { 
-        this.$totalTime = a0;
-        this.$elapsedTime = 0;
-        this.$finished = false;
+    if (!pt) {
+        return;
     }
 
-    _jstype.definition.get_finished = function(elapsed) { 
+    var replace = function (funName, fun, allowNew) {
+        if (!allowNew && !pt[funName]) {
+            UnityEngine.Debug.LogError("Manual-js: " + fullname + "." + funName + " not found!");
+            return;
+        }
+        pt[funName] = fun;
+    };
+    
+
+    // 在这里改不行啊
+    // 因为 UnityEngine.WaitForSeconds === UnityEngine.WaitForSeconds.ctor
+    // 挪到 c# 去做特殊处理...
+    //replace("ctor", function(a0) {
+    //    this.$totalTime = a0;
+    //    this.$elapsedTime = 0;
+    //    this.$finished = false;
+    //});
+
+    replace("get_finished", function(elapsed) { 
+
         if (!this.$finished) {
             this.$elapsedTime += elapsed;
             if (this.$elapsedTime >= this.$totalTime) {
@@ -22,5 +34,6 @@ if (_jstype) {
             }        
         }
         return this.$finished;
-    }
-}
+    }, true);
+
+})();

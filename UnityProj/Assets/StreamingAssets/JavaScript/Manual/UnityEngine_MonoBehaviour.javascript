@@ -1,67 +1,86 @@
-_jstype = undefined;
-for (var i = 0; i < JsTypes.length; i++) {
-    if (JsTypes[i].fullname == "UnityEngine.MonoBehaviour") {
-        _jstype = JsTypes[i];
-        break;
-    }
-}
+(function () {
+    var fullname = "UnityEngine.MonoBehaviour",
+        mb = Bridge.findObj(fullname),
+        pt = mb ? mb.prototype : null;
 
-if (_jstype) {
-    _jstype.definition.CancelInvoke$$String = function(a0/*String*/) {
-        this.$RemoveInvokeByName(a0);
+    if (!pt) {
+        return;
+    }
+
+    var replace = function (funName, fun) {
+        if (!pt[funName]) {
+            UnityEngine.Debug.LogError("Manual-js: " + fullname + "." + funName + " not found!");
+            return;
+        }
+        pt[funName] = fun;
     };
-    _jstype.definition.CancelInvoke = function() {
+
+    replace("CancelInvoke$1", function(a0/*String*/) {
+        this.$RemoveInvokeByName(a0); 
+    });
+
+    replace("CancelInvoke", function() {
         this.$RemoveAllInvokes();
-    };
-    _jstype.definition.Invoke = function(a0/*String*/, a1/*Single*/) {
+    });
+
+    replace("Invoke", function(a0/*String*/, a1/*Single*/) {
         if (this[a0]) {
             var fun = this[a0].bind(this);
             this.$AddInvoke(a0, fun, a1, 0, false);
         }
-    };
-    _jstype.definition.InvokeRepeating = function(a0/*String*/, a1/*Single*/, a2/*Single*/) {
+    });
+
+    replace("InvokeRepeating", function(a0/*String*/, a1/*Single*/, a2/*Single*/) {
         if (this[a0]) {
             var fun = this[a0].bind(this);
             this.$AddInvoke(a0, fun, a1, a2, true);
         }
-    };
-    _jstype.definition.IsInvoking$$String = function(a0/*String*/) {
+    });
+
+    replace("IsInvoking$1", function(a0/*String*/) {
         return this.$IsInvoking(a0);
-    };
-    _jstype.definition.IsInvoking = function() {
+    });
+
+    replace("IsInvoking", function() {
         return this.$IsInvoking(undefined);
-    };
-    _jstype.definition.StartCoroutine$$String$$Object = function(a0/*String*/, a1/*Object*/) {
+    });
+
+    replace("StartCoroutine$2", function(a0/*String*/, a1/*Object*/) {
         if (this[a0]) {
             var fiber = this[a0].call(this, a1);
             return this.$AddCoroutine(fiber, a0);
         }
-    };
-    _jstype.definition.StartCoroutine$$String = function(a0/*String*/) {
+    });
+
+    replace("StartCoroutine$1", function(a0/*String*/) {
         if (this[a0]) {
             var fiber = this[a0].call(this);
             return this.$AddCoroutine(fiber, a0);
         }
-    };
-    _jstype.definition.StartCoroutine$$IEnumerator = function(a0/*IEnumerator*/) { 
+    });
+
+    replace("StartCoroutine", function(a0/*IEnumerator*/) {
         return this.$AddCoroutine(a0);
-    };
-    _jstype.definition.StartCoroutine_Auto = function(a0/*IEnumerator*/) {
+    });
+
+    replace("StartCoroutine_Auto", function(a0/*IEnumerator*/) {
         return this.$AddCoroutine(a0);
-    };
-    _jstype.definition.StopAllCoroutines = function() {
+    });
+
+    replace("StopAllCoroutines", function() {
         return this.$RemoveAllCoroutines();
-    };
-    _jstype.definition.StopCoroutine$$IEnumerator = function(a0/*Coroutine*/) {
+    });
+
+    replace("StopCoroutine", function(a0/*Coroutine*/) {
         return this.$RemoveCoroutineByFiber(a0);
-    };
-    _jstype.definition.StopCoroutine$$String = function(a0/*String*/) {
+    });
+
+    replace("StopCoroutine$1", function(a0/*String*/) {
         return this.$RemoveCoroutineByName(a0);
-    };
-    //
-    // Invoke Scheduler
-    //
-    _jstype.definition.$AddInvoke = function (funName, fun, delay, interval, bRepeat) {
+    });
+
+    
+    pt.$AddInvoke = function (funName, fun, delay, interval, bRepeat) {
         var invokeNode = {
             funName: funName,
             fun: fun,
@@ -79,7 +98,7 @@ if (_jstype) {
         };
         this.$firstInvoke = invokeNode;
     };
-    _jstype.definition.$UpdateAllInvokes = function (elapsed) {
+    pt.$UpdateAllInvokes = function (elapsed) {
         var invoke = this.$firstInvoke,
             next,
             bCall;
@@ -107,7 +126,7 @@ if (_jstype) {
             invoke = next;
         }
     };
-    _jstype.definition.$IsInvoking = function (funName) {
+    pt.$IsInvoking = function (funName) {
         if (funName == undefined) {
             return (this.$firstInvoke != undefined);
         } else {
@@ -124,10 +143,10 @@ if (_jstype) {
             return false;
         }
     };
-    _jstype.definition.$RemoveAllInvokes = function () {
+    pt.$RemoveAllInvokes = function () {
         this.$firstInvoke = undefined;
     };
-    _jstype.definition.$RemoveInvokeByName = function (funName) {
+    pt.$RemoveInvokeByName = function (funName) {
         var invoke = this.$firstInvoke,
             next,
             bCall;
@@ -139,7 +158,7 @@ if (_jstype) {
             invoke = next;
         }
     };
-    _jstype.definition.$RemoveInvoke = function (invoke) {
+    pt.$RemoveInvoke = function (invoke) {
         if (this.$firstInvoke == invoke) {
             this.$firstInvoke = invoke.next;
         }
@@ -169,7 +188,7 @@ if (_jstype) {
     // 
 
     // fiber 类似于 C# 的 IEnumerator
-    _jstype.definition.$AddCoroutine = function (fiber, name) {
+    pt.$AddCoroutine = function (fiber, name) {
         var coroutineNode = {
             $__CN: true,  // mark this is a coroutine node
             prev: undefined,
@@ -196,7 +215,7 @@ if (_jstype) {
         return coroutineNode;
     };
     // this method is called from LateUpdate
-    _jstype.definition.$UpdateAllCoroutines = function (elapsed) {
+    pt.$UpdateAllCoroutines = function (elapsed) {
         // cn is short for Coroutine Node
         var cn = this.$first;
         while (cn != undefined) {
@@ -241,7 +260,7 @@ if (_jstype) {
             cn = next;
         }
     };
-    _jstype.definition.$UpdateCoroutine = function (cn) { // cn is short for Coroutine Node
+    pt.$UpdateCoroutine = function (cn) { // cn is short for Coroutine Node
         var fiber = cn.fiber;
         var obj = fiber.next();
         if (!obj.done) {
@@ -251,13 +270,13 @@ if (_jstype) {
                 cn.waitForFrames = 1;
             }
             else {
-                if (yieldCommand instanceof UnityEngine.WaitForSeconds.ctor) {
+                if (yieldCommand instanceof UnityEngine.WaitForSeconds) {
                     cn.waitForSeconds = yieldCommand;
                 } 
-                else if (yieldCommand instanceof UnityEngine.WWW.ctor) {
+                else if (yieldCommand instanceof UnityEngine.WWW) {
                     cn.www = yieldCommand;
                 }
-                else if (yieldCommand instanceof UnityEngine.AsyncOperation.ctor) {
+                else if (yieldCommand instanceof UnityEngine.AsyncOperation) {
                     cn.asyncOp = yieldCommand;
                 }
                 else if (yieldCommand.$__CN === true/*yieldCommand.toString() == "[object Generator]"*/) {
@@ -274,10 +293,10 @@ if (_jstype) {
             this.$RemoveCoroutine(cn);
         }
     };
-    _jstype.definition.$RemoveAllCoroutines = function () {
+    pt.$RemoveAllCoroutines = function () {
         this.$first = undefined;
     };
-    _jstype.definition.$RemoveCoroutineByFiber = function (fiber) {
+    pt.$RemoveCoroutineByFiber = function (fiber) {
         var cn = this.$first;
         while (cn != undefined) {
             // store next coroutineNode before it is removed from the list
@@ -288,7 +307,7 @@ if (_jstype) {
             cn = next;
         }
     };
-    _jstype.definition.$RemoveCoroutineByName = function (name) {
+    pt.$RemoveCoroutineByName = function (name) {
         var cn = this.$first;
         while (cn != undefined) {
             // store next coroutineNode before it is removed from the list
@@ -299,7 +318,7 @@ if (_jstype) {
             cn = next;
         }
     };
-    _jstype.definition.$RemoveCoroutine = function (cn) { // cn is short for Coroutine Node
+    pt.$RemoveCoroutine = function (cn) { // cn is short for Coroutine Node
         if (this.$first == cn) {
             this.$first = cn.next;
         }
@@ -315,4 +334,4 @@ if (_jstype) {
         cn.prev = undefined;
         cn.next = undefined;
     };
-}
+})();

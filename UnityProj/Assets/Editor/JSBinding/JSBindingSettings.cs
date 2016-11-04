@@ -53,6 +53,7 @@ namespace jsb
 	        typeof(UnityEngine.Time),
 	        typeof(Resources),
 	        typeof(TextAsset),
+            typeof(WaitForSeconds),
 
 	//        typeof(List<>),
 	//        typeof(List<>.Enumerator),
@@ -86,7 +87,7 @@ namespace jsb
 	        typeof(ParticleSystem),
 	        typeof(Renderer),
 	        typeof(ParticleSystemRenderer),
-	        typeof(DateTime),
+	        // typeof(DateTime),
 	        typeof(GUIElement),
 	        typeof(GUIText),
 	        typeof(GUITexture),
