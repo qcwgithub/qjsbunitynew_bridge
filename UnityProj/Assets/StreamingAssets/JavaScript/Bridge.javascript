@@ -1387,7 +1387,7 @@
         callObjCtor: function (name) {
             var cls = Bridge.findObj(name);
             if (cls && cls.ctor) {
-                return new obj.ctor();
+                return new cls.ctor();
             }
             return null;
         },

@@ -280,7 +280,7 @@ namespace jsb
                 int L = paramS.Length;
                 for (int j = 0; j < L; j++)
                 {
-                    sbFormalParam.AppendFormat("a{0}{1}", j, (j == L - 1 ? "" : ", "));
+                    sbFormalParam.AppendFormat("a{0}/* {1} */{2}", j, paramS[j].ParameterType.Name, (j == L - 1 ? "" : ", "));
                     sbActualParam.AppendFormat(", a{0}", j);
                 }
 
@@ -474,13 +474,6 @@ using UnityEngine;
             // Bom (byte order mark) is not needed
             Encoding utf8NoBom = new UTF8Encoding(false);
             return new StreamWriter(fileName, bAppend, utf8NoBom);
-        }
-
-        static void HandleStringFormat(StringBuilder sb)
-        {
-            sb.Replace("[[", "{");
-            sb.Replace("]]", "}");
-            sb.Replace("'", "\"");
         }
 
         //     [MenuItem("JS for Unity/Generate JS Enum Bindings")]

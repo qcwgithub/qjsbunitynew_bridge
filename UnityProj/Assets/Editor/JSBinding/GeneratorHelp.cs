@@ -90,12 +90,12 @@ namespace jsb
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            sb.Append(m.PropertyType.ToString()).Append(" ");
+			sb.Append(m.PropertyType.CsFullName(CsNameOption.BridgeTypeToString)).Append(" ");
             sb.Append(m.Name).Append(" ");
 
             foreach (var p in m.GetIndexParameters())
             {
-                sb.Append(p.ParameterType.ToString()).Append(" ");
+				sb.Append(p.ParameterType.CsFullName(CsNameOption.BridgeTypeToString)).Append(" ");
             }
             return sb.ToString();
         }
@@ -116,13 +116,15 @@ namespace jsb
 
             return string.Compare(PropertyToString(m1), PropertyToString(m2));
         }
+
         // 与 Bridge 的排序方式保持一致！处理重载函数的后缀才不会有问题
+        // 看 OverloadsCollection.cs MethodToString
         static string MethodToString(MethodBase m)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
             if (m is MethodInfo)
-                sb.Append((m as MethodInfo).ReturnType.ToString()).Append(" ");
+                sb.Append((m as MethodInfo).ReturnType.CsFullName(CsNameOption.BridgeTypeToString)).Append(" ");
 
             sb.Append(m.Name).Append(" ");
 
@@ -131,7 +133,7 @@ namespace jsb
 
             foreach (var p in m.GetParameters())
             {
-                sb.Append(p.ParameterType.ToString()).Append(" ");
+				sb.Append(p.ParameterType.CsFullName(CsNameOption.BridgeTypeToString)).Append(" ");
             }
             return sb.ToString();
         }

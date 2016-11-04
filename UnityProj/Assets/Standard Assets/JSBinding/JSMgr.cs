@@ -8,6 +8,7 @@ using System.Collections;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
+using jsb;
 
 using jsval = JSApi.jsval;
 

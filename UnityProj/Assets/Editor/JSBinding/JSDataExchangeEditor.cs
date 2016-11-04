@@ -361,7 +361,7 @@ namespace jsb
 
             // this function name is used in BuildFields, don't change
             TextFile tfFun = tf.Add("public static {0} {1}{2}(CSRepresentedObject objFunction)",
-                JSNameMgr.CsFullName(delType, true),  // [0]
+                JSNameMgr.CsFullName(delType, CsNameOption.CompilableWithT),  // [0]
                 getDelFunctionName, // [2]
                 stringTOfMethod  // [1]
                 )
@@ -374,7 +374,7 @@ namespace jsb
                         .AddLine();
 
 
-                tfFun.Add("{0} action = ({0})JSMgr.getJSFunCSDelegateRel(objFunction.jsObjID);", JSNameMgr.CsFullName(delType, true));
+				tfFun.Add("{0} action = ({0})JSMgr.getJSFunCSDelegateRel(objFunction.jsObjID);", JSNameMgr.CsFullName(delType, CsNameOption.CompilableWithT));
                 tfFun.Add("if (action != null)")
                     .In()
                         .Add("return action;")

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using jsb;
 
 public partial class UnityEngineManual
 {
