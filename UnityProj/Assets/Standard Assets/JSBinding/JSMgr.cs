@@ -227,21 +227,18 @@ public static class JSMgr
         jsEngineRound++;
     }
     
+    public static string jsExtension = ".javascript";
+    public static string jsDir = Application.streamingAssetsPath + "/JavaScript";
+    public static string jsRelDir = "Assets/StreamingAssets/JavaScript";
+    public static string jsGenFiles { get { return jsDir + "/Gen" + jsExtension; } }
 
-    /// <summary>
-    /// Gets the full name of the javascript file.
-    /// </summary>
-    /// <param name="shortName">The short name.</param>
-    /// <param name="bGenerated">if set to <c>true</c> [b generated].</param>
-    /// <returns></returns>
     static public string getJSFullName(string shortName)
     {
-        string baseDir = JSBindingSettings.jsDir;
-        string fullName = baseDir + "/" + shortName;// + JSBindingSettings.jsExtension;
+        string fullName = jsDir + "/" + shortName;// + JSBindingSettings.jsExtension;
         // don't append, if extension already exist
         if (shortName.IndexOf('.') < 0)
         {
-            fullName += JSBindingSettings.jsExtension;
+            fullName += jsExtension;
         }
         return fullName;
     }
