@@ -1384,6 +1384,7 @@
             return false;
         },
         
+        // 名字不能改，在C里有用
         callObjCtor: function (name) {
             var cls = Bridge.findObj(name);
             if (cls && cls.ctor) {

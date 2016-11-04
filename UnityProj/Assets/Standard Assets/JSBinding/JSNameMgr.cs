@@ -59,6 +59,8 @@ namespace jsb
 				typeShortName.Add("System.UInt16", "ushort");
 				typeShortName.Add("System.Int32", "int");
 				typeShortName.Add("System.UInt32", "uint");
+				typeShortName.Add("System.Int64", "long");
+				typeShortName.Add("System.UInt64", "ulong");
 				typeShortName.Add("System.Single", "float");
 				typeShortName.Add("System.Double", "double");
 				typeShortName.Add("System.String", "string");

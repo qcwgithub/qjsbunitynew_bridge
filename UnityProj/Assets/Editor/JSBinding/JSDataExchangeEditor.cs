@@ -449,7 +449,7 @@ namespace jsb
                         if (newValue is string)
                             tf.Add("{0} = {1};", access, newValue);
                         else
-                            tf.Add("{0} = ").In().Add((newValue as TextFile).Ch).Out().Add(";");
+                            tf.Add("{0} = ", access).In().Add((newValue as TextFile).Ch).Out().Add(";");
 
                         if (!bStatic && bStruct)
                         {

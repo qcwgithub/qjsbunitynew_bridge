@@ -75,7 +75,7 @@ namespace jsb
                 bool isDelegate = JSDataExchangeEditor.IsDelegateDerived(field.FieldType);// (typeof(System.Delegate).IsAssignableFrom(field.FieldType));
                 if (isDelegate)
                 {
-                    tf.Add(JSDataExchangeEditor.Build_DelegateFunction(type, field, field.FieldType, i, 0).ToString());
+                    tf.Add(JSDataExchangeEditor.Build_DelegateFunction(type, field, field.FieldType, i, 0).Ch);
                 }
 
                 bool bGenericT = type.IsGenericTypeDefinition;
