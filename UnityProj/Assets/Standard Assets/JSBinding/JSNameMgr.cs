@@ -151,8 +151,10 @@ namespace jsb
 					N += type.Name;
 				}
 				Type[] Ts = type.GetGenericArguments();
-				
-				N = N.Substring(0, N.IndexOf("`" + Ts.Length));
+
+				int iOft = N.IndexOf("`" + Ts.Length);
+				if (iOft >= 0)
+					N = N.Substring(0, iOft);
 				
 				if (bridge)
 					N += "`" + Ts.Length;

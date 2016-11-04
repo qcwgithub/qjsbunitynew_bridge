@@ -193,6 +193,8 @@ namespace jsb
 		{
 			Action<PropertyInfo> action = (pro) =>
 			{
+				bool isI = type.IsInterface;
+
 				OnNewType(pro.PropertyType);
 				ParameterInfo[] ps = pro.GetIndexParameters();
 				
@@ -214,27 +216,40 @@ namespace jsb
                 bool canSet = setm != null && setm.IsPublic;
 
 				string getset = "";
-				if (canGet) getset += string.Format("get {{ return default({0}); }}", typefn(pro.PropertyType, type.Namespace));
-				if (canSet) getset += " set {}";
 
-                string vo = string.Empty;
-                if ((getm != null && getm.IsVirtual) ||
-                    (setm != null && setm.IsVirtual))
+                if (!isI)
                 {
-                    vo = ((getm != null && getm.GetBaseDefinition() != getm) || (setm != null && setm.GetBaseDefinition() != setm))
-                        ? "override " : "virtual ";
+                    if (canGet) getset += string.Format("get {{ return default({0}); }}", typefn(pro.PropertyType, type.Namespace));
+                    if (canSet) getset += " set {}";
+                }
+                else
+                {
+                    if (canGet) getset += "get;";
+                    if (canSet) getset += " set;";
                 }
 				
-				if (isIndexer)
+				string vo = string.Empty;
+                if (!isI)
 				{
-					tfClass.Add("public {3}{0} this{1} {{ {2} }}",
+					if ((getm != null && getm.IsVirtual) ||
+					    (setm != null && setm.IsVirtual))
+					{
+						vo = ((getm != null && getm.GetBaseDefinition() != getm) || (setm != null && setm.GetBaseDefinition() != setm))
+							? "public override " : "public virtual ";
+                    }
+                }
+                
+                
+                if (isIndexer)
+                {
+                    tfClass.Add("{3}{0} this{1} {{ {2} }}",
 					            typefn(pro.PropertyType, type.Namespace), iargs.Format(args.ArgsFormat.Indexer),
 					            getset,
                                 vo);
                 }
                 else
                 {
-                    tfClass.Add("public {3}{0} {1} {{ {2} }}",
+                    tfClass.Add("{3}{0} {1} {{ {2} }}",
                                 typefn(pro.PropertyType, type.Namespace), pro.Name,
 					            getset,
                                 vo);
@@ -272,22 +287,31 @@ namespace jsb
 			Action<MethodInfo> action = (method) => 
 			{
 				StringBuilder sbDef = new StringBuilder();
-				if (method.IsPublic)
-					sbDef.Append("public ");
-				else if (method.IsFamily)
-					sbDef.Append("protected ");
-				else if (method.IsAssembly)
-					sbDef.Append("internal ");
-				if (method.IsStatic)
-					sbDef.Append("static ");
-				sbDef.Append("extern ");
 
-				if (method.GetBaseDefinition() != method)
-					sbDef.Append("override ");
-                else if (method.IsVirtual)
-                    sbDef.Append("virtual ");
+				bool isI = type.IsInterface;
 
-				if (!(method.IsSpecialName && method.Name == "op_Implicit"))
+				if (!isI)
+				{
+					if (method.IsPublic)
+						sbDef.Append("public ");
+					else if (method.IsFamily)
+						sbDef.Append("protected ");
+                    else if (method.IsAssembly)
+						sbDef.Append("internal ");
+
+					if (method.IsStatic)
+						sbDef.Append("static ");
+
+					sbDef.Append("extern ");
+
+					if (method.GetBaseDefinition() != method)
+						sbDef.Append("override ");
+					else if (method.IsVirtual)
+                        sbDef.Append("virtual ");
+                }
+                
+                
+                if (!(method.IsSpecialName && method.Name == "op_Implicit"))
 					sbDef.Append(typefn(method.ReturnType, type.Namespace) + " ");
 
 				OnNewType(method.ReturnType);
@@ -399,7 +423,7 @@ namespace jsb
                 else
                     sb.Append("class ");
 
-                sb.Append(type.Name);
+				sb.Append(type.Name);
 
                 Type vBaseType = type.ValidBaseType();
                 Type[] interfaces = type.GetInterfaces();
@@ -478,9 +502,26 @@ namespace jsb
 		{
 			if (type == null || 
 			    type.IsPrimitive ||
-			    (type.Namespace != null && (type.Namespace == "System" || type.Namespace.StartsWith("System.")))
+			    type == typeof(Decimal) ||
+			    (type.IsGenericType && !type.IsGenericTypeDefinition) ||
+			    // typeof(Delegate).IsAssignableFrom(type) ||
+			    type == typeof(Delegate) ||
+			    type == typeof(MulticastDelegate) ||
+			    type.IsPointer ||
+			    type == typeof(String) ||
+			    type == typeof(Type) ||
+                (type.Namespace != null && type.Namespace.StartsWith("System.Reflection")) ||
+                type == typeof(Array) ||
+                type == typeof(ArrayList) ||
+                type == typeof(DateTime) ||
+                type == typeof(System.Collections.Hashtable) ||
+                typeof(System.Exception).IsAssignableFrom(type) ||
+                type == typeof(System.Runtime.Serialization.SerializationInfoEnumerator) ||
+                type == typeof(System.Runtime.Serialization.SerializationInfo) 
+			    // || (type.Namespace != null && (type.Namespace == "System" || type.Namespace.StartsWith("System.")))
 			    )
 			{
+				Debug.Log("CSW ignore " + type.ToString());
 				return true;
 			}
 			return false;
