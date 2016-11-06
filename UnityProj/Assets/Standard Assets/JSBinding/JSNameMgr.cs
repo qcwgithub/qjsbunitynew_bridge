@@ -109,7 +109,7 @@ namespace jsb
 			if (type == null) 
 				return "";
 			
-			bool with_t = (opt == CsNameOption.CompilableWithT || opt == CsNameOption.BridgeTypeToString);
+			//bool with_t = (opt == CsNameOption.CompilableWithT || opt == CsNameOption.BridgeTypeToString);
 			bool bridge = (opt == CsNameOption.BridgeTypeToString);
 			
 			bool isgp = type.IsGenericParameter;
@@ -150,26 +150,31 @@ namespace jsb
 					}
 					N += type.Name;
 				}
-				Type[] Ts = type.GetGenericArguments();
 
+				Type[] Ts = type.GetGenericArguments();
 				int iOft = N.IndexOf("`" + Ts.Length);
-				if (iOft >= 0)
-					N = N.Substring(0, iOft);
-				
-				if (bridge)
-					N += "`" + Ts.Length;
-				
-				if (gtd && !with_t)
+
+				if (gtd)
 				{
-					if (!bridge)
-					{
-						for (var i = 0; i < GenTSuffix.Length; i++)
-							N = N.Replace(GenTSuffix[i], GenTSuffixReplaceCS[i]);
-					}
+                    if (!bridge)
+                    {
+                        for (var i = 0; i < GenTSuffix.Length; i++)
+                            N = N.Replace(GenTSuffix[i], GenTSuffixReplaceCS[i]);
+                    }
+                    else
+                    {
+                        if (iOft >= 0)
+                            N = N.Substring(0, iOft);
+                        if (bridge)
+                            N += "`" + Ts.Length;
+                    }
 					return _ReplacePlus(N, opt);
 				}
 				else
-				{
+                {
+                    if (iOft >= 0)
+                        N = N.Substring(0, iOft);
+
 					N += bridge ? "[" : "<";
 					for (int i = 0; i < Ts.Length; i++)
 					{

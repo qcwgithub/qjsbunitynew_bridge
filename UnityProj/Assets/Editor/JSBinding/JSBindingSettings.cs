@@ -28,16 +28,8 @@ namespace jsb
 		//
 
 		
-		public static Type[] classes2 = new Type[]
-		{
-			typeof(Com2),
-	    };
-	    
 	    public static Type[] classes = new Type[]
 	    {
-	        typeof(Qcw),
-			typeof(ItemInfo),
-
 	       typeof(Debug),
 	       typeof(Input),
 	       typeof(GameObject),
@@ -246,15 +238,44 @@ namespace jsb
 		public static string csDir = Application.dataPath + "/JSBinding/CSharp";
 		public static string csGenDir = Application.dataPath + "/Standard Assets/JSBinding/G";
 
+        static HashSet<string> LoadBridgeDefinedTypes()
+        {
+            HashSet<string> types = new HashSet<string>();
+
+            string text = File.ReadAllText("Assets/Editor/JSBinding/BridgeTypes.txt");
+            string[] lines = text.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            string ns = "";
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                if (line.StartsWith("//"))
+                {
+                    continue;
+                }
+                if (line[0] == '[')
+                {
+                    ns = line.Substring(1, line.Length - 2);
+                }
+                else
+                {
+                    string name = line;
+                    int index1 = name.IndexOf('<');
+                    if (index1 >= 0)
+                    {
+                        int index2 = name.IndexOf('>');
+                        int tCount = name.Substring(index1 + 1, index2 - index1 - 1).Count((c) => c == ',');
+                        name = line.Substring(0, index1) + "`" + (tCount + 1);
+                    }
+                    types.Add(ns + "." + name);
+                }
+            }
+
+            return types;
+        }
+
 	    public static List<Type> CheckClasses()
 	    {
-	        HashSet<Type> skips = new HashSet<Type>();
-	        {
-	            skips.Add(typeof(System.Object));
-	            skips.Add(typeof(System.Exception));
-	            skips.Add(typeof(System.SystemException));
-	            skips.Add(typeof(System.ValueType));
-	        }
+            HashSet<string> bridgeTypes = LoadBridgeDefinedTypes();
 
 	        HashSet<Type> wanted = new HashSet<Type>();
 	        var sb = new StringBuilder();
@@ -296,12 +317,17 @@ namespace jsb
 	                ok = false;
 
 	                continue;
-	            }
+                }
 
-	            if (!skips.Contains(type))
-	            {
-	                wanted.Add(type);
-	            }
+                if (bridgeTypes.Contains(type.FullName))
+                {
+                    sb.AppendFormat("Bridge已包含\"{0}\"，无需导出", type.FullName);
+                    ok = false;
+
+                    continue;
+                }
+
+                wanted.Add(type);
 	        }
 
 	        // 自动添加基类
@@ -311,7 +337,8 @@ namespace jsb
 	            Type vBaseType = type.ValidBaseType();
 	            while (vBaseType != null)
 	            {
-	                if (!skips.Contains(vBaseType) && !wanted.Contains(vBaseType) &&
+                    if (!bridgeTypes.Contains(vBaseType.FullName) && 
+                        !wanted.Contains(vBaseType) &&
 	                    !(vBaseType.IsGenericType && !vBaseType.IsGenericTypeDefinition)
 	                    //&&
 	                    //!IsDiscardType(baseType)
@@ -332,9 +359,11 @@ namespace jsb
 	            {
 	                Type ti = interfaces[i];
 	                string tiFullName = JSNameMgr.CsFullName(ti);
+                    if (tiFullName.Contains("<") || tiFullName.Contains(">"))
+                        continue;
 
-	                if (!tiFullName.Contains("<") && !tiFullName.Contains(">") &&
-	                    !skips.Contains(ti) && !wanted.Contains(ti)
+                    if (!bridgeTypes.Contains(interfaces[i].FullName) &&
+                        !wanted.Contains(ti)
 	                    //&&
 	                    //!IsDiscardType(ti)
 	                    )

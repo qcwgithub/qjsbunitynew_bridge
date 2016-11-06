@@ -245,7 +245,7 @@ namespace jsb
                     tft = new TextFile();
                     tft.Add("PropertyInfo member = GenericTypeCache.getProperty(vc.csObj.GetType(), propertyID{0});", i);
                     tft.Add("if (member == null)")
-                        .In().Add("return");
+                        .In().Add("return;");
                     tft.AddLine();
                 }
 
