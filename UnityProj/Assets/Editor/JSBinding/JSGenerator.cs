@@ -19,7 +19,7 @@ namespace jsb
         {
             GeneratorHelp.ClearTypeInfo();
             // clear generated enum files
-            string p = JSMgr.jsGenFiles;
+            string p = JSMgr.jsGenFile;
             if (!File.Exists(p))
             {
                 int i = p.Replace('\\', '/').LastIndexOf('/');
@@ -547,7 +547,7 @@ using UnityEngine;
                     .BraceOut();
             }
             tfFun.Out().Add("})(1000000);");
-            File.WriteAllText(JSMgr.jsGenFiles, tfAll.Format(-1));
+            File.WriteAllText(JSMgr.jsGenFile, tfAll.Format(-1));
             JSGenerator.OnEnd();
 
             Debug.Log("Generate JS Bindings OK. enum " + arrEnums.Length.ToString() + ", class " + arrClasses.Length.ToString());
