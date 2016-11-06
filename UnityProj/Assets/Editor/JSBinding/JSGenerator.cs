@@ -510,7 +510,7 @@ using UnityEngine;
         public static Dictionary<Type, string> typeClassName = new Dictionary<Type, string>();
         static string className = string.Empty;
 
-        public static void GenBindings(List<Type> lst)
+        public static void GenBindings(Type[] arrEnums, Type[] arrClasses)
         {
             JSGenerator.OnBegin();
 
@@ -519,10 +519,10 @@ using UnityEngine;
             int hc = 1;
 
             // enums
-            for (int i = 0; i < JSBindingSettings.enums.Length; i++)
+            for (int i = 0; i < arrEnums.Length; i++)
             {
                 JSGenerator.Clear();
-                JSGenerator.type = JSBindingSettings.enums[i];
+                JSGenerator.type = arrEnums[i];
                 TextFile tf = JSGenerator.GenEnum();
                 if (tf != null)
                 {
@@ -531,10 +531,10 @@ using UnityEngine;
                 }
             }
             // classes
-            for (int i = 0; i < lst.Count; i++)
+            for (int i = 0; i < arrClasses.Length; i++)
             {
                 JSGenerator.Clear();
-                JSGenerator.type = lst[i];
+                JSGenerator.type = arrClasses[i];
                 if (!typeClassName.TryGetValue(type, out className))
                     className = type.Name;
 
@@ -550,7 +550,7 @@ using UnityEngine;
             File.WriteAllText(JSMgr.jsGenFiles, tfAll.Format(-1));
             JSGenerator.OnEnd();
 
-            Debug.Log("Generate JS Bindings OK. enum " + JSBindingSettings.enums.Length.ToString() + ", class " + lst.Count.ToString());
+            Debug.Log("Generate JS Bindings OK. enum " + arrEnums.Length.ToString() + ", class " + arrClasses.Length.ToString());
         }
     }
 }

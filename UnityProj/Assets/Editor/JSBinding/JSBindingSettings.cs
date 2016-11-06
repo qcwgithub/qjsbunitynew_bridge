@@ -30,6 +30,7 @@ namespace jsb
 		
 	    public static Type[] classes = new Type[]
 	    {
+            typeof(Hashtable),
 	       typeof(Debug),
 	       typeof(Input),
 	       typeof(GameObject),
@@ -273,13 +274,33 @@ namespace jsb
             return types;
         }
 
-	    public static List<Type> CheckClasses()
+	    public static bool CheckClasses(out Type[] arrEnums, out Type[] arrClasses,
+            out HashSet<string> bridgeTypes)
 	    {
-            HashSet<string> bridgeTypes = LoadBridgeDefinedTypes();
+            arrEnums = null;
+            arrClasses = null;
+
+            var sb = new StringBuilder();
+            bool ok = true;
+
+            bridgeTypes = LoadBridgeDefinedTypes();
+
+            foreach (var e in enums)
+            {
+                if (bridgeTypes.Contains(e.FullName))
+                {
+                    sb.AppendFormat("Bridge已包含\"{0}\"，无需导出", e.FullName);
+                    ok = false;
+
+                    continue;
+                }
+            }
+            if (ok)
+            {
+                arrEnums = enums;
+            }
 
 	        HashSet<Type> wanted = new HashSet<Type>();
-	        var sb = new StringBuilder();
-	        bool ok = true;
 
 	        foreach (var type in classes)
 	        {
@@ -376,7 +397,7 @@ namespace jsb
 	        if (!ok)
 	        {
 	            Debug.LogError(sb);
-	            return null;
+	            return false;
 	        }
 
 	        List<Type> lst = wanted.ToList();
@@ -423,7 +444,9 @@ namespace jsb
 	            sb.AppendLine(JSNameMgr.CsFullName(t));
 	        }
 	        Debug.Log(sb.ToString());
-	        return lst;
+
+            arrClasses = lst.ToArray();
+            return true;
 	    }
 	}
 }

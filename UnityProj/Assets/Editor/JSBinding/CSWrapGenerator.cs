@@ -231,11 +231,12 @@ namespace jsb
 				string vo = string.Empty;
                 if (!isI)
 				{
+                    vo = "public ";
 					if ((getm != null && getm.IsVirtual) ||
 					    (setm != null && setm.IsVirtual))
 					{
-						vo = ((getm != null && getm.GetBaseDefinition() != getm) || (setm != null && setm.GetBaseDefinition() != setm))
-							? "public override " : "public virtual ";
+						vo += ((getm != null && getm.GetBaseDefinition() != getm) || (setm != null && setm.GetBaseDefinition() != setm))
+							? "override " : "virtual ";
                     }
                 }
                 
@@ -365,6 +366,16 @@ namespace jsb
                 {
                     action(method);
                 }
+            }
+
+            // 特殊处理
+            if (type == typeof(System.Collections.Hashtable))
+            {
+                tfClass.Add("extern IEnumerator IEnumerable.GetEnumerator();");
+            }
+            else if (type == typeof(System.Runtime.Serialization.SerializationInfoEnumerator))
+            {
+                tfClass.Add("object System.Collections.IEnumerator.Current { get { return null; } }");
             }
         }
         
@@ -501,24 +512,9 @@ namespace jsb
 		static bool ShouldIgnoreType(Type type)
 		{
 			if (type == null || 
-			    type.IsPrimitive ||
 			    type == typeof(Decimal) ||
 			    (type.IsGenericType && !type.IsGenericTypeDefinition) ||
-			    // typeof(Delegate).IsAssignableFrom(type) ||
-			    type == typeof(Delegate) ||
-			    type == typeof(MulticastDelegate) ||
-			    type.IsPointer ||
-			    type == typeof(String) ||
-			    type == typeof(Type) ||
-                (type.Namespace != null && type.Namespace.StartsWith("System.Reflection")) ||
-                type == typeof(Array) ||
-                type == typeof(ArrayList) ||
-                type == typeof(DateTime) ||
-                type == typeof(System.Collections.Hashtable) ||
-                typeof(System.Exception).IsAssignableFrom(type) ||
-                type == typeof(System.Runtime.Serialization.SerializationInfoEnumerator) ||
-                type == typeof(System.Runtime.Serialization.SerializationInfo) 
-			    // || (type.Namespace != null && (type.Namespace == "System" || type.Namespace.StartsWith("System.")))
+			    type.IsPointer
 			    )
 			{
 				Debug.Log("CSW ignore " + type.ToString());
@@ -535,7 +531,7 @@ namespace jsb
 			public bool IsInnerType = false;
 		}
 
-        public static void GenWraps()
+        public static void GenWraps(Type[] arrEnums, Type[] arrClasses, HashSet<string> bridgeTypes)
         {
             GeneratorHelp.ClearTypeInfo();
 
@@ -555,7 +551,8 @@ namespace jsb
 					break;
 				}
 
-				if (!dict.ContainsKey(nt))
+				if (!bridgeTypes.Contains(nt.FullName) &&
+                    !dict.ContainsKey(nt))
 				{
 					dict.Add(nt, new TypeStatus());
 				}
@@ -568,12 +565,12 @@ namespace jsb
 				return null;
 			};
 
-			foreach (var type in JSBindingSettings.enums)
+			foreach (var type in arrEnums)
 			{
 				onNewType(type);
 			}
 
-			foreach (var type in JSBindingSettings.classes)
+			foreach (var type in arrClasses)
 			{
 				onNewType(type);
 			}
@@ -607,6 +604,8 @@ namespace jsb
                     }
                     else
 					{
+                        if (type == typeof(Hashtable))
+                            Debug.Log("111");
 						GenInterfaceOrStructOrClass(type, ts, getParent, onNewType);
 					}
 				}

@@ -24,17 +24,18 @@ public class Menus
 			return; 
 		}
 
-        List<Type> lst = JSBindingSettings.CheckClasses();
-        if (lst == null)
+        Type[] arrEnums, arrClasses;
+        HashSet<string> bridgeTypes;
+        if (!JSBindingSettings.CheckClasses(out arrEnums, out arrClasses, out bridgeTypes))
 		{
 			return;
 		}
 		
 		JSDataExchangeEditor.reset();
 		UnityEngineManual.initManual();
-        CSGenerator.GenBindings(lst);
-        JSGenerator.GenBindings(lst);
-        CSWrapGenerator.GenWraps();
+        CSGenerator.GenBindings(arrEnums, arrClasses);
+        JSGenerator.GenBindings(arrEnums, arrClasses);
+        CSWrapGenerator.GenWraps(arrEnums, arrClasses, bridgeTypes);
 
         AssetDatabase.Refresh();
     }

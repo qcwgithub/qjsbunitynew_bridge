@@ -1070,7 +1070,7 @@ namespace jsb
             w.Write(tfClass.Format(-1));
             w.Close();
         }
-        public static void GenerateRegisterAll(List<Type> lst)
+        public static void GenerateRegisterAll(Type[] arrClasses)
         {
             TextFile tf = new TextFile();
             tf.Add("using UnityEngine;");
@@ -1086,9 +1086,9 @@ namespace jsb
                         .BraceOut();
 
                     tfFun.AddLine();
-                    for (int i = 0; i < lst.Count; i++)
+                    for (int i = 0; i < arrClasses.Length; i++)
                     {
-                        tfFun.Add("{0}_G.__Register();", JSNameMgr.GetTypeFileName(lst[i]));
+                        tfFun.Add("{0}_G.__Register();", JSNameMgr.GetTypeFileName(arrClasses[i]));
                     }
 
                     tfFun.BraceOut();
@@ -1101,24 +1101,24 @@ namespace jsb
             w.Write(tf.Format(-1));
             w.Close();
         }
-        public static void GenBindings(List<Type> lst)
+        public static void GenBindings(Type[] arrEnums, Type[] arrClasses)
         {
             CSGenerator.OnBegin();
             allClassCallbackNames = null;
-            allClassCallbackNames = new List<ClassCallbackNames>(lst.Count);
-            for (int i = 0; i < lst.Count; i++)
+            allClassCallbackNames = new List<ClassCallbackNames>(arrClasses.Length);
+            for (int i = 0; i < arrClasses.Length; i++)
             {
                 CSGenerator.Clear();
-                CSGenerator.type = lst[i];
+                CSGenerator.type = arrClasses[i];
                 CSGenerator.GenerateClass();
             }
             //GenerateRegisterAll();
             //GenerateAllJSFileNames();
 
-            GenerateRegisterAll(lst);
+            GenerateRegisterAll(arrClasses);
             CSGenerator.OnEnd();
 
-            Debug.Log("Generate CS Bindings OK. total = " + lst.Count.ToString());
+            Debug.Log("Generate CS Bindings OK. total = " + arrClasses.Length.ToString());
         }
     }
 }
