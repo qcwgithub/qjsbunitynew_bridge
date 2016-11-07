@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="csw.cs" />
+    <Compile Include="GameLogic\JSBinding\Misc.cs" />
     <Compile Include="GameLogic\Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

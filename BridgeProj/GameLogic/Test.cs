@@ -9,11 +9,9 @@ public class Test : MonoBehaviour
         StartCoroutine(Co());
     }
 
-    [Bridge.Script(@"var elapsed = UnityEngine.Time.getdeltaTime();
-            this.$UpdateAllCoroutines(elapsed);
-            this.$UpdateAllInvokes(elapsed);")]
     void Update()
     {
+        this.UpdateCoroutines();
     }
 
     IEnumerator Co()
@@ -22,12 +20,7 @@ public class Test : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1f);
-            print(++c);
+            print("hello " + (++c));
         }
     }
-}
-
-public class Test2 : MonoBehaviour
-{
-
 }
