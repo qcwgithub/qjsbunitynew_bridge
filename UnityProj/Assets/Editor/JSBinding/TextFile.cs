@@ -74,8 +74,8 @@ public class TextFile
     {
         string s = args.Length > 0 ? string.Format(null, format, args) : format;
         string[] arr = s.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-        TextFile tf = this;
-        int lastTab = 0;
+        //TextFile tf = this;
+        //int lastTab = 0;
         for (int i = 0; i < arr.Length; i++)
         {
 //             int tab = lineTabCount(arr[i]);

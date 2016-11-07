@@ -111,6 +111,8 @@ namespace jsb
                 tfNs.BraceOut();
             }
 
+            tfNs.Add("[Bridge.FileName(\"csw\")]");
+
             TextFile tfClass = null;
             sb.Remove(0, sb.Length);
             {
@@ -420,6 +422,8 @@ namespace jsb
                 tfNs = tfFile.Add("namespace {0}", type.Namespace).BraceIn();
                 tfNs.BraceOut();
             }
+
+            tfNs.Add("[Bridge.FileName(\"csw\")]");
 
             TextFile tfClass = null;
             sb.Remove(0, sb.Length);

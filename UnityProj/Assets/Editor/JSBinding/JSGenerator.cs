@@ -503,12 +503,8 @@ using UnityEngine;
         //         Debug.Log("Generate JS Enum Bindings finish. total = " + JSBindingSettings.enums.Length.ToString());
         //     }
 
-        /* 
-         * Some classes have another name
-         * for example: js has 'Object'
-         */
-        public static Dictionary<Type, string> typeClassName = new Dictionary<Type, string>();
-        static string className = string.Empty;
+        //public static Dictionary<Type, string> typeClassName = new Dictionary<Type, string>();
+        //static string className = string.Empty;
 
         public static void GenBindings(Type[] arrEnums, Type[] arrClasses)
         {
@@ -535,8 +531,8 @@ using UnityEngine;
             {
                 JSGenerator.Clear();
                 JSGenerator.type = arrClasses[i];
-                if (!typeClassName.TryGetValue(type, out className))
-                    className = type.Name;
+                //if (!typeClassName.TryGetValue(type, out className))
+                //    className = type.Name;
 
                 TextFile tf = JSGenerator.GenerateClass();
 
