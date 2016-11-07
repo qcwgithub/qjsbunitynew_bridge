@@ -1,3 +1,4 @@
+﻿using System;
 using UnityEngine;
 using System.Collections;
 
@@ -7,11 +8,17 @@ public class Test : MonoBehaviour
     void Start()
     {
         StartCoroutine(Co());
+        CallAction(funNs.Hellor.CreateHelloAction());
     }
 
     void Update()
     {
         this.UpdateCoroutines();
+    }
+
+    void CallAction(Action a)
+    {
+        a();
     }
 
     IEnumerator Co()
@@ -20,7 +27,26 @@ public class Test : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1f);
-            print("hello " + (++c));
+            print("我 " + (++c));
+
+            if (c >= 4)
+                yield break;
+        }
+        print("end of Co");
+    }
+}
+
+namespace funNs
+{
+    public class Hellor
+    {
+        public static Action CreateHelloAction()
+        {
+            return () =>
+            {
+                Debug.Log("Hello!!!!!!");
+            };
         }
     }
+
 }

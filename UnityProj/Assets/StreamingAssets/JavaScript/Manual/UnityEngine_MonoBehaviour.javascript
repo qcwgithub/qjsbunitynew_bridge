@@ -266,7 +266,7 @@
         if (!obj.done) {
             var yieldCommand = obj.value;
             // UnityEngine.Debug.Log$$Object(JSON.stringify(yieldCommand));
-            if (yieldCommand == null) {
+            if (yieldCommand == null || Bridge.isNumber(yieldCommand)) {
                 cn.waitForFrames = 1;
             }
             else {
@@ -288,7 +288,8 @@
             }
         } 
         else {
-            // UnityEngine.Debug.Log$$Object("cn.finished = true;");
+            // UnityEngine.MonoBehaviour.print("cn.finished = true;");
+            
             cn.finished = true;
             this.$RemoveCoroutine(cn);
         }
