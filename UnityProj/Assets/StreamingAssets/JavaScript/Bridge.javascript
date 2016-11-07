@@ -2635,8 +2635,11 @@
 
             if (extend) {
                 for (var j = 0; j < extend.length; j++) {
-                    var baseType = extend[j],
-                        baseI = (baseType.$interfaces || []).concat(baseType.$baseInterfaces || []);
+                    var baseType = extend[j];
+                    if (baseType == null) {
+                        throw new Error(className + ".inherits[" + j + "] is null!");
+                    }
+                    var baseI = (baseType.$interfaces || []).concat(baseType.$baseInterfaces || []);
 
                     if (baseI.length > 0) {
                         for (var k = 0; k < baseI.length; k++) {

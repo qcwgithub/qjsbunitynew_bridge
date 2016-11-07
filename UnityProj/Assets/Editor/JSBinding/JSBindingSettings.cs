@@ -11,7 +11,7 @@ using System.Linq;
 
 
 namespace jsb
-	{
+{
 	public class JSBindingSettings
 	{
 	    public static Type[] enums = new Type[]
@@ -403,37 +403,71 @@ namespace jsb
 	        List<Type> lst = wanted.ToList();
 
 	        // 对 lst 进行排序
-	        // Bridge.js 假设基类在前
+	        // Bridge.js 假设基类在前（接口也算）
 	        // var baseType = extend[j],
 	        //   baseI = (baseType.$interfaces || []).concat(baseType.$baseInterfaces || []);
 	        {
-	            Dictionary<Type, int> d = new Dictionary<Type, int>();
-	            foreach (var t in wanted)
+	            Dictionary<Type, int> dict = new Dictionary<Type, int>();
+	            foreach (var type in wanted)
 	            {
-	                d.Add(t, 0);
+	                dict.Add(type, 0);
 	            }
 
 	            while (true)
 	            {
 	                bool bC = false;
-	                foreach (Type t in d.Keys.ToArray())
+	                foreach (Type type in dict.Keys.ToArray())
 	                {
-	                    int v = d[t];
-	                    if (v == 0)
-	                    {
-	                        if (t.ValidBaseType() == null)
-	                            d[t] = 1;
-	                        else if (d[t.ValidBaseType()] != 0)
-	                            d[t] = d[t.ValidBaseType()] + 1;
-	                        else
-	                            bC = true;
-	                    }
+	                    int v = dict[type];
+                        if (v != 0)
+                        {
+                            continue;
+                        }
+
+                        bool allParentResolved = true;
+                        int maxParentValue = 0;
+                        Type[] interfaces = type.GetInterfaces();
+                        foreach (var interf in interfaces)
+                        {
+                            if (dict.ContainsKey(interf))
+                            {
+                                if (dict[interf] == 0)
+                                {
+                                    allParentResolved = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    maxParentValue = Math.Max(maxParentValue, dict[interf]);
+                                }
+                            }
+                        }
+
+                        Type baseType = type.ValidBaseType();
+                        if (allParentResolved)
+                        {
+                            if (baseType != null &&
+                                dict.ContainsKey(baseType))
+                            {
+                                if (dict[baseType] == 0)
+                                    allParentResolved = false;
+                                else
+                                    maxParentValue = Math.Max(maxParentValue, dict[baseType]);
+                            }
+                        }
+
+                        if (allParentResolved)
+                            dict[type] = maxParentValue + 1;
+                        else
+                            bC = true;
+
 	                }
+
 	                if (!bC)
-	                    break;
+                        break;
 	            }
 
-	            lst.Sort((t1, t2) => (d[t1] < d[t2] ? -1 : (d[t1] > d[t2] ? 1 : 0)));
+	            lst.Sort((t1, t2) => (dict[t1] < dict[t2] ? -1 : (dict[t1] > dict[t2] ? 1 : 0)));
 	        }
 
 	        // 打印最终要导出的类型
