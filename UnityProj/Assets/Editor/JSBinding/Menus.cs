@@ -42,8 +42,36 @@ public class Menus
         AssetDatabase.Refresh();
     }
 
-    [MenuItem("JSB/Correct JavaScript Yield code", false, 2)]
-    public static void CorrectJavaScriptYieldCode()
+    [MenuItem("JSB/Update JavaScript", false, 2)]
+    public static void UpdateJavaScript()
+    {
+        string dir = JSBindingSettings.BridgeOutputDir;
+        string[] files = Directory.GetFiles(dir, "*.js");
+
+        StringBuilder sb = new StringBuilder();
+        foreach (var fileFullName in files)
+        {
+            string fileName = fileFullName
+                .Substring(fileFullName.Replace('\\', '/').LastIndexOf('/') + 1)
+                .ToLower();
+
+            if (fileName != "bridge.js" &&
+                fileName != "csw.js" &&
+                !fileName.EndsWith("min.js"))
+            {
+                sb.Append(File.ReadAllText(fileFullName));
+                sb.AppendLine();
+            }
+        }
+
+        File.WriteAllText(JSMgr.jsGenByBridgeFile, sb.ToString());
+        CorrectJavaScriptYieldCode(JSMgr.jsGenByBridgeFile);
+
+        Debug.Log("OK");
+        AssetDatabase.Refresh();
+    }
+
+    static void CorrectJavaScriptYieldCode(string filePath)
     {
         string YIELD_DEF = "var $yield = [];"; // 删
         string YIELD_PUSH = "$yield.push"; // 替换为 "yield "
@@ -52,7 +80,6 @@ public class Menus
 
         StringBuilder sb = new StringBuilder();
         StringBuilder sbFail = new StringBuilder();
-        string filePath = JSMgr.jsGenByBridgeFile;
 
         bool suc = true;
         string str = File.ReadAllText(filePath);

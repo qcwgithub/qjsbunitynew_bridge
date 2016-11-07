@@ -521,7 +521,7 @@ namespace jsb
 			    type.IsPointer
 			    )
 			{
-				Debug.Log("CSW ignore " + type.ToString());
+//				Debug.Log("CSW ignore " + type.ToString());
 				return true;
 			}
 			return false;
@@ -608,8 +608,6 @@ namespace jsb
                     }
                     else
 					{
-                        if (type == typeof(Hashtable))
-                            Debug.Log("111");
 						GenInterfaceOrStructOrClass(type, ts, getParent, onNewType);
 					}
 				}
@@ -640,7 +638,7 @@ namespace jsb
 				}
             }
             tfAll.Add("#pragma warning restore 626, 824");
-            File.WriteAllText("D:\\x.cs", tfAll.Format(-1));
+            File.WriteAllText(JSBindingSettings.CswFilePath, tfAll.Format(-1));
         }
     }
 }

@@ -376,7 +376,7 @@ namespace jsb
                 }
                 if (bDiscard)
                 {
-                    Debug.Log(type.Name + "." + method.Name + " 忽略，因为他有 unsafe 的参数");
+                    Debug.Log(type.Name + "." + method.Name + " 忽略，因为他有 IsPointer = true 的参数");
                     infoEx.Ignored = true;
                     continue;
                 }

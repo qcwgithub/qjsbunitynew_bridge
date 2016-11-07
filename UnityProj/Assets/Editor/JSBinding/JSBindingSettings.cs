@@ -448,5 +448,9 @@ namespace jsb
             arrClasses = lst.ToArray();
             return true;
 	    }
+
+        public const string BridgeProj = "Assets/../../BridgeProj";
+        public static string CswFilePath = BridgeProj + "/csw.cs";
+        public static string BridgeOutputDir = BridgeProj + "/Bridge/output";
 	}
 }
