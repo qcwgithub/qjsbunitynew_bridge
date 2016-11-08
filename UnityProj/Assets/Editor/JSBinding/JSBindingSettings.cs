@@ -30,6 +30,8 @@ namespace jsb
 		
 	    public static Type[] classes = new Type[]
 	    {
+			typeof(TestRF),
+
             typeof(Hashtable),
 	       typeof(Debug),
 	       typeof(Input),

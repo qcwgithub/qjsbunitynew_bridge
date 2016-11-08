@@ -4,11 +4,25 @@ using System.Collections;
 
 public class Test : MonoBehaviour
 {
-    // Use this for initialization
     void Start()
     {
-        StartCoroutine(Co());
-        CallAction(funNs.Hellor.CreateHelloAction());
+//        StartCoroutine(Co());
+//        CallAction(funNs.Hellor.CreateHelloAction());
+//
+//        staticTTest.B.v = "v of B";
+//        staticTTest.C.v = "v of C";
+//        print(staticTTest.B.v);
+//        print(staticTTest.C.v);
+
+		int x = 2;
+		TestRF.Increase_ByRef(false, ref x);
+		print ("x = " + x + "(应等于 2)");
+
+		TestRF.Increase_ByRef(true, ref x);
+		print ("x = " + x + "(应等于 3)");
+
+		TestRF.Get_Out(out x);
+		print ("x = " + x + "(应等于 8)");
     }
 
     void Update()
@@ -38,8 +52,13 @@ public class Test : MonoBehaviour
 
 namespace funNs
 {
-    public class Hellor
+    public class Hellor// : IEnumerable
     {
+        //public IEnumerator GetEnumerator() { return null; }
+        static Hellor()
+        {
+            Debug.Log("Js Hellor::static Hellor()");
+        }
         public static Action CreateHelloAction()
         {
             return () =>
@@ -49,4 +68,18 @@ namespace funNs
         }
     }
 
+}
+
+namespace staticTTest
+{
+    class A<T>
+    {
+         public static string v;
+    }
+    class B : A<B>
+    {
+    }
+    class C : A<C>
+    {
+    }
 }
