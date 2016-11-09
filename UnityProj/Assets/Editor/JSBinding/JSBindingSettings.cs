@@ -31,7 +31,7 @@ namespace jsb
 	    public static Type[] classes = new Type[]
 	    {
 			typeof(TestRF),
-			typeof(TestGeneric<>),
+			typeof(TestGeneric<,,>),
 
             typeof(Hashtable),
 	       typeof(Debug),

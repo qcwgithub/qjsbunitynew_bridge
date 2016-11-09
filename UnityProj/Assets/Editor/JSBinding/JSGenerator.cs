@@ -216,14 +216,14 @@ namespace jsb
                 argFormal.Clear();
 
                 // add T to formal param
+                Type[] GAs = null;
                 if (type.IsGenericTypeDefinition)
                 {
-                    // TODO check
-                    int TCount = type.GetGenericArguments().Length;
-                    for (int j = 0; j < TCount; j++)
+                    GAs = type.GetGenericArguments();
+                    for (int j = 0; j < GAs.Length; j++)
                     {
-                        argFormal.Add("t" + j + "");
-						argActual.AddFormat("Bridge.Reflection.getTypeFullName(t{0})", j);
+                        //argFormal.Add("t" + j + "");
+                        argActual.AddFormat("${0}", GAs[j].Name);
                     }
                 }
 
@@ -254,9 +254,20 @@ namespace jsb
                 }
                 else
                 {
-                    tf.Add("{0}: function ({1}) {{", mName, argFormal)
-                        .In()
-                            .Add("CS.Call({0});", argActual)
+                    TextFile tfFun = tf.Add("{0}: function ({1}) {{", mName, argFormal)
+                        .In();
+
+                    if (type.IsGenericTypeDefinition)
+                    {
+                        tfFun.Add("var $GAs = Bridge.Reflection.getGenericArguments(Bridge.getType(this));");
+                        for (int j = 0; j < GAs.Length; j++)
+                        {
+                            tfFun.Add("var ${0} = Bridge.Reflection.getTypeFullName($GAs[{1}]);",
+                                GAs[j].Name, j);
+                        }
+                    }
+
+                    tfFun.Add("CS.Call({0});", argActual)
                         .Out().Add("},");
                 }
                 tfInst.Add(tf.Ch);
@@ -336,8 +347,25 @@ namespace jsb
             int slot = GeneratorHelp.AddTypeInfo(type, out ti);
 
             TextFile tfDef = new TextFile();
-            tfDef.Add("Bridge.define(\"{0}\", {{", JSNameMgr.JsFullName(type));
-            TextFile tfClass = tfDef.Add("");
+            TextFile tfClass = null;
+            bool gtd = type.IsGenericTypeDefinition;
+
+            if (!gtd)
+            {
+                tfClass = tfDef.Add("Bridge.define(\"{0}\", {{", JSNameMgr.JsFullName(type))
+                    .In();
+                tfDef.Add("});");
+            }
+            else
+            {
+                args TNames = new args();
+                foreach (var T in type.GetGenericArguments())
+                    TNames.Add(T.Name);
+
+                tfClass = tfDef.Add("Bridge.define(\"{0}\", function ({1}) {{ return {{", JSNameMgr.JsFullName(type), TNames.Format(args.ArgsFormat.OnlyList))
+                    .In();
+                tfDef.Add("}});");
+            }
 
             // base type, interfaces
             {
@@ -364,16 +392,14 @@ namespace jsb
             }
 
             if (type.IsInterface)
-                tfClass.In().Add("$kind: \"interface\",");
+                tfClass.Add("$kind: \"interface\",");
             else if (type.IsValueType)
-                tfClass.In().Add("$kind: \"struct\",");
+                tfClass.Add("$kind: \"struct\",");
 
-            TextFile tfStatic = tfClass.In().Add("statics: {").In();
+            TextFile tfStatic = tfClass.Add("statics: {").In();
             tfStatic.Out().Add("},");
 
-            TextFile tfInst = tfClass.Add("").In();
-
-            tfDef.Add("});");
+            TextFile tfInst = tfClass.Add("");
 
             if (type.IsValueType)
             {

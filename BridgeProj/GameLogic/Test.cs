@@ -4,6 +4,20 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public class TG<T, J>
+{
+    public TG(){ v = 1; strs = null; }
+    public int v;
+    public string[] strs;
+}
+
+public class TG2
+{
+    public TG2() { v = 1;strs = null; }
+    public int v;
+    public string[] strs;
+}
+
 public class Test : MonoBehaviour
 {
     void Start()
@@ -33,8 +47,12 @@ public class Test : MonoBehaviour
         //v.x = 5f;
         //print("v.x = " + v.x);
 
-        TestGeneric<GameObject> tg = new TestGeneric<GameObject>();
+        TestGeneric<GameObject, int, int> tg = new TestGeneric<GameObject, int, int>(new GameObject("BBCCCC"));
         tg.PrintName();
+
+        //var tgjs = new TG<GameObject, int>();
+        //var ttt = tgjs.GetType().GetGenericArguments()[0].FullName;
+        //print("fullname is " + ttt);
 
         //List<GameObject> lst = new List<GameObject>();
         //for (int i = 0; i < 10; i++)
