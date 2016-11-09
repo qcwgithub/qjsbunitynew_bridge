@@ -111,13 +111,13 @@ public class JSComponent : JSSerializer
         // because we have to call ctor, to run initialization code
         // this object will not have finalizeOp
         jsObjID = JSApi.newJSClassObject(this.jsClassName);
-        JSApi.setTraceS(jsObjID, true);
         if (jsObjID == 0)
         {
             Debug.LogError("New MonoBehaviour \"" + this.jsClassName + "\" failed. Did you forget to export that class?");
             jsFail = true;
             return;
         } 
+		JSApi.setTraceS(jsObjID, true);
         JSMgr.addJSCSRel(jsObjID, this);
         initMemberFunction();
         jsSuccess = true;

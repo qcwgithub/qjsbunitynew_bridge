@@ -85,7 +85,7 @@ namespace jsb
             }
             return name;
         }
-        public static string Member_AddSuffix(string methodName, int overloadIndex, int TCounts = 0)
+        static string Member_AddSuffix(string methodName, int overloadIndex, int TCounts = 0)
         {
             string name = methodName;
             //if (TCounts > 0)
@@ -96,7 +96,16 @@ namespace jsb
                 name += "$" + overloadIndex;
             }
             return name;
-        }
+		}
+		static string Ctor_Name(int overloadIndex)
+		{
+			string name = "ctor";			
+			if (overloadIndex > 0)
+			{
+				name = "$" + name + overloadIndex;
+			}
+			return name;
+		}
         public static string SharpKitClassName(Type type)
         {
             return JSNameMgr.JsFullName(type);
@@ -178,7 +187,7 @@ namespace jsb
                     mName, indexerParamA, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
 
                 tf.Add("set{0}: function ({1}v) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}, v); }},",
-                    mName, indexerParamB, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
+                    mName, indexerParamB, (int)JSVCall.Oper.SET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
             }
         }
         public static void BuildConstructors(TextFile tfInst, Type type, List<MemberInfoEx> constructors, int slot)
@@ -226,7 +235,7 @@ namespace jsb
                     argActual.Add("a" + j.ToString());
                 }
 
-                string mName = Member_AddSuffix("ctor", infoEx.GetOverloadIndex());
+				string mName = Ctor_Name(infoEx.GetOverloadIndex());
 
                 // 特殊处理 - MonoBehaviour 不需要构造函数内容
                 if (type == typeof(MonoBehaviour))
@@ -401,6 +410,7 @@ namespace jsb
 
                 tfInst.Add("$clone: function (to) {")
                     .In()
+						.Add("return this; // don't clone").AddLine()
                         .Add("var s = to || new {0}();", JSNameMgr.JsFullName(type))
                         .Add(() =>
                         {
