@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-//using UnityEditor;
 using System;
 using System.Text;
 using System.Reflection;
@@ -64,7 +63,7 @@ public static class JSMgr
                     }
                 }
             }
-        } 
+        }
         if (find)
         {
             method.Invoke(null, null);
@@ -159,26 +158,27 @@ public static class JSMgr
          * 后来在某个时刻析构被调用，在析构函数里有  removeJSCSRel ，那里会判断 round 是上一轮的所以忽略
          */
         List<int> keysToRemove = new List<int>();
-        List<int> hashsToRemove = new List<int>();
+        List<object> csObjsToRemove = new List<object>();
         foreach (var KV in mDictionary1)
         {
             JS_CS_Rel rel = KV.Value;
-            if (rel.csObj is WeakReference)
+            var wr = rel.csObj as WeakReference;
+            if (wr != null)
             {
-                if ((rel.csObj as WeakReference).Target is CSRepresentedObject)
+                if (wr.Target is CSRepresentedObject)
                 {
                     keysToRemove.Add(KV.Key);
-                    hashsToRemove.Add(rel.hash);
+                    csObjsToRemove.Add(rel.csObj);
                 }
             }
         }
-        foreach (var k in keysToRemove)
+        foreach (int jsObjId in keysToRemove)
         {
-            mDictionary1.Remove(k);
+            mDictionary1.Remove(jsObjId);
         }
-        foreach (var h in hashsToRemove)
+        foreach (var csObj in csObjsToRemove)
         {
-            mDictionary2.Remove(h);
+            mDictionary2.Remove(csObj);
         }
 
         //
@@ -207,18 +207,18 @@ public static class JSMgr
          * 这时候可能他的 OnDestroy 还没有执行，所以这2个字典里还会有他们
          */
         List<int> Keys = new List<int>(mDictionary1.Keys);
-        foreach (var K in Keys)
+        foreach (int jsObjId in Keys)
         {
-            if (!mDictionary1.ContainsKey(K))
+            if (!mDictionary1.ContainsKey(jsObjId))
                 continue;
-            
-            JS_CS_Rel Rel = mDictionary1[K];
-            sb.AppendLine(K.ToString() + " " + Rel.name);
+
+            JS_CS_Rel Rel = mDictionary1[jsObjId];
+            sb.AppendLine(jsObjId + " " + Rel.csObj.GetType().Name);
         }
         Debug.Log(sb);
 
         allCallbackInfo.Clear();
-        JSMgr.MoveJSCSRel2Old();
+        MoveJSCSRel2Old();
         mDictJSFun1.Clear();
         mDictJSFun2.Clear();
         evaluatedScript.Clear();
@@ -246,10 +246,7 @@ public static class JSMgr
 
     static Dictionary<string, bool> evaluatedScript = new Dictionary<string, bool>();
 
-    //static Dictionary<long, IntPtrClass> rootedObject = new Dictionary<long, IntPtrClass>();
-
     /// <summary>
-    /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// callback function list
     /// </summary>
     /// 
@@ -328,7 +325,7 @@ public static class JSMgr
     [MonoPInvokeCallbackAttribute(typeof(JSApi.CSEntry))]
     static int CSEntry(int iOP, int slot, int index, int isStatic, int argc)
     {
-        if (JSMgr.IsShutDown) return 0; 
+        if (JSMgr.IsShutDown) return 0;
         try
         {
             vCall.CallCallback(iOP, slot, index, isStatic, argc);
@@ -361,12 +358,12 @@ public static class JSMgr
         byte[] bytes = jsLoader.LoadJSSync(fullName);
         if (bytes == null)
         {
-            Debug.LogError(jsScriptName + "file content is null");
+            Debug.LogError(jsScriptName + "file bytes is null");
             return false;
         }
         else if (bytes.Length == 0)
         {
-            Debug.LogError(jsScriptName + "file content length = 0");
+            Debug.LogError(jsScriptName + "file bytes length = 0");
             return false;
         }
 
@@ -401,46 +398,27 @@ public static class JSMgr
 
     #region JS_CS_REL
 
-    // TODO check
     public class JS_CS_Rel
     {
         public int jsObjID;
         public object csObj;
-        public string name;
-        public int hash;
-        public JS_CS_Rel(int jsObjID, object csObj, int h)
+        public JS_CS_Rel(int jsObjID, object csObj)
         {
             this.jsObjID = jsObjID;
             this.csObj = csObj;
-            this.name = csObj.GetType().Name;// csObj.ToString();
-            this.hash = h;
         }
-
     }
     public static void addJSCSRel(int jsObjID, object csObj, bool weakReference = false)
     {
-        //if (csObj == null || csObj.Equals(null))
-
-//         if (csObj != null && csObj is UnityEngine.Object)
-//         {
-//             if (csObj.Equals(null))
-//             {
-//                 Debug.LogError("JSMgr.addJSCSRel object == null, call stack:" + new System.Diagnostics.StackTrace().ToString());
-//                 //throw new Exception();
-//             }
-//         }
-
         if (weakReference)
         {
-            int hash = csObj.GetHashCode();
             WeakReference wrObj = new WeakReference(csObj);
-            var Rel = new JS_CS_Rel(jsObjID, wrObj, hash);
-            mDictionary1.Add(jsObjID, Rel);
-            mDictionary2.Add(hash, Rel);
+            var Rel = new JS_CS_Rel(jsObjID, wrObj);
+            AddDictionary1(jsObjID,Rel);
+            AddDictionary2(Rel);
         }
         else
         {
-            int hash = csObj.GetHashCode();
             JSCache.TypeInfo typeInfo = JSCache.GetTypeInfo(csObj.GetType());
 
             if (mDictionary1.ContainsKey(jsObjID))
@@ -451,20 +429,39 @@ public static class JSMgr
                 }
             }
 
-#if UNITY_EDITOR
-            if (mDictionary1.ContainsKey(jsObjID))
-            {
-                Debug.Log(">_<");
-            }
-#endif
-
-            var Rel = new JS_CS_Rel(jsObjID, csObj, hash);
-            mDictionary1.Add(jsObjID, Rel);
+            var Rel = new JS_CS_Rel(jsObjID, csObj);
+            AddDictionary1(jsObjID, Rel);
 
             if (typeInfo.IsClass)
             {
-                mDictionary2.Add(hash, Rel);
+                AddDictionary2(Rel);
             }
+        }
+    }
+
+    private static void AddDictionary1(int jsObjID, JS_CS_Rel Rel)
+    {
+        if (mDictionary1.ContainsKey(jsObjID))
+        {
+            mDictionary1[jsObjID] = Rel;
+            Debug.LogError("mDictionary1 has same key to add:" + jsObjID + " - " + Rel.csObj);
+        }
+        else
+        {
+            mDictionary1.Add(jsObjID, Rel);
+        }
+    }
+
+    private static void AddDictionary2(JS_CS_Rel Rel)
+    {
+        if (mDictionary2.ContainsKey(Rel.csObj))
+        {
+            mDictionary2[Rel.csObj] = Rel;
+            Debug.LogError("mDictionary2 has same key to add:" + Rel.csObj + " - " + Rel.jsObjID);
+        }
+        else
+        {
+            mDictionary2.Add(Rel.csObj, Rel);
         }
     }
 
@@ -484,7 +481,7 @@ public static class JSMgr
                 if (mDictionary1_Old.TryGetValue(id, out Rel))
                 {
                     mDictionary1_Old.Remove(id);
-                    mDictionary2_Old.Remove(Rel.hash);
+                    mDictionary2_Old.Remove(Rel.csObj);
 
                     Debug.Log("Remove " + id + " from old, left " + mDictionary1_Old.Count + " and " + mDictionary2_Old.Count);
                 }
@@ -498,7 +495,7 @@ public static class JSMgr
                 if (mDictionary1.TryGetValue(id, out Rel))
                 {
                     mDictionary1.Remove(id);
-                    mDictionary2.Remove(Rel.hash);
+                    mDictionary2.Remove(Rel.csObj);
                 }
                 else if (!JSMgr.IsShutDown)
                 {
@@ -523,12 +520,12 @@ public static class JSMgr
                 object tar = ((WeakReference)ret).Target;
                 if (tar == null)
                 {
-//                    JSEngine.inst.UpdateThreadSafeActions();
-//                    if (mDictionary1.ContainsKey(jsObjID))
-//                        Debug.LogError("ERROR: JSMgr.getCSObj WeakReference.Target == null");
+                    //                    JSEngine.inst.UpdateThreadSafeActions();
+                    //                    if (mDictionary1.ContainsKey(jsObjID))
+                    //                        Debug.LogError("ERROR: JSMgr.getCSObj WeakReference.Target == null");
 
                     // 这里为什么这么做
-					// 这里先移除，返回值为null，外面自然会再添加
+                    // 这里先移除，返回值为null，外面自然会再添加
                     // 更多细节请看 CSRepresentedObject 注释！
                     // 这里唯一需要纠结一下的就是 round 参数，总是传 0 吧，现在已经不需要检查 round 是否是上一轮的
                     // 而且在手机上跑的话也不可能出现遗留上一轮对象的问题，因为一共只有一轮
@@ -549,12 +546,13 @@ public static class JSMgr
         }
 
         JS_CS_Rel Rel;
-        object newObj = (csObj is WeakReference) ? ((WeakReference)csObj).Target : csObj;
-        int hash = newObj.GetHashCode();
-        if (mDictionary2.TryGetValue(hash, out Rel))
+        var wr = csObj as WeakReference;
+        object newObj = (wr != null) ? wr.Target : csObj;
+        if (mDictionary2.TryGetValue(csObj, out Rel))
         {
 #if UNITY_EDITOR
-            object oldObj = (Rel.csObj is WeakReference) ? ((WeakReference)Rel.csObj).Target : Rel.csObj;
+            wr = Rel.csObj as WeakReference;
+            object oldObj = (wr != null) ? wr.Target : Rel.csObj;
             if (!oldObj.Equals(newObj))
             {
                 Debug.LogError("mDictionary2 and mDictionary1 saves different object");
@@ -574,8 +572,7 @@ public static class JSMgr
         JS_CS_Rel Rel;
         if (mDictionary1.TryGetValue(jsObjID, out Rel))
         {
-            mDictionary1.Remove(jsObjID);
-            mDictionary1.Add(jsObjID, new JS_CS_Rel(jsObjID, csObjNew, csObjNew.GetHashCode()));
+            mDictionary1[jsObjID] = new JS_CS_Rel(jsObjID, csObjNew);
         }
     }
     public static void MoveJSCSRel2Old()
@@ -583,8 +580,8 @@ public static class JSMgr
         mDictionary1_Old = mDictionary1;
         mDictionary2_Old = mDictionary2;
 
-        mDictionary1 = new Dictionary<int, JS_CS_Rel>(); // key = OBJID
-        mDictionary2 = new Dictionary<int, JS_CS_Rel>(); // key = object.GetHashCode()
+        mDictionary1 = new Dictionary<int, JS_CS_Rel>(); // key = jsObjID
+        mDictionary2 = new Dictionary<object, JS_CS_Rel>(); // key = csObj
     }
 
     [MonoPInvokeCallbackAttribute(typeof(JSApi.OnObjCollected))]
@@ -593,16 +590,15 @@ public static class JSMgr
         removeJSCSRel(id);
     }
 
-    static Dictionary<int, JS_CS_Rel> mDictionary1 = new Dictionary<int, JS_CS_Rel>(); // key = OBJID
+    static Dictionary<int, JS_CS_Rel> mDictionary1 = new Dictionary<int, JS_CS_Rel>(); // 以jsObjID为key,获取对应csObj
     static Dictionary<int, JS_CS_Rel> mDictionary1_Old;
     /// <summary>
     /// NOTICE
     /// two C# object may have same hash code?
     /// if Destroy(go) was called, obj becomes null, ... 
-    /// TODO
     /// </summary>
-    static Dictionary<int, JS_CS_Rel> mDictionary2 = new Dictionary<int, JS_CS_Rel>(); // key = object.GetHashCode()
-    static Dictionary<int, JS_CS_Rel> mDictionary2_Old;
+    static Dictionary<object, JS_CS_Rel> mDictionary2 = new Dictionary<object, JS_CS_Rel>(); // 以csObj为key,获取对应jsObjID
+    static Dictionary<object, JS_CS_Rel> mDictionary2_Old;
 
     public static void GetDictCount(out int countDict1, out int countDict2)
     {

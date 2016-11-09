@@ -201,23 +201,24 @@ public class JSEngine : MonoBehaviour
         GUI.TextArea(new Rect(guiX, 10, 500, 20), "JS->CS Count " + this.jsCallCountPerFrame + " Round " + JSMgr.jsEngineRound + " Objs(Total " + countDict1.ToString() + ", Class " + countDict2.ToString() + ") CSR(Obj " + CSRepresentedObject.s_objCount + " Fun " + CSRepresentedObject.s_funCount + ") Del " + JSMgr.getJSFunCSDelegateCount());
 
         int clsCount = 0;
-        Dictionary<int, JSMgr.JS_CS_Rel> dict1 = JSMgr.GetDict1();
-        List<int> Keys = new List<int>(dict1.Keys);
+        var dict1 = JSMgr.GetDict1();
+        var Keys = new List<int>(dict1.Keys);
 
-        Dictionary<string, int> class2Count = new Dictionary<string, int>();
-        foreach (var K in Keys)
+        var class2Count = new Dictionary<string, int>();
+        foreach (int K in Keys)
         {
             if (!dict1.ContainsKey(K))
                 continue;
 
             var Rel = dict1[K];
-            if (class2Count.ContainsKey(Rel.name))
+            var typeName = Rel.csObj.GetType().Name;
+            if (class2Count.ContainsKey(typeName))
             {
-                class2Count[Rel.name]++;
+                class2Count[typeName]++;
             }
             else
             {
-                class2Count[Rel.name] = 1;
+                class2Count[typeName] = 1;
             }
             if (Rel.csObj != null && Rel.csObj.GetType().IsClass)
             {
