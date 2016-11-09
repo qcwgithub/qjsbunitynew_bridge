@@ -374,14 +374,14 @@ namespace jsb
                         .AddLine();
 
 
-				tfFun.Add("{0} action = ({0})JSMgr.getJSFunCSDelegateRel(objFunction.jsObjID);", JSNameMgr.CsFullName(delType, CsNameOption.CompilableWithT));
+				tfFun.Add("{0} action = JSMgr.getJSFunCSDelegateRel<{0}>(objFunction.jsObjID);", JSNameMgr.CsFullName(delType, CsNameOption.CompilableWithT));
                 tfFun.Add("if (action != null)")
                     .In()
                         .Add("return action;")
                         .Out()
                         .AddLine();
 
-                TextFile tfAction = tfFun.Add("action = ({0}) => \n", argsParam.Format(args.ArgsFormat.OnlyList))
+                TextFile tfAction = tfFun.Add("action = ({0}) => ", argsParam.Format(args.ArgsFormat.OnlyList))
                     .BraceIn();
                 {
                     tfAction.Add("JSMgr.vCall.CallJSFunctionValue(0, objFunction.jsObjID{0}{1});", (argsParam.Count > 0) ? ", " : "", argsParam);

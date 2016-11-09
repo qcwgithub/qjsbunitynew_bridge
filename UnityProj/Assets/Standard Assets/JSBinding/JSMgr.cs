@@ -220,7 +220,6 @@ public static class JSMgr
         allCallbackInfo.Clear();
         MoveJSCSRel2Old();
         mDictJSFun1.Clear();
-        mDictJSFun2.Clear();
         evaluatedScript.Clear();
         CSRepresentedObject.s_objCount = 0;
         CSRepresentedObject.s_funCount = 0;
@@ -611,68 +610,47 @@ public static class JSMgr
 
     #region JS<->CS fun<->Delegate relationship
 
-    class JS_CS_FunRel
+    // key = jsFuncId, Value = JS_CS_FunRel(Delegate, Delegate.GetHashCode())
+    static Dictionary<int, WeakReference> mDictJSFun1 = new Dictionary<int, WeakReference>();
+
+    public static T getJSFunCSDelegateRel<T>(int funID)
     {
-        public WeakReference wr;
-        public int hashCode;
+        WeakReference wr = null;
+        if (mDictJSFun1.TryGetValue(funID, out wr))
+        {
+            object obj = wr.Target;
+            if(obj == null)
+                Debug.LogError("ERROR getJSFunCSDelegateRel rel.wr.Target == null");
+
+            return (T) obj;
+        }
+        return default(T);
     }
-    static Dictionary<int, JS_CS_FunRel> mDictJSFun1 = new Dictionary<int, JS_CS_FunRel>(); // key = FUNCTION ID, Value = JS_CS_FunRel(Delegate, Delegate.GetHashCode())
-    static Dictionary<int, int> mDictJSFun2 = new Dictionary<int,int>(); // key = Delegate.GetHashCode(), Value = FUNCTIONID
     public static void addJSFunCSDelegateRel(int funID, Delegate del)
     {
         if (!mDictJSFun1.ContainsKey(funID))
         {
-            JS_CS_FunRel rel = new JS_CS_FunRel();
-            {
-                rel.wr = new WeakReference(del);
-                rel.hashCode = del.GetHashCode();
-            }
-
-            mDictJSFun1.Add(funID, rel);
-            mDictJSFun2.Add(rel.hashCode, funID);
+            var wr = new WeakReference(del);
+            mDictJSFun1.Add(funID, wr);
         }
-    }
-    public static Delegate getJSFunCSDelegateRel(int funID)
-    {
-        JS_CS_FunRel rel;
-        if (mDictJSFun1.TryGetValue(funID, out rel))
-        {
-            object obj = rel.wr.Target;
-            if (obj == null)
-                Debug.LogError("ERROR getJSFunCSDelegateRel rel.wr.Target == null");
-            return (Delegate)obj;
-        }
-        return null;
     }
     public static void removeJSFunCSDelegateRel(int funID)
     {
-        JS_CS_FunRel rel;
-        if (mDictJSFun1.TryGetValue(funID, out rel))
-        {
-            mDictJSFun1.Remove(funID);
-            mDictJSFun2.Remove(rel.hashCode);
-        }
+        mDictJSFun1.Remove(funID);
     }
     public static int getFunIDByDelegate(Delegate del)
     {
-        int hash = del.GetHashCode();
-
-        int funID;
-        if (mDictJSFun2.TryGetValue(hash, out funID))
+        foreach (var pair in mDictJSFun1)
         {
-            return funID;
+            Delegate target = (Delegate)pair.Value.Target;
+            if (target != null && target == del)
+                return pair.Key;
         }
         return 0;
     }
     public static string getJSFunCSDelegateCount()
     {
-        var c1 = mDictJSFun1.Count;
-        var c2 = mDictJSFun2.Count;
-        if (c1 == c2)
-        {
-            return c1.ToString();
-        }
-        return "" + c1 + "/" + c2;
-    } 
+        return mDictJSFun1.Count.ToString();
+    }
     #endregion
 }
