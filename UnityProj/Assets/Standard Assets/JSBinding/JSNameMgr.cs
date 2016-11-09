@@ -104,12 +104,19 @@ namespace jsb
 			else
 				return name.Replace('+', '.');
 		}
+
+		// 当有一个类 TestGeneric<T>，有可能需要产生下面几种名字
+		// 名字形式                  使用环境
+		// TestGeneric<>            typeof(TestGeneric<>) 可编译
+		// TestGeneric<T>           public class TestGeneric<T>
+		// TestGeneric<GameObject>  具体类型时
+		// TestGeneric`1            bridge使用
 		static string CsFullName_Impl(Type type, CsNameOption opt)
 		{
 			if (type == null) 
 				return "";
 			
-			//bool with_t = (opt == CsNameOption.CompilableWithT || opt == CsNameOption.BridgeTypeToString);
+			bool with_t = (opt == CsNameOption.CompilableWithT);
 			bool bridge = (opt == CsNameOption.BridgeTypeToString);
 			
 			bool isgp = type.IsGenericParameter;
@@ -154,20 +161,19 @@ namespace jsb
 				Type[] Ts = type.GetGenericArguments();
 				int iOft = N.IndexOf("`" + Ts.Length);
 
-				if (gtd)
+				if (bridge && gtd)
 				{
-                    if (!bridge)
-                    {
-                        for (var i = 0; i < GenTSuffix.Length; i++)
-                            N = N.Replace(GenTSuffix[i], GenTSuffixReplaceCS[i]);
-                    }
-                    else
-                    {
-                        if (iOft >= 0)
-                            N = N.Substring(0, iOft);
-                        if (bridge)
-                            N += "`" + Ts.Length;
-                    }
+					if (iOft >= 0)
+						N = N.Substring(0, iOft);
+					
+					N += "`" + Ts.Length;
+					return _ReplacePlus(N, opt);
+				}
+
+				if (gtd && !with_t)
+				{
+                    for (var i = 0; i < GenTSuffix.Length; i++)
+                        N = N.Replace(GenTSuffix[i], GenTSuffixReplaceCS[i]);
 					return _ReplacePlus(N, opt);
 				}
 				else

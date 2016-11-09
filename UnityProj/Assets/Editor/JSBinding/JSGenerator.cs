@@ -223,7 +223,7 @@ namespace jsb
                     for (int j = 0; j < TCount; j++)
                     {
                         argFormal.Add("t" + j + "");
-                        argActual.Add("t" + j + ".getNativeType()");
+						argActual.AddFormat("Bridge.Reflection.getTypeFullName(t{0})", j);
                     }
                 }
 

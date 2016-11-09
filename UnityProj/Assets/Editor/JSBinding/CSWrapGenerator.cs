@@ -438,7 +438,13 @@ namespace jsb
                 else
                     sb.Append("class ");
 
-				sb.Append(type.Name);
+				string className = type.CsFullName(CsNameOption.CompilableWithT);
+				int dot = className.LastIndexOf(".");
+				if (dot >= 0)
+				{
+					className = className.Substring(dot + 1);
+				}
+				sb.Append(className);
 
                 Type vBaseType = type.ValidBaseType();
                 Type[] interfaces = type.GetInterfaces();
@@ -492,7 +498,14 @@ namespace jsb
 					}
 				}
 
-				tfClass.Add("public extern {0}({1});", type.Name, con == null ? "" : Ps2String(type, con.GetParameters()));
+				string ctorName = type.Name;
+				if (type.IsGenericTypeDefinition)
+				{
+					int flag = ctorName.LastIndexOf('`');
+					if (flag >= 0)
+						ctorName = ctorName.Substring(0, flag);
+				}
+				tfClass.Add("public extern {0}({1});", ctorName, con == null ? "" : Ps2String(type, con.GetParameters()));
 
 				if (con != null)
 				{

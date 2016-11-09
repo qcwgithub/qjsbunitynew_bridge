@@ -33,48 +33,51 @@ public class Test : MonoBehaviour
         //v.x = 5f;
         //print("v.x = " + v.x);
 
-        List<GameObject> lst = new List<GameObject>();
-        for (int i = 0; i < 10; i++)
-        {
-            GameObject go = new GameObject("go_" + i);
-            lst.Add(go);
-        }
+        TestGeneric<GameObject> tg = new TestGeneric<GameObject>();
+        tg.PrintName();
 
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("before sort --- ");
-        foreach (var go in lst)
-        {
-            sb.AppendLine(go.name);
-        }
+        //List<GameObject> lst = new List<GameObject>();
+        //for (int i = 0; i < 10; i++)
+        //{
+        //    GameObject go = new GameObject("go_" + i);
+        //    lst.Add(go);
+        //}
 
-        sb.AppendLine();
-        sb.AppendLine("after sort --- ");
+        //StringBuilder sb = new StringBuilder();
+        //sb.AppendLine("before sort --- ");
+        //foreach (var go in lst)
+        //{
+        //    sb.AppendLine(go.name);
+        //}
 
-        lst.Sort((a, b) =>
-        {
-            int x = int.Parse(a.name.Substr(a.name.IndexOf('_') + 1));
-            int y = int.Parse(b.name.Substr(b.name.IndexOf('_') + 1));
-            if (x % 2 == 0 && y % 2 == 1)
-                return -1;
-            else if (x % 2 == 1 && y % 2 == 0)
-                return 1;
-            return 0;
-        });
-        foreach (var go in lst)
-        {
-            sb.AppendLine(go.name);
-        }
+        //sb.AppendLine();
+        //sb.AppendLine("after sort --- ");
 
-        print(sb.ToString());
+        //lst.Sort((a, b) =>
+        //{
+        //    int x = int.Parse(a.name.Substr(a.name.IndexOf('_') + 1));
+        //    int y = int.Parse(b.name.Substr(b.name.IndexOf('_') + 1));
+        //    if (x % 2 == 0 && y % 2 == 1)
+        //        return -1;
+        //    else if (x % 2 == 1 && y % 2 == 0)
+        //        return 1;
+        //    return 0;
+        //});
+        //foreach (var go in lst)
+        //{
+        //    sb.AppendLine(go.name);
+        //}
+
+        //print(sb.ToString());
 
 
-        foreach (var go in lst)
-        {
-            UnityEngine.Object.Destroy(go);
-        }
-        lst.Clear();
+        //foreach (var go in lst)
+        //{
+        //    UnityEngine.Object.Destroy(go);
+        //}
+        //lst.Clear();
 
-        print("lst.Count = " + lst.Count);
+        //print("lst.Count = " + lst.Count);
     }
     void Update()
     {
