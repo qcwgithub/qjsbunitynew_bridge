@@ -47,10 +47,13 @@ public class Test : MonoBehaviour
         //v.x = 5f;
         //print("v.x = " + v.x);
 
-        TestGeneric<GameObject, int, int> tg = new TestGeneric<GameObject, int, int>(new GameObject("BBCCCC"));
-        tg.PrintName();
+        //TestGeneric<GameObject, int, int> tg = new TestGeneric<GameObject, int, int>(new GameObject("BBCCCC"));
+        //tg.PrintName();
 
-        tg.Hello<int, UnityEngine.Collider>();
+        //tg.Hello<int, UnityEngine.Collider>();
+
+        TestMisc tm = new TestMisc();
+        tm.TestParams("邱少云", "是谁");
 
         //var tgjs = new TG<GameObject, int>();
         //var ttt = tgjs.GetType().GetGenericArguments()[0].FullName;

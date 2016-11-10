@@ -159,6 +159,8 @@ namespace jsb
 					else
 						s = "ref ";
 				}
+				if (ParameterIsParams(p))
+					s += "params ";
 				s += typefn(p.ParameterType, type.Namespace) + " ";
 				s += p.Name;
 				f_args.Add(s);
@@ -284,6 +286,11 @@ namespace jsb
                 }
             }
         }
+
+		static bool ParameterIsParams(ParameterInfo pi)
+		{
+			return (pi.ParameterType.IsArray && pi.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0);
+		}
 
 		static void handleMethods(TextFile tfClass, Type type, GeneratorHelp.ATypeInfo ti, Action<Type> OnNewType)
 		{

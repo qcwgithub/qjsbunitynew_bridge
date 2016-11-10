@@ -40,9 +40,7 @@ namespace jsb
             tf.AddMultiline(@"JSDataExchangeMgr.GetJSArg<{0}>(() => 
 {{
     int jsObjID = JSApi.getObject((int)JSApi.GetType.Arg);
-    if (jsObjID == 0)
-        return null;
-    int length = JSApi.getArrayLength(jsObjID);
+    int length = jsObjID == 0 ? 0 : JSApi.getArrayLength(jsObjID);
     var ret = new {1}[length];
     for (var i = 0; i < length; i++)
     {{
