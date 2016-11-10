@@ -236,6 +236,13 @@ namespace jsb
                 if (!isI)
 				{
                     vo = "public ";
+					
+					if ((getm != null && getm.IsStatic) ||
+					    (setm != null && setm.IsStatic))
+					{
+						vo += "static ";
+					}
+
 					if ((getm != null && getm.IsVirtual) ||
 					    (setm != null && setm.IsVirtual))
 					{

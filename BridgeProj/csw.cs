@@ -143,23 +143,23 @@ namespace UnityEngine
          
         public extern Physics2D();
          
-        public float angularSleepTolerance { get { return default(float); } set {} }
-        public float baumgarteScale { get { return default(float); } set {} }
-        public float baumgarteTOIScale { get { return default(float); } set {} }
-        public bool changeStopsCallbacks { get { return default(bool); } set {} }
-        public Vector2 gravity { get { return default(Vector2); } set {} }
-        public float linearSleepTolerance { get { return default(float); } set {} }
-        public float maxAngularCorrection { get { return default(float); } set {} }
-        public float maxLinearCorrection { get { return default(float); } set {} }
-        public float maxRotationSpeed { get { return default(float); } set {} }
-        public float maxTranslationSpeed { get { return default(float); } set {} }
-        public float minPenetrationForPenalty { get { return default(float); } set {} }
-        public int positionIterations { get { return default(int); } set {} }
-        public bool raycastsHitTriggers { get { return default(bool); } set {} }
-        public bool raycastsStartInColliders { get { return default(bool); } set {} }
-        public float timeToSleep { get { return default(float); } set {} }
-        public int velocityIterations { get { return default(int); } set {} }
-        public float velocityThreshold { get { return default(float); } set {} }
+        public static float angularSleepTolerance { get { return default(float); } set {} }
+        public static float baumgarteScale { get { return default(float); } set {} }
+        public static float baumgarteTOIScale { get { return default(float); } set {} }
+        public static bool changeStopsCallbacks { get { return default(bool); } set {} }
+        public static Vector2 gravity { get { return default(Vector2); } set {} }
+        public static float linearSleepTolerance { get { return default(float); } set {} }
+        public static float maxAngularCorrection { get { return default(float); } set {} }
+        public static float maxLinearCorrection { get { return default(float); } set {} }
+        public static float maxRotationSpeed { get { return default(float); } set {} }
+        public static float maxTranslationSpeed { get { return default(float); } set {} }
+        public static float minPenetrationForPenalty { get { return default(float); } set {} }
+        public static int positionIterations { get { return default(int); } set {} }
+        public static bool raycastsHitTriggers { get { return default(bool); } set {} }
+        public static bool raycastsStartInColliders { get { return default(bool); } set {} }
+        public static float timeToSleep { get { return default(float); } set {} }
+        public static int velocityIterations { get { return default(int); } set {} }
+        public static float velocityThreshold { get { return default(float); } set {} }
          
          
         public static extern RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction);
@@ -311,17 +311,17 @@ namespace UnityEngine
         public Color gamma { get { return default(Color); } }
         public float grayscale { get { return default(float); } }
         public Color linear { get { return default(Color); } }
-        public Color black { get { return default(Color); } }
-        public Color blue { get { return default(Color); } }
-        public Color clear { get { return default(Color); } }
-        public Color cyan { get { return default(Color); } }
-        public Color gray { get { return default(Color); } }
-        public Color green { get { return default(Color); } }
-        public Color grey { get { return default(Color); } }
-        public Color magenta { get { return default(Color); } }
-        public Color red { get { return default(Color); } }
-        public Color white { get { return default(Color); } }
-        public Color yellow { get { return default(Color); } }
+        public static Color black { get { return default(Color); } }
+        public static Color blue { get { return default(Color); } }
+        public static Color clear { get { return default(Color); } }
+        public static Color cyan { get { return default(Color); } }
+        public static Color gray { get { return default(Color); } }
+        public static Color green { get { return default(Color); } }
+        public static Color grey { get { return default(Color); } }
+        public static Color magenta { get { return default(Color); } }
+        public static Color red { get { return default(Color); } }
+        public static Color white { get { return default(Color); } }
+        public static Color yellow { get { return default(Color); } }
          
         public float this[int index] { get { return default(float); } set {} }
          
@@ -368,13 +368,13 @@ namespace UnityEngine
          
         public extern Physics();
          
-        public float bounceThreshold { get { return default(float); } set {} }
-        public Vector3 gravity { get { return default(Vector3); } set {} }
-        public float maxAngularVelocity { get { return default(float); } set {} }
-        public float minPenetrationForPenalty { get { return default(float); } set {} }
-        public float sleepAngularVelocity { get { return default(float); } set {} }
-        public float sleepVelocity { get { return default(float); } set {} }
-        public int solverIterationCount { get { return default(int); } set {} }
+        public static float bounceThreshold { get { return default(float); } set {} }
+        public static Vector3 gravity { get { return default(Vector3); } set {} }
+        public static float maxAngularVelocity { get { return default(float); } set {} }
+        public static float minPenetrationForPenalty { get { return default(float); } set {} }
+        public static float sleepAngularVelocity { get { return default(float); } set {} }
+        public static float sleepVelocity { get { return default(float); } set {} }
+        public static int solverIterationCount { get { return default(int); } set {} }
          
          
         public static extern bool CapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction);
@@ -558,21 +558,21 @@ namespace UnityEngine
     {
         public extern Screen();
          
-        public bool autorotateToLandscapeLeft { get { return default(bool); } set {} }
-        public bool autorotateToLandscapeRight { get { return default(bool); } set {} }
-        public bool autorotateToPortrait { get { return default(bool); } set {} }
-        public bool autorotateToPortraitUpsideDown { get { return default(bool); } set {} }
-        public Resolution currentResolution { get { return default(Resolution); } }
-        public float dpi { get { return default(float); } }
-        public bool fullScreen { get { return default(bool); } set {} }
-        public Resolution[] GetResolution { get { return default(Resolution[]); } }
-        public int height { get { return default(int); } }
-        public bool lockCursor { get { return default(bool); } set {} }
-        public ScreenOrientation orientation { get { return default(ScreenOrientation); } set {} }
-        public Resolution[] resolutions { get { return default(Resolution[]); } }
-        public bool showCursor { get { return default(bool); } set {} }
-        public int sleepTimeout { get { return default(int); } set {} }
-        public int width { get { return default(int); } }
+        public static bool autorotateToLandscapeLeft { get { return default(bool); } set {} }
+        public static bool autorotateToLandscapeRight { get { return default(bool); } set {} }
+        public static bool autorotateToPortrait { get { return default(bool); } set {} }
+        public static bool autorotateToPortraitUpsideDown { get { return default(bool); } set {} }
+        public static Resolution currentResolution { get { return default(Resolution); } }
+        public static float dpi { get { return default(float); } }
+        public static bool fullScreen { get { return default(bool); } set {} }
+        public static Resolution[] GetResolution { get { return default(Resolution[]); } }
+        public static int height { get { return default(int); } }
+        public static bool lockCursor { get { return default(bool); } set {} }
+        public static ScreenOrientation orientation { get { return default(ScreenOrientation); } set {} }
+        public static Resolution[] resolutions { get { return default(Resolution[]); } }
+        public static bool showCursor { get { return default(bool); } set {} }
+        public static int sleepTimeout { get { return default(int); } set {} }
+        public static int width { get { return default(int); } }
          
          
         public static extern void SetResolution(int width, int height, bool fullscreen);
@@ -603,7 +603,7 @@ namespace UnityEngine
         public extern Quaternion(float x, float y, float z, float w);
          
         public Vector3 eulerAngles { get { return default(Vector3); } set {} }
-        public Quaternion identity { get { return default(Quaternion); } }
+        public static Quaternion identity { get { return default(Quaternion); } }
          
         public float this[int index] { get { return default(float); } set {} }
          
@@ -633,6 +633,32 @@ namespace UnityEngine
         public static extern Quaternion LookRotation(Vector3 forward, Vector3 upwards);
         public static extern Quaternion RotateTowards(Quaternion from, Quaternion to, float maxDegreesDelta);
         public static extern Quaternion Slerp(Quaternion from, Quaternion to, float t);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class Time
+    {
+        public extern Time();
+         
+        public static int captureFramerate { get { return default(int); } set {} }
+        public static float deltaTime { get { return default(float); } }
+        public static float fixedDeltaTime { get { return default(float); } set {} }
+        public static float fixedTime { get { return default(float); } }
+        public static int frameCount { get { return default(int); } }
+        public static float maximumDeltaTime { get { return default(float); } set {} }
+        public static float realtimeSinceStartup { get { return default(float); } }
+        public static int renderedFrameCount { get { return default(int); } }
+        public static float smoothDeltaTime { get { return default(float); } }
+        public static float time { get { return default(float); } }
+        public static float timeScale { get { return default(float); } set {} }
+        public static float timeSinceLevelLoad { get { return default(float); } }
+        public static float unscaledDeltaTime { get { return default(float); } }
+        public static float unscaledTime { get { return default(float); } }
+         
+         
     }
 }
  
@@ -687,14 +713,14 @@ namespace UnityEngine
         public float magnitude { get { return default(float); } }
         public Vector3 normalized { get { return default(Vector3); } }
         public float sqrMagnitude { get { return default(float); } }
-        public Vector3 back { get { return default(Vector3); } }
-        public Vector3 down { get { return default(Vector3); } }
-        public Vector3 forward { get { return default(Vector3); } }
-        public Vector3 left { get { return default(Vector3); } }
-        public Vector3 one { get { return default(Vector3); } }
-        public Vector3 right { get { return default(Vector3); } }
-        public Vector3 up { get { return default(Vector3); } }
-        public Vector3 zero { get { return default(Vector3); } }
+        public static Vector3 back { get { return default(Vector3); } }
+        public static Vector3 down { get { return default(Vector3); } }
+        public static Vector3 forward { get { return default(Vector3); } }
+        public static Vector3 left { get { return default(Vector3); } }
+        public static Vector3 one { get { return default(Vector3); } }
+        public static Vector3 right { get { return default(Vector3); } }
+        public static Vector3 up { get { return default(Vector3); } }
+        public static Vector3 zero { get { return default(Vector3); } }
          
         public float this[int index] { get { return default(float); } set {} }
          
@@ -741,6 +767,15 @@ namespace UnityEngine
 }
  
 [Bridge.FileName("csw")]
+public class TestGeneric<T,J,K>
+{
+    public extern TestGeneric(T o);
+     
+    public extern void Hello<X, Y>();
+    public extern void PrintName();
+}
+ 
+[Bridge.FileName("csw")]
 public class TestMisc
 {
     public extern TestMisc();
@@ -751,36 +786,12 @@ public class TestMisc
 namespace UnityEngine
 {
     [Bridge.FileName("csw")]
-    public class NavMeshPath
-    {
-        public extern NavMeshPath();
-         
-        public Vector3[] corners { get { return default(Vector3[]); } }
-        public NavMeshPathStatus status { get { return default(NavMeshPathStatus); } }
-         
-         
-        public extern void ClearCorners();
-    }
-}
- 
-[Bridge.FileName("csw")]
-public class TestRF
-{
-    public extern TestRF();
-     
-    public static extern void Get_Out(out int x);
-    public static extern void Increase_ByRef(bool bInc, ref int x);
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
     public class Debug
     {
         public extern Debug();
          
-        public bool developerConsoleVisible { get { return default(bool); } set {} }
-        public bool isDebugBuild { get { return default(bool); } }
+        public static bool developerConsoleVisible { get { return default(bool); } set {} }
+        public static bool isDebugBuild { get { return default(bool); } }
          
          
         public static extern void Break();
@@ -808,6 +819,59 @@ namespace UnityEngine
 namespace UnityEngine
 {
     [Bridge.FileName("csw")]
+    public class Input
+    {
+        public extern Input();
+         
+        public static Vector3 acceleration { get { return default(Vector3); } }
+        public static int accelerationEventCount { get { return default(int); } }
+        public static AccelerationEvent[] accelerationEvents { get { return default(AccelerationEvent[]); } }
+        public static bool anyKey { get { return default(bool); } }
+        public static bool anyKeyDown { get { return default(bool); } }
+        public static Compass compass { get { return default(Compass); } }
+        public static bool compensateSensors { get { return default(bool); } set {} }
+        public static Vector2 compositionCursorPos { get { return default(Vector2); } set {} }
+        public static string compositionString { get { return default(string); } }
+        public static DeviceOrientation deviceOrientation { get { return default(DeviceOrientation); } }
+        public static Gyroscope gyro { get { return default(Gyroscope); } }
+        public static IMECompositionMode imeCompositionMode { get { return default(IMECompositionMode); } set {} }
+        public static bool imeIsSelected { get { return default(bool); } }
+        public static string inputString { get { return default(string); } }
+        public static LocationService location { get { return default(LocationService); } }
+        public static Vector3 mousePosition { get { return default(Vector3); } }
+        public static bool mousePresent { get { return default(bool); } }
+        public static Vector3 mouseScrollDelta { get { return default(Vector3); } }
+        public static bool multiTouchEnabled { get { return default(bool); } set {} }
+        public static bool simulateMouseWithTouches { get { return default(bool); } set {} }
+        public static int touchCount { get { return default(int); } }
+        public static Touch[] touches { get { return default(Touch[]); } }
+        public static bool touchSupported { get { return default(bool); } }
+         
+         
+        public static extern AccelerationEvent GetAccelerationEvent(int index);
+        public static extern float GetAxis(string axisName);
+        public static extern float GetAxisRaw(string axisName);
+        public static extern bool GetButton(string buttonName);
+        public static extern bool GetButtonDown(string buttonName);
+        public static extern bool GetButtonUp(string buttonName);
+        public static extern string[] GetJoystickNames();
+        public static extern bool GetKey(string name);
+        public static extern bool GetKey(KeyCode key);
+        public static extern bool GetKeyDown(string name);
+        public static extern bool GetKeyDown(KeyCode key);
+        public static extern bool GetKeyUp(string name);
+        public static extern bool GetKeyUp(KeyCode key);
+        public static extern bool GetMouseButton(int button);
+        public static extern bool GetMouseButtonDown(int button);
+        public static extern bool GetMouseButtonUp(int button);
+        public static extern Touch GetTouch(int index);
+        public static extern void ResetInputAxes();
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
     public struct Vector2
     {
         public static float kEpsilon;
@@ -819,10 +883,10 @@ namespace UnityEngine
         public float magnitude { get { return default(float); } }
         public Vector2 normalized { get { return default(Vector2); } }
         public float sqrMagnitude { get { return default(float); } }
-        public Vector2 one { get { return default(Vector2); } }
-        public Vector2 right { get { return default(Vector2); } }
-        public Vector2 up { get { return default(Vector2); } }
-        public Vector2 zero { get { return default(Vector2); } }
+        public static Vector2 one { get { return default(Vector2); } }
+        public static Vector2 right { get { return default(Vector2); } }
+        public static Vector2 up { get { return default(Vector2); } }
+        public static Vector2 zero { get { return default(Vector2); } }
          
         public float this[int index] { get { return default(float); } set {} }
          
@@ -861,155 +925,25 @@ namespace UnityEngine
     }
 }
  
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Input
-    {
-        public extern Input();
-         
-        public Vector3 acceleration { get { return default(Vector3); } }
-        public int accelerationEventCount { get { return default(int); } }
-        public AccelerationEvent[] accelerationEvents { get { return default(AccelerationEvent[]); } }
-        public bool anyKey { get { return default(bool); } }
-        public bool anyKeyDown { get { return default(bool); } }
-        public Compass compass { get { return default(Compass); } }
-        public bool compensateSensors { get { return default(bool); } set {} }
-        public Vector2 compositionCursorPos { get { return default(Vector2); } set {} }
-        public string compositionString { get { return default(string); } }
-        public DeviceOrientation deviceOrientation { get { return default(DeviceOrientation); } }
-        public Gyroscope gyro { get { return default(Gyroscope); } }
-        public IMECompositionMode imeCompositionMode { get { return default(IMECompositionMode); } set {} }
-        public bool imeIsSelected { get { return default(bool); } }
-        public string inputString { get { return default(string); } }
-        public LocationService location { get { return default(LocationService); } }
-        public Vector3 mousePosition { get { return default(Vector3); } }
-        public bool mousePresent { get { return default(bool); } }
-        public Vector3 mouseScrollDelta { get { return default(Vector3); } }
-        public bool multiTouchEnabled { get { return default(bool); } set {} }
-        public bool simulateMouseWithTouches { get { return default(bool); } set {} }
-        public int touchCount { get { return default(int); } }
-        public Touch[] touches { get { return default(Touch[]); } }
-        public bool touchSupported { get { return default(bool); } }
-         
-         
-        public static extern AccelerationEvent GetAccelerationEvent(int index);
-        public static extern float GetAxis(string axisName);
-        public static extern float GetAxisRaw(string axisName);
-        public static extern bool GetButton(string buttonName);
-        public static extern bool GetButtonDown(string buttonName);
-        public static extern bool GetButtonUp(string buttonName);
-        public static extern string[] GetJoystickNames();
-        public static extern bool GetKey(string name);
-        public static extern bool GetKey(KeyCode key);
-        public static extern bool GetKeyDown(string name);
-        public static extern bool GetKeyDown(KeyCode key);
-        public static extern bool GetKeyUp(string name);
-        public static extern bool GetKeyUp(KeyCode key);
-        public static extern bool GetMouseButton(int button);
-        public static extern bool GetMouseButtonDown(int button);
-        public static extern bool GetMouseButtonUp(int button);
-        public static extern Touch GetTouch(int index);
-        public static extern void ResetInputAxes();
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Time
-    {
-        public extern Time();
-         
-        public int captureFramerate { get { return default(int); } set {} }
-        public float deltaTime { get { return default(float); } }
-        public float fixedDeltaTime { get { return default(float); } set {} }
-        public float fixedTime { get { return default(float); } }
-        public int frameCount { get { return default(int); } }
-        public float maximumDeltaTime { get { return default(float); } set {} }
-        public float realtimeSinceStartup { get { return default(float); } }
-        public int renderedFrameCount { get { return default(int); } }
-        public float smoothDeltaTime { get { return default(float); } }
-        public float time { get { return default(float); } }
-        public float timeScale { get { return default(float); } set {} }
-        public float timeSinceLevelLoad { get { return default(float); } }
-        public float unscaledDeltaTime { get { return default(float); } }
-        public float unscaledTime { get { return default(float); } }
-         
-         
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Application
-    {
-            public delegate void LogCallback(string condition, string stackTrace, LogType type);
-        public extern Application();
-         
-        public string absoluteURL { get { return default(string); } }
-        public ThreadPriority backgroundLoadingPriority { get { return default(ThreadPriority); } set {} }
-        public string dataPath { get { return default(string); } }
-        public bool genuine { get { return default(bool); } }
-        public bool genuineCheckAvailable { get { return default(bool); } }
-        public NetworkReachability internetReachability { get { return default(NetworkReachability); } }
-        public bool isConsolePlatform { get { return default(bool); } }
-        public bool isEditor { get { return default(bool); } }
-        public bool isLoadingLevel { get { return default(bool); } }
-        public bool isMobilePlatform { get { return default(bool); } }
-        public bool isPlaying { get { return default(bool); } }
-        public bool isWebPlayer { get { return default(bool); } }
-        public int levelCount { get { return default(int); } }
-        public int loadedLevel { get { return default(int); } }
-        public string loadedLevelName { get { return default(string); } }
-        public string persistentDataPath { get { return default(string); } }
-        public RuntimePlatform platform { get { return default(RuntimePlatform); } }
-        public bool runInBackground { get { return default(bool); } set {} }
-        public string srcValue { get { return default(string); } }
-        public int streamedBytes { get { return default(int); } }
-        public string streamingAssetsPath { get { return default(string); } }
-        public SystemLanguage systemLanguage { get { return default(SystemLanguage); } }
-        public int targetFrameRate { get { return default(int); } set {} }
-        public string temporaryCachePath { get { return default(string); } }
-        public string unityVersion { get { return default(string); } }
-        public bool webSecurityEnabled { get { return default(bool); } }
-        public string webSecurityHostUrl { get { return default(string); } }
-         
-         
-        public static extern void CancelQuit();
-        public static extern bool CanStreamedLevelBeLoaded(int levelIndex);
-        public static extern bool CanStreamedLevelBeLoaded(string levelName);
-        public static extern void CaptureScreenshot(string filename);
-        public static extern void CaptureScreenshot(string filename, int superSize);
-        public static extern void ExternalCall(string functionName, params object[] args);
-        public static extern float GetStreamProgressForLevel(int levelIndex);
-        public static extern float GetStreamProgressForLevel(string levelName);
-        public static extern bool HasProLicense();
-        public static extern bool HasUserAuthorization(UserAuthorization mode);
-        public static extern void LoadLevel(int index);
-        public static extern void LoadLevel(string name);
-        public static extern void LoadLevelAdditive(int index);
-        public static extern void LoadLevelAdditive(string name);
-        public static extern AsyncOperation LoadLevelAdditiveAsync(int index);
-        public static extern AsyncOperation LoadLevelAdditiveAsync(string levelName);
-        public static extern AsyncOperation LoadLevelAsync(int index);
-        public static extern AsyncOperation LoadLevelAsync(string levelName);
-        public static extern void OpenURL(string url);
-        public static extern void Quit();
-        public static extern void RegisterLogCallback(Application.LogCallback handler);
-        public static extern void RegisterLogCallbackThreaded(Application.LogCallback handler);
-        public static extern AsyncOperation RequestUserAuthorization(UserAuthorization mode);
-    }
-}
- 
 [Bridge.FileName("csw")]
-public class TestGeneric<T,J,K>
+public class TestPerformance
 {
-    public extern TestGeneric(T o);
+        [Bridge.FileName("csw")]
+        public class RefObject
+        {
+            public string String;
+            public int x;
+            public int y;
+             
+            public extern RefObject();
+             
+        }
+    public static TestPerformance.RefObject StaticObject;
      
-    public extern void Hello<X, Y>();
-    public extern void PrintName();
+    public extern TestPerformance();
+     
+    public static extern void test123(params object[] ts);
+    public static extern void testString(params string[] ts);
 }
  
 namespace UnityEngine
@@ -1056,6 +990,103 @@ namespace UnityEngine
         public static extern WWW LoadFromCacheOrDownload(string url, int version, uint crc);
         public static extern string UnEscapeURL(string s);
         public static extern string UnEscapeURL(string s, System.Text.Encoding e);
+    }
+}
+ 
+[Bridge.FileName("csw")]
+public class TestRF
+{
+    public extern TestRF();
+     
+    public static extern void Get_Out(out int x);
+    public static extern void Increase_ByRef(bool bInc, ref int x);
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class Application
+    {
+            public delegate void LogCallback(string condition, string stackTrace, LogType type);
+        public extern Application();
+         
+        public static string absoluteURL { get { return default(string); } }
+        public static ThreadPriority backgroundLoadingPriority { get { return default(ThreadPriority); } set {} }
+        public static string dataPath { get { return default(string); } }
+        public static bool genuine { get { return default(bool); } }
+        public static bool genuineCheckAvailable { get { return default(bool); } }
+        public static NetworkReachability internetReachability { get { return default(NetworkReachability); } }
+        public static bool isConsolePlatform { get { return default(bool); } }
+        public static bool isEditor { get { return default(bool); } }
+        public static bool isLoadingLevel { get { return default(bool); } }
+        public static bool isMobilePlatform { get { return default(bool); } }
+        public static bool isPlaying { get { return default(bool); } }
+        public static bool isWebPlayer { get { return default(bool); } }
+        public static int levelCount { get { return default(int); } }
+        public static int loadedLevel { get { return default(int); } }
+        public static string loadedLevelName { get { return default(string); } }
+        public static string persistentDataPath { get { return default(string); } }
+        public static RuntimePlatform platform { get { return default(RuntimePlatform); } }
+        public static bool runInBackground { get { return default(bool); } set {} }
+        public static string srcValue { get { return default(string); } }
+        public static int streamedBytes { get { return default(int); } }
+        public static string streamingAssetsPath { get { return default(string); } }
+        public static SystemLanguage systemLanguage { get { return default(SystemLanguage); } }
+        public static int targetFrameRate { get { return default(int); } set {} }
+        public static string temporaryCachePath { get { return default(string); } }
+        public static string unityVersion { get { return default(string); } }
+        public static bool webSecurityEnabled { get { return default(bool); } }
+        public static string webSecurityHostUrl { get { return default(string); } }
+         
+         
+        public static extern void CancelQuit();
+        public static extern bool CanStreamedLevelBeLoaded(int levelIndex);
+        public static extern bool CanStreamedLevelBeLoaded(string levelName);
+        public static extern void CaptureScreenshot(string filename);
+        public static extern void CaptureScreenshot(string filename, int superSize);
+        public static extern void ExternalCall(string functionName, params object[] args);
+        public static extern float GetStreamProgressForLevel(int levelIndex);
+        public static extern float GetStreamProgressForLevel(string levelName);
+        public static extern bool HasProLicense();
+        public static extern bool HasUserAuthorization(UserAuthorization mode);
+        public static extern void LoadLevel(int index);
+        public static extern void LoadLevel(string name);
+        public static extern void LoadLevelAdditive(int index);
+        public static extern void LoadLevelAdditive(string name);
+        public static extern AsyncOperation LoadLevelAdditiveAsync(int index);
+        public static extern AsyncOperation LoadLevelAdditiveAsync(string levelName);
+        public static extern AsyncOperation LoadLevelAsync(int index);
+        public static extern AsyncOperation LoadLevelAsync(string levelName);
+        public static extern void OpenURL(string url);
+        public static extern void Quit();
+        public static extern void RegisterLogCallback(Application.LogCallback handler);
+        public static extern void RegisterLogCallbackThreaded(Application.LogCallback handler);
+        public static extern AsyncOperation RequestUserAuthorization(UserAuthorization mode);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class NavMeshPath
+    {
+        public extern NavMeshPath();
+         
+        public Vector3[] corners { get { return default(Vector3[]); } }
+        public NavMeshPathStatus status { get { return default(NavMeshPathStatus); } }
+         
+         
+        public extern void ClearCorners();
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class WaitForSeconds : YieldInstruction
+    {
+        public extern WaitForSeconds(float seconds);
+         
     }
 }
  
@@ -1137,107 +1168,6 @@ namespace UnityEngine
         public static extern GameObject[] FindGameObjectsWithTag(string tag);
         public static extern GameObject FindGameObjectWithTag(string tag);
         public static extern GameObject FindWithTag(string tag);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Sprite : Object
-    {
-        public extern Sprite();
-         
-        public Vector4 border { get { return default(Vector4); } }
-        public Bounds bounds { get { return default(Bounds); } }
-        public bool packed { get { return default(bool); } }
-        public SpritePackingMode packingMode { get { return default(SpritePackingMode); } }
-        public SpritePackingRotation packingRotation { get { return default(SpritePackingRotation); } }
-        public float pixelsPerUnit { get { return default(float); } }
-        public Rect rect { get { return default(Rect); } }
-        public Texture2D texture { get { return default(Texture2D); } }
-        public Rect textureRect { get { return default(Rect); } }
-        public Vector2 textureRectOffset { get { return default(Vector2); } }
-         
-         
-        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot);
-        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit);
-        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude);
-        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType);
-        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType, Vector4 border);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Component : Object
-    {
-        public extern Component();
-         
-        public Animation animation { get { return default(Animation); } }
-        public AudioSource audio { get { return default(AudioSource); } }
-        public Camera camera { get { return default(Camera); } }
-        public Collider collider { get { return default(Collider); } }
-        public Collider2D collider2D { get { return default(Collider2D); } }
-        public ConstantForce constantForce { get { return default(ConstantForce); } }
-        public GameObject gameObject { get { return default(GameObject); } }
-        public GUIText guiText { get { return default(GUIText); } }
-        public GUITexture guiTexture { get { return default(GUITexture); } }
-        public HingeJoint hingeJoint { get { return default(HingeJoint); } }
-        public Light light { get { return default(Light); } }
-        public ParticleEmitter particleEmitter { get { return default(ParticleEmitter); } }
-        public ParticleSystem particleSystem { get { return default(ParticleSystem); } }
-        public Renderer renderer { get { return default(Renderer); } }
-        public Rigidbody rigidbody { get { return default(Rigidbody); } }
-        public Rigidbody2D rigidbody2D { get { return default(Rigidbody2D); } }
-        public string tag { get { return default(string); } set {} }
-        public Transform transform { get { return default(Transform); } }
-         
-         
-        public extern void BroadcastMessage(string methodName);
-        public extern void BroadcastMessage(string methodName, object parameter);
-        public extern void BroadcastMessage(string methodName, object parameter, SendMessageOptions options);
-        public extern void BroadcastMessage(string methodName, SendMessageOptions options);
-        public extern bool CompareTag(string tag);
-        public extern T GetComponent<T>();
-        public extern Component GetComponent(string type);
-        public extern Component GetComponent(System.Type type);
-        public extern T GetComponentInChildren<T>();
-        public extern Component GetComponentInChildren(System.Type t);
-        public extern T GetComponentInParent<T>();
-        public extern Component GetComponentInParent(System.Type t);
-        public extern T[] GetComponents<T>();
-        public extern void GetComponents(System.Type type, System.Collections.Generic.List<UnityEngine.Component> results);
-        public extern void GetComponents<T>(System.Collections.Generic.List<T> results);
-        public extern Component[] GetComponents(System.Type type);
-        public extern T[] GetComponentsInChildren<T>();
-        public extern T[] GetComponentsInChildren<T>(bool includeInactive);
-        public extern void GetComponentsInChildren<T>(bool includeInactive, System.Collections.Generic.List<T> result);
-        public extern void GetComponentsInChildren<T>(System.Collections.Generic.List<T> results);
-        public extern Component[] GetComponentsInChildren(System.Type t);
-        public extern Component[] GetComponentsInChildren(System.Type t, bool includeInactive);
-        public extern T[] GetComponentsInParent<T>();
-        public extern T[] GetComponentsInParent<T>(bool includeInactive);
-        public extern Component[] GetComponentsInParent(System.Type t);
-        public extern Component[] GetComponentsInParent(System.Type t, bool includeInactive);
-        public extern void SendMessage(string methodName);
-        public extern void SendMessage(string methodName, object value);
-        public extern void SendMessage(string methodName, object value, SendMessageOptions options);
-        public extern void SendMessage(string methodName, SendMessageOptions options);
-        public extern void SendMessageUpwards(string methodName);
-        public extern void SendMessageUpwards(string methodName, object value);
-        public extern void SendMessageUpwards(string methodName, object value, SendMessageOptions options);
-        public extern void SendMessageUpwards(string methodName, SendMessageOptions options);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class WaitForSeconds : YieldInstruction
-    {
-        public extern WaitForSeconds(float seconds);
-         
     }
 }
  
@@ -1379,6 +1309,97 @@ namespace UnityEngine
         public extern void SetTextureScale(string propertyName, Vector2 scale);
         public extern void SetVector(int nameID, Vector4 vector);
         public extern void SetVector(string propertyName, Vector4 vector);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class Component : Object
+    {
+        public extern Component();
+         
+        public Animation animation { get { return default(Animation); } }
+        public AudioSource audio { get { return default(AudioSource); } }
+        public Camera camera { get { return default(Camera); } }
+        public Collider collider { get { return default(Collider); } }
+        public Collider2D collider2D { get { return default(Collider2D); } }
+        public ConstantForce constantForce { get { return default(ConstantForce); } }
+        public GameObject gameObject { get { return default(GameObject); } }
+        public GUIText guiText { get { return default(GUIText); } }
+        public GUITexture guiTexture { get { return default(GUITexture); } }
+        public HingeJoint hingeJoint { get { return default(HingeJoint); } }
+        public Light light { get { return default(Light); } }
+        public ParticleEmitter particleEmitter { get { return default(ParticleEmitter); } }
+        public ParticleSystem particleSystem { get { return default(ParticleSystem); } }
+        public Renderer renderer { get { return default(Renderer); } }
+        public Rigidbody rigidbody { get { return default(Rigidbody); } }
+        public Rigidbody2D rigidbody2D { get { return default(Rigidbody2D); } }
+        public string tag { get { return default(string); } set {} }
+        public Transform transform { get { return default(Transform); } }
+         
+         
+        public extern void BroadcastMessage(string methodName);
+        public extern void BroadcastMessage(string methodName, object parameter);
+        public extern void BroadcastMessage(string methodName, object parameter, SendMessageOptions options);
+        public extern void BroadcastMessage(string methodName, SendMessageOptions options);
+        public extern bool CompareTag(string tag);
+        public extern T GetComponent<T>();
+        public extern Component GetComponent(string type);
+        public extern Component GetComponent(System.Type type);
+        public extern T GetComponentInChildren<T>();
+        public extern Component GetComponentInChildren(System.Type t);
+        public extern T GetComponentInParent<T>();
+        public extern Component GetComponentInParent(System.Type t);
+        public extern T[] GetComponents<T>();
+        public extern void GetComponents(System.Type type, System.Collections.Generic.List<UnityEngine.Component> results);
+        public extern void GetComponents<T>(System.Collections.Generic.List<T> results);
+        public extern Component[] GetComponents(System.Type type);
+        public extern T[] GetComponentsInChildren<T>();
+        public extern T[] GetComponentsInChildren<T>(bool includeInactive);
+        public extern void GetComponentsInChildren<T>(bool includeInactive, System.Collections.Generic.List<T> result);
+        public extern void GetComponentsInChildren<T>(System.Collections.Generic.List<T> results);
+        public extern Component[] GetComponentsInChildren(System.Type t);
+        public extern Component[] GetComponentsInChildren(System.Type t, bool includeInactive);
+        public extern T[] GetComponentsInParent<T>();
+        public extern T[] GetComponentsInParent<T>(bool includeInactive);
+        public extern Component[] GetComponentsInParent(System.Type t);
+        public extern Component[] GetComponentsInParent(System.Type t, bool includeInactive);
+        public extern void SendMessage(string methodName);
+        public extern void SendMessage(string methodName, object value);
+        public extern void SendMessage(string methodName, object value, SendMessageOptions options);
+        public extern void SendMessage(string methodName, SendMessageOptions options);
+        public extern void SendMessageUpwards(string methodName);
+        public extern void SendMessageUpwards(string methodName, object value);
+        public extern void SendMessageUpwards(string methodName, object value, SendMessageOptions options);
+        public extern void SendMessageUpwards(string methodName, SendMessageOptions options);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class Sprite : Object
+    {
+        public extern Sprite();
+         
+        public Vector4 border { get { return default(Vector4); } }
+        public Bounds bounds { get { return default(Bounds); } }
+        public bool packed { get { return default(bool); } }
+        public SpritePackingMode packingMode { get { return default(SpritePackingMode); } }
+        public SpritePackingRotation packingRotation { get { return default(SpritePackingRotation); } }
+        public float pixelsPerUnit { get { return default(float); } }
+        public Rect rect { get { return default(Rect); } }
+        public Texture2D texture { get { return default(Texture2D); } }
+        public Rect textureRect { get { return default(Rect); } }
+        public Vector2 textureRectOffset { get { return default(Vector2); } }
+         
+         
+        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot);
+        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit);
+        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude);
+        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType);
+        public static extern Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType, Vector4 border);
     }
 }
  
@@ -2219,10 +2240,10 @@ namespace UnityEngine
         public bool useOcclusionCulling { get { return default(bool); } set {} }
         public Vector3 velocity { get { return default(Vector3); } }
         public Matrix4x4 worldToCameraMatrix { get { return default(Matrix4x4); } set {} }
-        public Camera[] allCameras { get { return default(Camera[]); } }
-        public int allCamerasCount { get { return default(int); } }
-        public Camera current { get { return default(Camera); } }
-        public Camera main { get { return default(Camera); } }
+        public static Camera[] allCameras { get { return default(Camera[]); } }
+        public static int allCamerasCount { get { return default(int); } }
+        public static Camera current { get { return default(Camera); } }
+        public static Camera main { get { return default(Camera); } }
          
          
         public extern Matrix4x4 CalculateObliqueMatrix(Vector4 clipPlane);
@@ -2452,8 +2473,8 @@ namespace UnityEngine
         public float magnitude { get { return default(float); } }
         public Vector4 normalized { get { return default(Vector4); } }
         public float sqrMagnitude { get { return default(float); } }
-        public Vector4 one { get { return default(Vector4); } }
-        public Vector4 zero { get { return default(Vector4); } }
+        public static Vector4 one { get { return default(Vector4); } }
+        public static Vector4 zero { get { return default(Vector4); } }
          
         public float this[int index] { get { return default(float); } set {} }
          
@@ -2598,17 +2619,6 @@ namespace UnityEngine
         DontSave = 4,
         NotEditable = 8,
         HideAndDontSave = 13,
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public enum NavMeshPathStatus
-    {
-        PathComplete = 0,
-        PathPartial = 1,
-        PathInvalid = 2,
     }
 }
  
@@ -2975,12 +2985,211 @@ namespace UnityEngine
 namespace UnityEngine
 {
     [Bridge.FileName("csw")]
+    public class WWWForm
+    {
+        public extern WWWForm();
+         
+        public byte[] data { get { return default(byte[]); } }
+        public System.Collections.Hashtable headers { get { return default(System.Collections.Hashtable); } }
+         
+         
+        public extern void AddBinaryData(string fieldName, byte[] contents);
+        public extern void AddBinaryData(string fieldName, byte[] contents, string fileName);
+        public extern void AddBinaryData(string fieldName, byte[] contents, string fileName, string mimeType);
+        public extern void AddField(string fieldName, int i);
+        public extern void AddField(string fieldName, string value);
+        public extern void AddField(string fieldName, string value, System.Text.Encoding e);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class AssetBundle : Object
+    {
+        public extern AssetBundle();
+         
+        public Object mainAsset { get { return default(Object); } }
+         
+         
+        public extern bool Contains(string name);
+        public extern Object Load(string name);
+        public extern Object Load(string name, System.Type type);
+        public extern Object[] LoadAll();
+        public extern Object[] LoadAll(System.Type type);
+        public extern AssetBundleRequest LoadAsync(string name, System.Type type);
+        public extern void Unload(bool unloadAllLoadedObjects);
+        public static extern AssetBundle CreateFromFile(string path);
+        public static extern AssetBundle CreateFromFile(string path, int offset);
+        public static extern AssetBundleCreateRequest CreateFromMemory(byte[] binary);
+        public static extern AssetBundle CreateFromMemoryImmediate(byte[] binary);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class MovieTexture : Texture
+    {
+        public extern MovieTexture();
+         
+        public AudioClip audioClip { get { return default(AudioClip); } }
+        public float duration { get { return default(float); } }
+        public bool isPlaying { get { return default(bool); } }
+        public bool isReadyToPlay { get { return default(bool); } }
+        public bool loop { get { return default(bool); } set {} }
+         
+         
+        public extern void Pause();
+        public extern void Play();
+        public extern void Stop();
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class Texture2D : Texture
+    {
+        public extern Texture2D(int width, int height);
+        public extern Texture2D(int width, int height, TextureFormat format, bool mipmap);
+        public extern Texture2D(int width, int height, TextureFormat format, bool mipmap, bool linear);
+         
+        public TextureFormat format { get { return default(TextureFormat); } }
+        public int mipmapCount { get { return default(int); } }
+        public static Texture2D blackTexture { get { return default(Texture2D); } }
+        public static Texture2D whiteTexture { get { return default(Texture2D); } }
+         
+         
+        public extern void Apply();
+        public extern void Apply(bool updateMipmaps);
+        public extern void Apply(bool updateMipmaps, bool makeNoLongerReadable);
+        public extern void Compress(bool highQuality);
+        public extern byte[] EncodeToJPG();
+        public extern byte[] EncodeToJPG(int quality);
+        public extern byte[] EncodeToPNG();
+        public extern Color GetPixel(int x, int y);
+        public extern Color GetPixelBilinear(float u, float v);
+        public extern Color[] GetPixels();
+        public extern Color[] GetPixels(int miplevel);
+        public extern Color[] GetPixels(int x, int y, int blockWidth, int blockHeight);
+        public extern Color[] GetPixels(int x, int y, int blockWidth, int blockHeight, int miplevel);
+        public extern Color32[] GetPixels32();
+        public extern Color32[] GetPixels32(int miplevel);
+        public extern bool LoadImage(byte[] data);
+        public extern void LoadRawTextureData(byte[] data);
+        public extern Rect[] PackTextures(Texture2D[] textures, int padding);
+        public extern Rect[] PackTextures(Texture2D[] textures, int padding, int maximumAtlasSize);
+        public extern Rect[] PackTextures(Texture2D[] textures, int padding, int maximumAtlasSize, bool makeNoLongerReadable);
+        public extern void ReadPixels(Rect source, int destX, int destY);
+        public extern void ReadPixels(Rect source, int destX, int destY, bool recalculateMipMaps);
+        public extern bool Resize(int width, int height);
+        public extern bool Resize(int width, int height, TextureFormat format, bool hasMipMap);
+        public extern void SetPixel(int x, int y, Color color);
+        public extern void SetPixels(int x, int y, int blockWidth, int blockHeight, Color[] colors);
+        public extern void SetPixels(int x, int y, int blockWidth, int blockHeight, Color[] colors, int miplevel);
+        public extern void SetPixels(Color[] colors);
+        public extern void SetPixels(Color[] colors, int miplevel);
+        public extern void SetPixels32(Color32[] colors);
+        public extern void SetPixels32(Color32[] colors, int miplevel);
+        public extern void UpdateExternalTexture(System.IntPtr nativeTex);
+        public static extern Texture2D CreateExternalTexture(int width, int height, TextureFormat format, bool mipmap, bool linear, System.IntPtr nativeTex);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
     public enum ThreadPriority
     {
         Low = 0,
         BelowNormal = 1,
         Normal = 2,
         High = 4,
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public enum AudioType
+    {
+        UNKNOWN = 0,
+        ACC = 1,
+        AIFF = 2,
+        IT = 10,
+        MOD = 12,
+        MPEG = 13,
+        OGGVORBIS = 14,
+        S3M = 17,
+        WAV = 20,
+        XM = 21,
+        XMA = 22,
+        VAG = 23,
+        AUDIOQUEUE = 24,
+    }
+}
+ 
+namespace System.Text
+{
+    [Bridge.FileName("csw")]
+    public class Encoding : System.ICloneable
+    {
+        public virtual string BodyName { get { return default(string); } }
+        public virtual int CodePage { get { return default(int); } }
+        public DecoderFallback DecoderFallback { get { return default(DecoderFallback); } set {} }
+        public EncoderFallback EncoderFallback { get { return default(EncoderFallback); } set {} }
+        public virtual string EncodingName { get { return default(string); } }
+        public virtual string HeaderName { get { return default(string); } }
+        public virtual bool IsBrowserDisplay { get { return default(bool); } }
+        public virtual bool IsBrowserSave { get { return default(bool); } }
+        public virtual bool IsMailNewsDisplay { get { return default(bool); } }
+        public virtual bool IsMailNewsSave { get { return default(bool); } }
+        public bool IsReadOnly { get { return default(bool); } }
+        public virtual bool IsSingleByte { get { return default(bool); } }
+        public virtual string WebName { get { return default(string); } }
+        public virtual int WindowsCodePage { get { return default(int); } }
+        public static Encoding ASCII { get { return default(Encoding); } }
+        public static Encoding BigEndianUnicode { get { return default(Encoding); } }
+        public static Encoding Default { get { return default(Encoding); } }
+        public static Encoding Unicode { get { return default(Encoding); } }
+        public static Encoding UTF32 { get { return default(Encoding); } }
+        public static Encoding UTF7 { get { return default(Encoding); } }
+        public static Encoding UTF8 { get { return default(Encoding); } }
+         
+         
+        public extern virtual object Clone();
+        public extern override bool Equals(object value);
+        public extern virtual int GetByteCount(System.Char[] chars);
+        public extern virtual int GetByteCount(System.Char[] chars, int index, int count);
+        public extern virtual int GetByteCount(string s);
+        public extern virtual byte[] GetBytes(System.Char[] chars);
+        public extern virtual byte[] GetBytes(System.Char[] chars, int index, int count);
+        public extern virtual byte[] GetBytes(string s);
+        public extern virtual int GetBytes(System.Char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex);
+        public extern virtual int GetBytes(string s, int charIndex, int charCount, byte[] bytes, int byteIndex);
+        public extern virtual int GetCharCount(byte[] bytes);
+        public extern virtual int GetCharCount(byte[] bytes, int index, int count);
+        public extern virtual System.Char[] GetChars(byte[] bytes);
+        public extern virtual System.Char[] GetChars(byte[] bytes, int index, int count);
+        public extern virtual int GetChars(byte[] bytes, int byteIndex, int byteCount, System.Char[] chars, int charIndex);
+        public extern virtual Decoder GetDecoder();
+        public extern virtual Encoder GetEncoder();
+        public extern override int GetHashCode();
+        public extern virtual int GetMaxByteCount(int charCount);
+        public extern virtual int GetMaxCharCount(int byteCount);
+        public extern virtual byte[] GetPreamble();
+        public extern virtual string GetString(byte[] bytes);
+        public extern virtual string GetString(byte[] bytes, int index, int count);
+        public extern bool IsAlwaysNormalized();
+        public extern virtual bool IsAlwaysNormalized(NormalizationForm form);
+        public static extern byte[] Convert(Encoding srcEncoding, Encoding dstEncoding, byte[] bytes);
+        public static extern byte[] Convert(Encoding srcEncoding, Encoding dstEncoding, byte[] bytes, int index, int count);
+        public static extern Encoding GetEncoding(int codepage);
+        public static extern Encoding GetEncoding(int codepage, EncoderFallback encoderFallback, DecoderFallback decoderFallback);
+        public static extern Encoding GetEncoding(string name);
+        public static extern Encoding GetEncoding(string name, EncoderFallback encoderFallback, DecoderFallback decoderFallback);
+        public static extern EncodingInfo[] GetEncodings();
     }
 }
  
@@ -3092,199 +3301,11 @@ namespace UnityEngine
 namespace UnityEngine
 {
     [Bridge.FileName("csw")]
-    public class WWWForm
+    public enum NavMeshPathStatus
     {
-        public extern WWWForm();
-         
-        public byte[] data { get { return default(byte[]); } }
-        public System.Collections.Hashtable headers { get { return default(System.Collections.Hashtable); } }
-         
-         
-        public extern void AddBinaryData(string fieldName, byte[] contents);
-        public extern void AddBinaryData(string fieldName, byte[] contents, string fileName);
-        public extern void AddBinaryData(string fieldName, byte[] contents, string fileName, string mimeType);
-        public extern void AddField(string fieldName, int i);
-        public extern void AddField(string fieldName, string value);
-        public extern void AddField(string fieldName, string value, System.Text.Encoding e);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class AssetBundle : Object
-    {
-        public extern AssetBundle();
-         
-        public Object mainAsset { get { return default(Object); } }
-         
-         
-        public extern bool Contains(string name);
-        public extern Object Load(string name);
-        public extern Object Load(string name, System.Type type);
-        public extern Object[] LoadAll();
-        public extern Object[] LoadAll(System.Type type);
-        public extern AssetBundleRequest LoadAsync(string name, System.Type type);
-        public extern void Unload(bool unloadAllLoadedObjects);
-        public static extern AssetBundle CreateFromFile(string path);
-        public static extern AssetBundle CreateFromFile(string path, int offset);
-        public static extern AssetBundleCreateRequest CreateFromMemory(byte[] binary);
-        public static extern AssetBundle CreateFromMemoryImmediate(byte[] binary);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class MovieTexture : Texture
-    {
-        public extern MovieTexture();
-         
-        public AudioClip audioClip { get { return default(AudioClip); } }
-        public float duration { get { return default(float); } }
-        public bool isPlaying { get { return default(bool); } }
-        public bool isReadyToPlay { get { return default(bool); } }
-        public bool loop { get { return default(bool); } set {} }
-         
-         
-        public extern void Pause();
-        public extern void Play();
-        public extern void Stop();
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Texture2D : Texture
-    {
-        public extern Texture2D(int width, int height);
-        public extern Texture2D(int width, int height, TextureFormat format, bool mipmap);
-        public extern Texture2D(int width, int height, TextureFormat format, bool mipmap, bool linear);
-         
-        public TextureFormat format { get { return default(TextureFormat); } }
-        public int mipmapCount { get { return default(int); } }
-        public Texture2D blackTexture { get { return default(Texture2D); } }
-        public Texture2D whiteTexture { get { return default(Texture2D); } }
-         
-         
-        public extern void Apply();
-        public extern void Apply(bool updateMipmaps);
-        public extern void Apply(bool updateMipmaps, bool makeNoLongerReadable);
-        public extern void Compress(bool highQuality);
-        public extern byte[] EncodeToJPG();
-        public extern byte[] EncodeToJPG(int quality);
-        public extern byte[] EncodeToPNG();
-        public extern Color GetPixel(int x, int y);
-        public extern Color GetPixelBilinear(float u, float v);
-        public extern Color[] GetPixels();
-        public extern Color[] GetPixels(int miplevel);
-        public extern Color[] GetPixels(int x, int y, int blockWidth, int blockHeight);
-        public extern Color[] GetPixels(int x, int y, int blockWidth, int blockHeight, int miplevel);
-        public extern Color32[] GetPixels32();
-        public extern Color32[] GetPixels32(int miplevel);
-        public extern bool LoadImage(byte[] data);
-        public extern void LoadRawTextureData(byte[] data);
-        public extern Rect[] PackTextures(Texture2D[] textures, int padding);
-        public extern Rect[] PackTextures(Texture2D[] textures, int padding, int maximumAtlasSize);
-        public extern Rect[] PackTextures(Texture2D[] textures, int padding, int maximumAtlasSize, bool makeNoLongerReadable);
-        public extern void ReadPixels(Rect source, int destX, int destY);
-        public extern void ReadPixels(Rect source, int destX, int destY, bool recalculateMipMaps);
-        public extern bool Resize(int width, int height);
-        public extern bool Resize(int width, int height, TextureFormat format, bool hasMipMap);
-        public extern void SetPixel(int x, int y, Color color);
-        public extern void SetPixels(int x, int y, int blockWidth, int blockHeight, Color[] colors);
-        public extern void SetPixels(int x, int y, int blockWidth, int blockHeight, Color[] colors, int miplevel);
-        public extern void SetPixels(Color[] colors);
-        public extern void SetPixels(Color[] colors, int miplevel);
-        public extern void SetPixels32(Color32[] colors);
-        public extern void SetPixels32(Color32[] colors, int miplevel);
-        public extern void UpdateExternalTexture(System.IntPtr nativeTex);
-        public static extern Texture2D CreateExternalTexture(int width, int height, TextureFormat format, bool mipmap, bool linear, System.IntPtr nativeTex);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public enum AudioType
-    {
-        UNKNOWN = 0,
-        ACC = 1,
-        AIFF = 2,
-        IT = 10,
-        MOD = 12,
-        MPEG = 13,
-        OGGVORBIS = 14,
-        S3M = 17,
-        WAV = 20,
-        XM = 21,
-        XMA = 22,
-        VAG = 23,
-        AUDIOQUEUE = 24,
-    }
-}
- 
-namespace System.Text
-{
-    [Bridge.FileName("csw")]
-    public class Encoding : System.ICloneable
-    {
-        public virtual string BodyName { get { return default(string); } }
-        public virtual int CodePage { get { return default(int); } }
-        public DecoderFallback DecoderFallback { get { return default(DecoderFallback); } set {} }
-        public EncoderFallback EncoderFallback { get { return default(EncoderFallback); } set {} }
-        public virtual string EncodingName { get { return default(string); } }
-        public virtual string HeaderName { get { return default(string); } }
-        public virtual bool IsBrowserDisplay { get { return default(bool); } }
-        public virtual bool IsBrowserSave { get { return default(bool); } }
-        public virtual bool IsMailNewsDisplay { get { return default(bool); } }
-        public virtual bool IsMailNewsSave { get { return default(bool); } }
-        public bool IsReadOnly { get { return default(bool); } }
-        public virtual bool IsSingleByte { get { return default(bool); } }
-        public virtual string WebName { get { return default(string); } }
-        public virtual int WindowsCodePage { get { return default(int); } }
-        public Encoding ASCII { get { return default(Encoding); } }
-        public Encoding BigEndianUnicode { get { return default(Encoding); } }
-        public Encoding Default { get { return default(Encoding); } }
-        public Encoding Unicode { get { return default(Encoding); } }
-        public Encoding UTF32 { get { return default(Encoding); } }
-        public Encoding UTF7 { get { return default(Encoding); } }
-        public Encoding UTF8 { get { return default(Encoding); } }
-         
-         
-        public extern virtual object Clone();
-        public extern override bool Equals(object value);
-        public extern virtual int GetByteCount(System.Char[] chars);
-        public extern virtual int GetByteCount(System.Char[] chars, int index, int count);
-        public extern virtual int GetByteCount(string s);
-        public extern virtual byte[] GetBytes(System.Char[] chars);
-        public extern virtual byte[] GetBytes(System.Char[] chars, int index, int count);
-        public extern virtual byte[] GetBytes(string s);
-        public extern virtual int GetBytes(System.Char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex);
-        public extern virtual int GetBytes(string s, int charIndex, int charCount, byte[] bytes, int byteIndex);
-        public extern virtual int GetCharCount(byte[] bytes);
-        public extern virtual int GetCharCount(byte[] bytes, int index, int count);
-        public extern virtual System.Char[] GetChars(byte[] bytes);
-        public extern virtual System.Char[] GetChars(byte[] bytes, int index, int count);
-        public extern virtual int GetChars(byte[] bytes, int byteIndex, int byteCount, System.Char[] chars, int charIndex);
-        public extern virtual Decoder GetDecoder();
-        public extern virtual Encoder GetEncoder();
-        public extern override int GetHashCode();
-        public extern virtual int GetMaxByteCount(int charCount);
-        public extern virtual int GetMaxCharCount(int byteCount);
-        public extern virtual byte[] GetPreamble();
-        public extern virtual string GetString(byte[] bytes);
-        public extern virtual string GetString(byte[] bytes, int index, int count);
-        public extern bool IsAlwaysNormalized();
-        public extern virtual bool IsAlwaysNormalized(NormalizationForm form);
-        public static extern byte[] Convert(Encoding srcEncoding, Encoding dstEncoding, byte[] bytes);
-        public static extern byte[] Convert(Encoding srcEncoding, Encoding dstEncoding, byte[] bytes, int index, int count);
-        public static extern Encoding GetEncoding(int codepage);
-        public static extern Encoding GetEncoding(int codepage, EncoderFallback encoderFallback, DecoderFallback decoderFallback);
-        public static extern Encoding GetEncoding(string name);
-        public static extern Encoding GetEncoding(string name, EncoderFallback encoderFallback, DecoderFallback decoderFallback);
-        public static extern EncodingInfo[] GetEncodings();
+        PathComplete = 0,
+        PathPartial = 1,
+        PathInvalid = 2,
     }
 }
  
@@ -3407,6 +3428,144 @@ namespace UnityEngine
 namespace UnityEngine
 {
     [Bridge.FileName("csw")]
+    public class Shader : Object
+    {
+        public extern Shader();
+         
+        public bool isSupported { get { return default(bool); } }
+        public int maximumLOD { get { return default(int); } set {} }
+        public int renderQueue { get { return default(int); } }
+        public static int globalMaximumLOD { get { return default(int); } set {} }
+         
+         
+        public static extern void DisableKeyword(string keyword);
+        public static extern void EnableKeyword(string keyword);
+        public static extern Shader Find(string name);
+        public static extern int PropertyToID(string name);
+        public static extern void SetGlobalBuffer(string propertyName, ComputeBuffer buffer);
+        public static extern void SetGlobalColor(int nameID, Color color);
+        public static extern void SetGlobalColor(string propertyName, Color color);
+        public static extern void SetGlobalFloat(int nameID, float value);
+        public static extern void SetGlobalFloat(string propertyName, float value);
+        public static extern void SetGlobalInt(int nameID, int value);
+        public static extern void SetGlobalInt(string propertyName, int value);
+        public static extern void SetGlobalMatrix(int nameID, Matrix4x4 mat);
+        public static extern void SetGlobalMatrix(string propertyName, Matrix4x4 mat);
+        public static extern void SetGlobalTexGenMode(string propertyName, TexGenMode mode);
+        public static extern void SetGlobalTexture(int nameID, Texture tex);
+        public static extern void SetGlobalTexture(string propertyName, Texture tex);
+        public static extern void SetGlobalTextureMatrixName(string propertyName, string matrixName);
+        public static extern void SetGlobalVector(int nameID, Vector4 vec);
+        public static extern void SetGlobalVector(string propertyName, Vector4 vec);
+        public static extern void WarmupAllShaders();
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class Texture : Object
+    {
+        public extern Texture();
+         
+        public int anisoLevel { get { return default(int); } set {} }
+        public FilterMode filterMode { get { return default(FilterMode); } set {} }
+        public virtual int height { get { return default(int); } set {} }
+        public float mipMapBias { get { return default(float); } set {} }
+        public Vector2 texelSize { get { return default(Vector2); } }
+        public virtual int width { get { return default(int); } set {} }
+        public TextureWrapMode wrapMode { get { return default(TextureWrapMode); } set {} }
+        public static AnisotropicFiltering anisotropicFiltering { get { return default(AnisotropicFiltering); } set {} }
+        public static int masterTextureLimit { get { return default(int); } set {} }
+         
+         
+        public extern int GetNativeTextureID();
+        public extern System.IntPtr GetNativeTexturePtr();
+        public static extern void SetGlobalAnisotropicFilteringLimits(int forcedMin, int globalMax);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public struct Matrix4x4
+    {
+        public float m00;
+        public float m10;
+        public float m20;
+        public float m30;
+        public float m01;
+        public float m11;
+        public float m21;
+        public float m31;
+        public float m02;
+        public float m12;
+        public float m22;
+        public float m32;
+        public float m03;
+        public float m13;
+        public float m23;
+        public float m33;
+         
+         
+        public Matrix4x4 inverse { get { return default(Matrix4x4); } }
+        public bool isIdentity { get { return default(bool); } }
+        public Matrix4x4 transpose { get { return default(Matrix4x4); } }
+        public static Matrix4x4 identity { get { return default(Matrix4x4); } }
+        public static Matrix4x4 zero { get { return default(Matrix4x4); } }
+         
+        public float this[int index] { get { return default(float); } set {} }
+        public float this[int row, int column] { get { return default(float); } set {} }
+         
+        public static extern bool operator ==(Matrix4x4 lhs, Matrix4x4 rhs);
+        public static extern bool operator !=(Matrix4x4 lhs, Matrix4x4 rhs);
+        public static extern Matrix4x4 operator *(Matrix4x4 lhs, Matrix4x4 rhs);
+        public static extern Vector4 operator *(Matrix4x4 lhs, Vector4 v);
+         
+        public extern override bool Equals(object other);
+        public extern Vector4 GetColumn(int i);
+        public extern override int GetHashCode();
+        public extern Vector4 GetRow(int i);
+        public extern Vector3 MultiplyPoint(Vector3 v);
+        public extern Vector3 MultiplyPoint3x4(Vector3 v);
+        public extern Vector3 MultiplyVector(Vector3 v);
+        public extern void SetColumn(int i, Vector4 v);
+        public extern void SetRow(int i, Vector4 v);
+        public extern void SetTRS(Vector3 pos, Quaternion q, Vector3 s);
+        public extern override string ToString();
+        public extern string ToString(string format);
+        public static extern Matrix4x4 Inverse(Matrix4x4 m);
+        public static extern Matrix4x4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
+        public static extern Matrix4x4 Perspective(float fov, float aspect, float zNear, float zFar);
+        public static extern Matrix4x4 Scale(Vector3 v);
+        public static extern Matrix4x4 Transpose(Matrix4x4 m);
+        public static extern Matrix4x4 TRS(Vector3 pos, Quaternion q, Vector3 s);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public class ComputeBuffer : System.IDisposable
+    {
+        public extern ComputeBuffer(int count, int stride);
+        public extern ComputeBuffer(int count, int stride, ComputeBufferType type);
+         
+        public int count { get { return default(int); } }
+        public int stride { get { return default(int); } }
+         
+         
+        public extern virtual void Dispose();
+        public extern void GetData(System.Array data);
+        public extern void Release();
+        public extern void SetData(System.Array data);
+        public static extern void CopyCount(ComputeBuffer src, ComputeBuffer dst, int dstOffset);
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
     public struct Bounds
     {
         public extern Bounds(Vector3 center, Vector3 size);
@@ -3465,144 +3624,6 @@ namespace UnityEngine
     {
         FullRect = 0,
         Tight = 1,
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Shader : Object
-    {
-        public extern Shader();
-         
-        public bool isSupported { get { return default(bool); } }
-        public int maximumLOD { get { return default(int); } set {} }
-        public int renderQueue { get { return default(int); } }
-        public int globalMaximumLOD { get { return default(int); } set {} }
-         
-         
-        public static extern void DisableKeyword(string keyword);
-        public static extern void EnableKeyword(string keyword);
-        public static extern Shader Find(string name);
-        public static extern int PropertyToID(string name);
-        public static extern void SetGlobalBuffer(string propertyName, ComputeBuffer buffer);
-        public static extern void SetGlobalColor(int nameID, Color color);
-        public static extern void SetGlobalColor(string propertyName, Color color);
-        public static extern void SetGlobalFloat(int nameID, float value);
-        public static extern void SetGlobalFloat(string propertyName, float value);
-        public static extern void SetGlobalInt(int nameID, int value);
-        public static extern void SetGlobalInt(string propertyName, int value);
-        public static extern void SetGlobalMatrix(int nameID, Matrix4x4 mat);
-        public static extern void SetGlobalMatrix(string propertyName, Matrix4x4 mat);
-        public static extern void SetGlobalTexGenMode(string propertyName, TexGenMode mode);
-        public static extern void SetGlobalTexture(int nameID, Texture tex);
-        public static extern void SetGlobalTexture(string propertyName, Texture tex);
-        public static extern void SetGlobalTextureMatrixName(string propertyName, string matrixName);
-        public static extern void SetGlobalVector(int nameID, Vector4 vec);
-        public static extern void SetGlobalVector(string propertyName, Vector4 vec);
-        public static extern void WarmupAllShaders();
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class Texture : Object
-    {
-        public extern Texture();
-         
-        public int anisoLevel { get { return default(int); } set {} }
-        public FilterMode filterMode { get { return default(FilterMode); } set {} }
-        public virtual int height { get { return default(int); } set {} }
-        public float mipMapBias { get { return default(float); } set {} }
-        public Vector2 texelSize { get { return default(Vector2); } }
-        public virtual int width { get { return default(int); } set {} }
-        public TextureWrapMode wrapMode { get { return default(TextureWrapMode); } set {} }
-        public AnisotropicFiltering anisotropicFiltering { get { return default(AnisotropicFiltering); } set {} }
-        public int masterTextureLimit { get { return default(int); } set {} }
-         
-         
-        public extern int GetNativeTextureID();
-        public extern System.IntPtr GetNativeTexturePtr();
-        public static extern void SetGlobalAnisotropicFilteringLimits(int forcedMin, int globalMax);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public struct Matrix4x4
-    {
-        public float m00;
-        public float m10;
-        public float m20;
-        public float m30;
-        public float m01;
-        public float m11;
-        public float m21;
-        public float m31;
-        public float m02;
-        public float m12;
-        public float m22;
-        public float m32;
-        public float m03;
-        public float m13;
-        public float m23;
-        public float m33;
-         
-         
-        public Matrix4x4 inverse { get { return default(Matrix4x4); } }
-        public bool isIdentity { get { return default(bool); } }
-        public Matrix4x4 transpose { get { return default(Matrix4x4); } }
-        public Matrix4x4 identity { get { return default(Matrix4x4); } }
-        public Matrix4x4 zero { get { return default(Matrix4x4); } }
-         
-        public float this[int index] { get { return default(float); } set {} }
-        public float this[int row, int column] { get { return default(float); } set {} }
-         
-        public static extern bool operator ==(Matrix4x4 lhs, Matrix4x4 rhs);
-        public static extern bool operator !=(Matrix4x4 lhs, Matrix4x4 rhs);
-        public static extern Matrix4x4 operator *(Matrix4x4 lhs, Matrix4x4 rhs);
-        public static extern Vector4 operator *(Matrix4x4 lhs, Vector4 v);
-         
-        public extern override bool Equals(object other);
-        public extern Vector4 GetColumn(int i);
-        public extern override int GetHashCode();
-        public extern Vector4 GetRow(int i);
-        public extern Vector3 MultiplyPoint(Vector3 v);
-        public extern Vector3 MultiplyPoint3x4(Vector3 v);
-        public extern Vector3 MultiplyVector(Vector3 v);
-        public extern void SetColumn(int i, Vector4 v);
-        public extern void SetRow(int i, Vector4 v);
-        public extern void SetTRS(Vector3 pos, Quaternion q, Vector3 s);
-        public extern override string ToString();
-        public extern string ToString(string format);
-        public static extern Matrix4x4 Inverse(Matrix4x4 m);
-        public static extern Matrix4x4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
-        public static extern Matrix4x4 Perspective(float fov, float aspect, float zNear, float zFar);
-        public static extern Matrix4x4 Scale(Vector3 v);
-        public static extern Matrix4x4 Transpose(Matrix4x4 m);
-        public static extern Matrix4x4 TRS(Vector3 pos, Quaternion q, Vector3 s);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class ComputeBuffer : System.IDisposable
-    {
-        public extern ComputeBuffer(int count, int stride);
-        public extern ComputeBuffer(int count, int stride, ComputeBufferType type);
-         
-        public int count { get { return default(int); } }
-        public int stride { get { return default(int); } }
-         
-         
-        public extern virtual void Dispose();
-        public extern void GetData(System.Array data);
-        public extern void Release();
-        public extern void SetData(System.Array data);
-        public static extern void CopyCount(ComputeBuffer src, ComputeBuffer dst, int dstOffset);
     }
 }
  
@@ -4306,7 +4327,7 @@ namespace UnityEngine
         public bool useMipMap { get { return default(bool); } set {} }
         public int volumeDepth { get { return default(int); } set {} }
         public override int width { get { return default(int); } set {} }
-        public RenderTexture active { get { return default(RenderTexture); } set {} }
+        public static RenderTexture active { get { return default(RenderTexture); } set {} }
          
          
         public extern bool Create();
@@ -4593,19 +4614,6 @@ namespace UnityEngine
 namespace UnityEngine
 {
     [Bridge.FileName("csw")]
-    public enum LogType
-    {
-        Error = 0,
-        Assert = 1,
-        Warning = 2,
-        Log = 3,
-        Exception = 4,
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
     public class AssetBundleRequest : AsyncOperation
     {
         public extern AssetBundleRequest();
@@ -4686,8 +4694,8 @@ namespace System.Text
     public class DecoderFallback
     {
         public virtual int MaxCharCount { get { return default(int); } }
-        public DecoderFallback ExceptionFallback { get { return default(DecoderFallback); } }
-        public DecoderFallback ReplacementFallback { get { return default(DecoderFallback); } }
+        public static DecoderFallback ExceptionFallback { get { return default(DecoderFallback); } }
+        public static DecoderFallback ReplacementFallback { get { return default(DecoderFallback); } }
          
          
         public extern virtual DecoderFallbackBuffer CreateFallbackBuffer();
@@ -4700,8 +4708,8 @@ namespace System.Text
     public class EncoderFallback
     {
         public virtual int MaxCharCount { get { return default(int); } }
-        public EncoderFallback ExceptionFallback { get { return default(EncoderFallback); } }
-        public EncoderFallback ReplacementFallback { get { return default(EncoderFallback); } }
+        public static EncoderFallback ExceptionFallback { get { return default(EncoderFallback); } }
+        public static EncoderFallback ReplacementFallback { get { return default(EncoderFallback); } }
          
          
         public extern virtual EncoderFallbackBuffer CreateFallbackBuffer();
@@ -4767,6 +4775,19 @@ namespace System.Text
         public extern override bool Equals(object value);
         public extern Encoding GetEncoding();
         public extern override int GetHashCode();
+    }
+}
+ 
+namespace UnityEngine
+{
+    [Bridge.FileName("csw")]
+    public enum LogType
+    {
+        Error = 0,
+        Assert = 1,
+        Warning = 2,
+        Log = 3,
+        Exception = 4,
     }
 }
  
