@@ -399,6 +399,10 @@ namespace jsb
 				tfClass.Add("public extern void OnAfterDeserialize();");
 				tfClass.Add("public extern void OnBeforeSerialize();");
 			}
+			else if (type.CsFullName() == "UnityEngine.TextGenerator")
+			{
+				tfClass.Add("public extern void Dispose();");
+			}
         }
         
 		static void GenInterfaceOrStructOrClass(Type type, TypeStatus ts, 

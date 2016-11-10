@@ -30,16 +30,19 @@ namespace jsb
 		
 	    public static Type[] classes = new Type[]
 	    {
-			typeof(TestPerformance),
-			typeof(TestMisc),
-			typeof(TestRF),
-			typeof(TestGeneric<,,>),
+			typeof(jsb.Test.Framwork.TestPerformance),
+			typeof(jsb.Test.Framwork.TestMisc),
+			typeof(jsb.Test.Framwork.TestRF),
+			typeof(jsb.Test.Framwork.TestGeneric<,,>),
 
+			typeof(UnityEngine.UI.GridLayoutGroup),
+			typeof(UnityEngine.UI.Text),
             typeof(Hashtable),
 	       typeof(Debug),
 	       typeof(Input),
 	       typeof(GameObject),
 	        typeof(Transform),
+	        typeof(RectTransform),
 	        typeof(Vector2),
 	        typeof(Vector3),
 	        typeof(UnityEngine.Object),
@@ -119,6 +122,9 @@ namespace jsb
 	        typeof(Rigidbody),
 	        typeof(NavMeshPath),
 			typeof(Animation),
+
+			typeof(UnityEngine.UI.Button),
+			typeof(UnityEngine.UI.Button.ButtonClickedEvent),
 		};
 		
 		// some public class members can be used
