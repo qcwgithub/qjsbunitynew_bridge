@@ -715,10 +715,11 @@ public class TestRF
 }
  
 [Bridge.FileName("csw")]
-public class TestGeneric<T>
+public class TestGeneric<T,J,K>
 {
-    public extern TestGeneric();
+    public extern TestGeneric(T o);
      
+    public extern void Hello<X, Y>();
     public extern void PrintName();
 }
  

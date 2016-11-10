@@ -13,4 +13,9 @@ public class TestGeneric<T, J, K> where T : UnityEngine.Object
 	{
 		UnityEngine.Debug.Log(obj.name);
 	}
+
+	public void Hello<X, Y>()
+	{
+		UnityEngine.Debug.Log("Hello<X, Y>()");
+	}
 }

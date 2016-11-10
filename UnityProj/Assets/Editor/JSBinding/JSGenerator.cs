@@ -295,15 +295,15 @@ namespace jsb
                 // add T to formal param
                 if (method.IsGenericMethodDefinition)
                 {
-                    TCount = method.GetGenericArguments().Length;
-                    for (int j = 0; j < TCount; j++)
+					Type[] GAs = method.GetGenericArguments();
+					for (int j = 0; j < GAs.Length; j++)
                     {
-                        sbFormalParam.AppendFormat("t{0}", j);
-                        if (j < TCount - 1 || paramS.Length > 0)
+                        sbFormalParam.AppendFormat("{0}", GAs[j].Name);
+						if (j < GAs.Length - 1 || paramS.Length > 0)
                             sbFormalParam.Append(", ");
 
-                        tfInitT.Add("var $tn{0} = Bridge.Reflection.getTypeFullName(t{0});", j);
-                        sbActualParam.AppendFormat(", $tn{0}", j);
+						tfInitT.Add("var ${0} = Bridge.Reflection.getTypeFullName({0});", GAs[j].Name);
+						sbActualParam.AppendFormat(", ${0}", GAs[j].Name);
                     }
                 }
 
