@@ -29,6 +29,29 @@ namespace jsb
 			}
 			return baseType;
 		}
+
+		public static Type[] GetDelcaringInterfaces(this Type type)
+		{
+			Type[] arr = type.GetInterfaces();
+			if (arr.Length == 0)
+				return arr;
+
+			List<Type> lst = new List<Type>();
+			lst.AddRange(arr);
+			Type t = type;
+			while (true)
+			{
+				Type vBaseType = t.ValidBaseType();
+				if (vBaseType == null)
+					break;
+
+				foreach (var i in vBaseType.GetInterfaces())
+					lst.Remove(i);
+
+				t = vBaseType;
+			}
+			return lst.ToArray();
+		}
 		
 		public static string GetTypeFileName(Type type)
 		{

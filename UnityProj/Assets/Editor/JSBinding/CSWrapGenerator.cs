@@ -105,7 +105,8 @@ namespace jsb
             StringBuilder sb = new StringBuilder();
             TextFile tfNs = tfFile;
 
-            if (!string.IsNullOrEmpty(type.Namespace))
+			if (type.DeclaringType == null && 
+			    !string.IsNullOrEmpty(type.Namespace))
             {
                 tfNs = tfFile.Add("namespace {0}", type.Namespace).BraceIn();
                 tfNs.BraceOut();
@@ -393,6 +394,11 @@ namespace jsb
             {
                 tfClass.Add("object System.Collections.IEnumerator.Current { get { return null; } }");
             }
+			else if (type.CsFullName() == "UnityEngine.Events.UnityEventBase")
+			{
+				tfClass.Add("public extern void OnAfterDeserialize();");
+				tfClass.Add("public extern void OnBeforeSerialize();");
+			}
         }
         
 		static void GenInterfaceOrStructOrClass(Type type, TypeStatus ts, 
@@ -461,7 +467,7 @@ namespace jsb
 				sb.Append(className);
 
                 Type vBaseType = type.ValidBaseType();
-                Type[] interfaces = type.GetInterfaces();
+				Type[] interfaces = type.GetDelcaringInterfaces();
                 if (vBaseType != null || interfaces.Length > 0)
                 {
                     sb.Append(" : ");

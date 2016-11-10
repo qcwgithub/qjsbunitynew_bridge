@@ -387,7 +387,7 @@ namespace jsb
                         a.Add(JSNameMgr.JsFullName(vBaseType));
                     foreach (var i in interfaces)
                         a.Add(JSNameMgr.JsFullName(i));
-                    tfClass.In().Add("inherits: [{0}],", a.ToString());
+                    tfClass.Add("inherits: [{0}],", a.ToString());
                 }
             }
 
@@ -573,10 +573,12 @@ using UnityEngine;
                 TextFile tf = JSGenerator.GenerateClass();
 
                 tfFun.Add("if ($hc < {0}) {{ return; }}", hc++);
-                tfFun.AddLine().Add("if (Bridge.findObj(\"{0}\") == null) {{", type.JsFullName())
-                    .In()
+                tfFun.AddLine()
+					//.Add("if (Bridge.findObj(\"{0}\") == null) {{", type.JsFullName())
+                    //.In()
                         .Add(tf.Ch)
-                    .BraceOut();
+                    //.BraceOut()
+						;
             }
             tfFun.Out().Add("})(1000000);");
             File.WriteAllText(JSMgr.jsGenFile, tfAll.Format(-1));
