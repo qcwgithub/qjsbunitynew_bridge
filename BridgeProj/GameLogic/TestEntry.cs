@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,19 +8,20 @@ namespace jsb.Test.Logic
 {
     public class TestEntry : MonoBehaviour
     {
-        //Dictionary<string, string>
-        string[] testNames = new string[]
-        {
-            "TestCoroutine",
-            "TestPerformance",
-            "TestVector3",
-        };
+        Dictionary<string, Action> dict = null;
 
         void Start()
         {
+            dict = new Dictionary<string, Action>();
+            dict["TestCoroutine"] = () => { gameObject.AddComponent<TestCoroutine>(); };
+            dict["TestPerformance"] = () => { gameObject.AddComponent<TestPerformance>(); };
+            dict["TestVector3"] = () => { gameObject.AddComponent<TestVector3>(); };
+            dict["TestDictionary"] = () => { gameObject.AddComponent<TestDictionary>(); };
+
             GameObject btnPrefab = transform.Find("ButtonPrefab").gameObject;
-            foreach (var n in testNames)
+            foreach (var KV in dict)
             {
+                string n = KV.Key;
                 GameObject go = (GameObject) Instantiate(btnPrefab);
                 Transform trans = go.transform;
                 go.name = n;
@@ -42,13 +44,8 @@ namespace jsb.Test.Logic
                 if (!(mbs[i] is TestEntry))
                     UnityEngine.Object.DestroyImmediate(mbs[i]);
             }
-            
-            switch (n)
-            {
-                case "TestCoroutine": gameObject.AddComponent<TestCoroutine>(); break;
-                case "TestVector3": gameObject.AddComponent<TestVector3>(); break;
-                case "TestPerformance": gameObject.AddComponent<TestPerformance>(); break;
-            }
+
+            dict[n]();
         }
     }
 }
