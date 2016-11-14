@@ -120,6 +120,14 @@ class GenericTypeCache
     }
     static bool matchReturnType(Type targetType, string typeName, TypeFlag flag)
     {
+        if (
+            (0 != (flag & TypeFlag.IsT) && !targetType.IsGenericParameter) || 
+            (0 == (flag & TypeFlag.IsT) && targetType.IsGenericParameter)
+            )
+        {
+            return false;
+        }
+
 //         if (targetType.IsGenericParameter)
 //         {
 //             return 0 != (flag & TypeFlag.IsT);
