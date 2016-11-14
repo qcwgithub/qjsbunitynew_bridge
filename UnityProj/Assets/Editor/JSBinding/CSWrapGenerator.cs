@@ -335,7 +335,7 @@ namespace jsb
 
 					if (method.GetBaseDefinition() != method)
 						sbDef.Append("override ");
-					else if (method.IsVirtual)
+					else if (method.IsVirtual && !type.IsValueType)
                         sbDef.Append("virtual ");
                 }
                 
