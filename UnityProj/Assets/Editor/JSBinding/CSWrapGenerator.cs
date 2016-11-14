@@ -588,18 +588,23 @@ namespace jsb
             GeneratorHelp.ClearTypeInfo();
 
 			Dictionary<Type, TypeStatus> dict = new Dictionary<Type, TypeStatus>();
-
-			Action<Type> onNewType = (nt) =>
-			{
-				while (true)
-				{
-					if (nt.IsByRef || nt.IsArray)
-					{
-						nt = nt.GetElementType();
-						continue;
-					}
+            Action<Type> onNewType = null;            
+            onNewType = (nt) =>
+            {
+                while (true)
+                {
+                    if (nt.IsByRef || nt.IsArray)
+                    {
+                        nt = nt.GetElementType();
+                        continue;
+                    }
                     if (nt.IsGenericType && !nt.IsGenericTypeDefinition)
                     {
+                        foreach (var ga in nt.GetGenericArguments())
+                        {
+                            onNewType(ga);
+                        }
+
                         nt = nt.GetGenericTypeDefinition();
                         continue;
                     }
