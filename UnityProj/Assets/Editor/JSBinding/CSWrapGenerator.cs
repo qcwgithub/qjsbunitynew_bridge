@@ -62,7 +62,10 @@ namespace jsb
 
             ParameterInfo[] ps = method.GetParameters();
             {
-                sb.AppendFormat("{0}({1});", type.Name, Ps2String(type, ps));
+                sb.AppendFormat("{0}({1});", 
+				                // type.Name, 
+				                typefn(type, "no-namespace", CsNameOption.CompilableWithT),
+				                Ps2String(type, ps));
 
                 foreach (var p in ps)
                     onNewType(p.ParameterType);
@@ -135,10 +138,18 @@ namespace jsb
 			}
         }
 
-		static string typefn(Type tType, string eraseNs)
+		static string typefn(Type tType, string eraseNs, CsNameOption opt = CsNameOption.Compilable)
 		{
-			string fn = JSNameMgr.CsFullName(tType);
-			if (!string.IsNullOrEmpty(eraseNs) &&
+			string fn = JSNameMgr.CsFullName(tType, opt);
+			if (eraseNs == "no-namespace")
+			{
+				int dot = fn.LastIndexOf('.');
+				if (dot >= 0)
+				{
+					fn = fn.Substring(dot + 1);
+				}
+			}
+			else if (!string.IsNullOrEmpty(eraseNs) &&
 			    fn.StartsWith(eraseNs + "."))
 			{
 				fn = fn.Substring(eraseNs.Length + 1);
@@ -587,6 +598,11 @@ namespace jsb
 						nt = nt.GetElementType();
 						continue;
 					}
+                    if (nt.IsGenericType && !nt.IsGenericTypeDefinition)
+                    {
+                        nt = nt.GetGenericTypeDefinition();
+                        continue;
+                    }
 					if (nt.IsGenericParameter)
 						return;
 					break;
