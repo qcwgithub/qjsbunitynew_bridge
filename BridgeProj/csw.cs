@@ -961,6 +961,10 @@ namespace jsb.Test.Framwork
         public extern TestMisc();
          
         public extern void TestParams(params string[] strs);
+        public static extern void GetL(System.Action<System.Int64> jsSetL);
+        public static extern void GetUL(System.Action<System.UInt64> jsSetUL);
+        public static extern void SetL(long l);
+        public static extern void SetUL(ulong ul);
     }
 }
  

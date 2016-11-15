@@ -32,6 +32,30 @@ namespace jsb.Test.Framwork
 				UnityEngine.MonoBehaviour.print(strs[i]);
 			}
 		}
+
+        public static void SetUL(ulong ul)
+        {
+            Debug.Log("C# 收到 ulong：" + ul);
+        }
+
+        public static void SetL(long l)
+        {
+            Debug.Log("C# 收到 long：" + l);
+        }
+
+        public static void GetUL(System.Action<ulong> jsSetUL)
+        {
+            ulong ul = 1152921504606846976L; // 2^60
+            Debug.Log("C# 传出 ulong：" + ul);
+            jsSetUL(ul);
+        }
+
+        public static void GetL(System.Action<long> jsSetL)
+        {
+            long l = 1152921504606846976L; // 2^60
+            Debug.Log("C# 传出 long：" + l);
+            jsSetL(l);
+        }
 	}
 
 	public class TestPerformance

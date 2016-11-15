@@ -1,5 +1,6 @@
 // 把 Bridge.dll 用 Reflector 打开，然后一个一个复制过来
 [System]
+Action<T>
 Activator
 AggregateException
 AppDomain
