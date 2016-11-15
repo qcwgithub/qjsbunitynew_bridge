@@ -16,7 +16,7 @@ namespace jsb.Test.Logic
             Debug.Log("Js 传出 ulong：" + ul);
             TestMisc.SetUL(ul);
 
-            long l = 9223372036854775807L; // 2^63-1
+            long l = -9223372036854775808L; // -2^63
             Debug.Log("Js 传出 long：" + l);
             TestMisc.SetL(l);
 

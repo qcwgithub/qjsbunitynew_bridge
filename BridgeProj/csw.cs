@@ -887,7 +887,6 @@ namespace UnityEngine
         public int bytesDownloaded { get { return default(int); } }
         public string error { get { return default(string); } }
         public bool isDone { get { return default(bool); } }
-        public MovieTexture movie { get { return default(MovieTexture); } }
         public float progress { get { return default(float); } }
         public System.Collections.Generic.Dictionary<System.String,System.String> responseHeaders { get { return default(System.Collections.Generic.Dictionary<System.String,System.String>); } }
         public int size { get { return default(int); } }
@@ -3473,26 +3472,6 @@ namespace UnityEngine
         public static extern AssetBundle CreateFromFile(string path, int offset);
         public static extern AssetBundleCreateRequest CreateFromMemory(byte[] binary);
         public static extern AssetBundle CreateFromMemoryImmediate(byte[] binary);
-    }
-}
- 
-namespace UnityEngine
-{
-    [Bridge.FileName("csw")]
-    public class MovieTexture : Texture
-    {
-        public extern MovieTexture();
-         
-        public AudioClip audioClip { get { return default(AudioClip); } }
-        public float duration { get { return default(float); } }
-        public bool isPlaying { get { return default(bool); } }
-        public bool isReadyToPlay { get { return default(bool); } }
-        public bool loop { get { return default(bool); } set {} }
-         
-         
-        public extern void Pause();
-        public extern void Play();
-        public extern void Stop();
     }
 }
  
