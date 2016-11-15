@@ -317,7 +317,7 @@ namespace jsb
 	        {
 	            if (typeof(System.Delegate).IsAssignableFrom(type))
 	            {
-	                sb.AppendFormat("Delegate \"{0}\" 不能导出.\n",
+	                sb.AppendFormat("Delegate \"{0}\" 不能导出\n",
 	                                JSNameMgr.CsFullName(type));
 	                ok = false;
 
@@ -326,7 +326,7 @@ namespace jsb
 
 	            if (type.IsGenericType && !type.IsGenericTypeDefinition)
 	            {
-	                sb.AppendFormat("\"{0}\" 不能导出，换成 \"{1}\".\n",
+	                sb.AppendFormat("\"{0}\" 不能导出，换成 \"{1}\"\n",
 	                    JSNameMgr.CsFullName(type), JSNameMgr.CsFullName(type.GetGenericTypeDefinition()));
 	                ok = false;
 
@@ -335,7 +335,7 @@ namespace jsb
 
 	            if (type.IsInterface)
 	            {
-	                sb.AppendFormat("接口 \"{0}\" 不需要配置，会自动添加.\n",
+	                sb.AppendFormat("接口 \"{0}\" 不需要配置。如果有配置继承这个接口的类，则这个接口会自动添加\n",
 	                    JSNameMgr.CsFullName(type));
 	                ok = false;
 
