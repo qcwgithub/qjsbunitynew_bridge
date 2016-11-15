@@ -75,11 +75,12 @@ namespace jsb
         }
 
 		static void GenEnum(Type type, TypeStatus ts, 
-		                    Func<Type, TypeStatus> getParent)
+		                    Func<Type, TypeStatus> getParent, Action<Type> onNewType)
 		{
 			TextFile tfFile = null;
 			if (type.DeclaringType != null)
 			{
+				onNewType(type.DeclaringType);
 				ts.IsInnerType = true;
 
 				TypeStatus tsParent = getParent(type.DeclaringType);
@@ -658,7 +659,7 @@ namespace jsb
 
 					if (type.IsEnum)
 					{
-						GenEnum(type, ts, getParent);
+						GenEnum(type, ts, getParent, onNewType);
 					}
                     else if (typeof(Delegate).IsAssignableFrom(type))
                     {
