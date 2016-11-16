@@ -158,19 +158,23 @@ namespace jsb
 			return fn;
 		}
 
-		static string Ps2String(Type type, ParameterInfo[] ps)
+		static string Ps2String(Type type, ParameterInfo[] ps, bool hasExtensionAttribute = false)
 		{
 			args f_args = new args();
 			for (int j = 0; j < ps.Length; j++)
 			{
 				ParameterInfo p = ps[j];
 				string s = "";
+                if (j == 0 && hasExtensionAttribute)
+                {
+                    s += "this ";
+                }
 				if (p.ParameterType.IsByRef)
 				{
 					if (p.IsOut)
-						s = "out ";
+						s += "out ";
 					else
-						s = "ref ";
+						s += "ref ";
 				}
 				if (ParameterIsParams(p))
 					s += "params ";
@@ -359,9 +363,10 @@ namespace jsb
 				}
 				
 				sbDef.Append("(");
+                bool hasExtensionAttribute = (method.GetCustomAttributes(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false).Length > 0);
 				ParameterInfo[] ps = method.GetParameters();
 				{
-					sbDef.Append(Ps2String(type, ps));
+                    sbDef.Append(Ps2String(type, ps, hasExtensionAttribute));
 					sbDef.Append(");");
 
 					foreach (var p in ps)
@@ -466,6 +471,16 @@ namespace jsb
             {
 				if (type.IsPublic || type.IsNestedPublic)
                     sb.Append("public ");
+
+                if (type.IsClass)
+                {
+                    if (type.IsAbstract && type.IsSealed)
+                        sb.Append("static ");
+                    //else if (type.IsAbstract)
+                    //    sb.Append("abstract ");
+                    //else if (type.IsSealed)
+                    //    sb.Append("sealed ");
+                }
 
                 if (type.IsInterface)
                     sb.Append("interface ");
