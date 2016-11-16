@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="csw.cs" />
     <Compile Include="GameLogic\JSBinding\Misc.cs" />
+    <Compile Include="GameLogic\TestCallFromCs.cs" />
     <Compile Include="GameLogic\TestCoroutine.cs" />
     <Compile Include="GameLogic\TestDictionary.cs" />
     <Compile Include="GameLogic\TestEntry.cs" />

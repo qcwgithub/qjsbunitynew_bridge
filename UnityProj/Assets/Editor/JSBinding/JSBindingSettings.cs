@@ -35,6 +35,7 @@ namespace jsb
 			typeof(jsb.Test.Framwork.TestRF),
 			typeof(jsb.Test.Framwork.TestGeneric<,,>),
 
+			typeof(TestCallJs),
 			typeof(UnityEngine.UI.GridLayoutGroup),
 			typeof(UnityEngine.UI.Text),
             typeof(Hashtable),
