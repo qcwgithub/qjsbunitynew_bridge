@@ -128,6 +128,40 @@ namespace jsb
 				return name.Replace('+', '.');
 		}
 
+        static Type[] EraseTDefinedByParent(Type type, Type[] Ts)
+        {
+            int leftCount = Ts.Length;
+            Type p = type;
+            while (true)
+            {
+                p = p.DeclaringType;
+                if (p == null || !p.IsGenericTypeDefinition)
+                    break;
+                foreach (var ga in p.GetGenericArguments())
+                {
+                    for (int i = 0; i < Ts.Length; i++)
+                    {
+                        if (Ts[i] != null && Ts[i].Name == ga.Name)
+                        {
+                            Ts[i] = null;
+                            leftCount--;
+                        }
+                    }
+                }
+            }
+            if (leftCount == Ts.Length)
+                return Ts;
+
+            Type[] rt = new Type[leftCount];
+            int j = 0;
+            for (int i = 0; i < Ts.Length; i++)
+            {
+                if (Ts[i] != null)
+                    rt[j++] = Ts[i];
+            }
+            return rt;
+        }
+
 		// 当有一个类 TestGeneric<T>，有可能需要产生下面几种名字
 		// 名字形式                  使用环境
 		// TestGeneric<>            typeof(TestGeneric<>) 可编译
@@ -162,23 +196,24 @@ namespace jsb
 			else if (gt || gtd)
 			{
 				string N = string.Empty;
-				if (gtd)
-				{
-					N = type.FullName;
-				}
-				else
+                string PN = "";
+// 				if (gtd)
+// 				{
+// 					N = type.FullName;
+// 				}
+// 				else
 				{
 					if (type.IsNested && type.DeclaringType != null)
 					{
-						N = CsFullName_Impl(type.DeclaringType, opt);
-						N += bridge ? "+" : ".";
+                        PN = CsFullName_Impl(type.DeclaringType, opt);
+                        PN += bridge ? "+" : ".";
 					}
 					else if (!string.IsNullOrEmpty(type.Namespace))
 					{
-						N = type.Namespace;
-						N += ".";
+                        PN = type.Namespace;
+                        PN += ".";
 					}
-					N += type.Name;
+					N = type.Name;
 				}
 
 				Type[] Ts = type.GetGenericArguments();
@@ -197,31 +232,34 @@ namespace jsb
 				{
                     for (var i = 0; i < GenTSuffix.Length; i++)
                         N = N.Replace(GenTSuffix[i], GenTSuffixReplaceCS[i]);
-					return _ReplacePlus(N, opt);
 				}
 				else
                 {
                     if (iOft >= 0)
                         N = N.Substring(0, iOft);
 
-					N += bridge ? "[" : "<";
-					for (int i = 0; i < Ts.Length; i++)
-					{
-						if (bridge)
-							N += "[";
-						
-						N += CsFullName_Impl(Ts[i], opt);
-						
-						if (bridge)
-							N += "]";
-						
-						if (i != Ts.Length - 1)
-							N += ",";
-					}
-					N += bridge ? "]" : ">";
-					
-					return _ReplacePlus(N, opt);
+                    Ts = EraseTDefinedByParent(type, Ts);
+                    if (Ts.Length > 0)
+                    {
+                        N += bridge ? "[" : "<";
+                        for (int i = 0; i < Ts.Length; i++)
+                        {
+                            if (bridge)
+                                N += "[";
+
+                            N += CsFullName_Impl(Ts[i], opt);
+
+                            if (bridge)
+                                N += "]";
+
+                            if (i != Ts.Length - 1)
+                                N += ",";
+                        }
+                        N += bridge ? "]" : ">";
+                    }
                 }
+
+                return _ReplacePlus(PN + N, opt);
             }
             else // contains generic parameter
             {

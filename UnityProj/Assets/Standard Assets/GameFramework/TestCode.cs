@@ -3,8 +3,11 @@ using System.Collections;
 
 namespace jsb.Test.Framwork
 {
-	public class TestGeneric<T, J, K> where T : UnityEngine.Object
-	{
+	public class TestGeneric<T, J, K>
+    {
+        public delegate void CompareFunc(T t);
+        public void Compare(CompareFunc cf) { }
+
 		T obj;
 		public TestGeneric(T o)
 		{
@@ -13,7 +16,7 @@ namespace jsb.Test.Framwork
 		
 		public void PrintName()
 		{
-			UnityEngine.Debug.Log(obj.name);
+			//UnityEngine.Debug.Log(((UnityEngine.Object)obj).name);
 		}
 		
 		public void Hello<X, Y>()

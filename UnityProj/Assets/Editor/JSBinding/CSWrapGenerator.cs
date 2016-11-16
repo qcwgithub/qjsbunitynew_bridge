@@ -178,7 +178,7 @@ namespace jsb
 				}
 				if (ParameterIsParams(p))
 					s += "params ";
-				s += typefn(p.ParameterType, type.Namespace) + " ";
+				s += typefn(p.ParameterType, p.ParameterType.DeclaringType == type ? "no-namespace" : type.Namespace) + " ";
 				s += p.Name;
 				f_args.Add(s);
 			};
