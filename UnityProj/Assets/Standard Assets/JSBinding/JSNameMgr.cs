@@ -176,14 +176,14 @@ namespace jsb
 			bool with_t = (opt == CsNameOption.CompilableWithT);
 			bool bridge = (opt == CsNameOption.BridgeTypeToString);
 			
+			if (type.IsByRef)
+				type = type.GetElementType();
+
 			bool isgp = type.IsGenericParameter;
 			bool cgt = type.ContainsGenericParameters;
 			bool gt = type.IsGenericType;
 			bool gtd = type.IsGenericTypeDefinition;
-			
-			if (type.IsByRef)
-				type = type.GetElementType();
-			
+
 			if (isgp)
 			{  // T
 				return _TName(type, opt);
