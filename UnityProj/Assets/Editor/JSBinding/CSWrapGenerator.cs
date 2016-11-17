@@ -135,7 +135,7 @@ namespace jsb
 			for (int i = 0; i < fields.Length; i++)
 			{
 				FieldInfo field = fields[i];
-				tfClass.Add("{0} = {1},", field.Name, (int)field.GetValue(null));
+				tfClass.Add("{0} = {1},", field.Name, System.Convert.ToInt64(field.GetValue(null)));
 			}
         }
 
