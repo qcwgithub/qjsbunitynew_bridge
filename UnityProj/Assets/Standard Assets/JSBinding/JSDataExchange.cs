@@ -746,7 +746,10 @@ public class JSDataExchangeMgr
             else if (type == typeof(System.Double))
                 ret = "JSApi.getDouble";
             else if (type == typeof(System.IntPtr))
-                ret = "JSApi.getIntPtr";
+			{
+				ret = "JSApi.getIntPtr";
+				needCast = true;
+			}
             else
                 Debug.LogError("444 Unknown primitive type");
         }
