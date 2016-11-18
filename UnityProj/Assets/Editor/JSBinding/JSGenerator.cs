@@ -483,10 +483,17 @@ namespace jsb
             tfDef.Add("$kind: \"enum\",");
             TextFile tfSta = tfDef.Add("statics: {").In();
 
+            Type uType = Enum.GetUnderlyingType(type);
             FieldInfo[] fields = type.GetFields(BindingFlags.GetField | BindingFlags.Public | BindingFlags.Static);
             for (int i = 0; i < fields.Length; i++)
             {
-				tfSta.Add("{0}: {1}{2}", fields[i].Name, System.Convert.ToInt64(fields[i].GetValue(null)), i == fields.Length - 1 ? "" : ",");
+                string v = "";
+                if (uType == typeof(ulong))
+                    v = System.Convert.ToUInt64(fields[i].GetValue(null)).ToString();
+                else
+                    v = System.Convert.ToInt64(fields[i].GetValue(null)).ToString();
+
+                tfSta.Add("{0}: {1}{2}", fields[i].Name, v, i == fields.Length - 1 ? "" : ",");
             }
             tfSta.BraceOut();
             tfDef.BraceOutSC();

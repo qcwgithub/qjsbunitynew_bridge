@@ -118,6 +118,7 @@ namespace jsb
 
             tfNs.Add("[Bridge.FileName(\"csw\")]");
 
+            Type uType = Enum.GetUnderlyingType(type);
             TextFile tfClass = null;
             sb.Remove(0, sb.Length);
             {
@@ -126,6 +127,8 @@ namespace jsb
 
                 sb.Append("enum ");
                 sb.Append(type.Name);
+                if (uType != typeof(int))
+                    sb.AppendFormat(" : {0}", uType.CsFullName());
 
                 tfClass = tfNs.Add(sb.ToString()).BraceIn();
                 tfClass.BraceOut();
@@ -135,7 +138,13 @@ namespace jsb
 			for (int i = 0; i < fields.Length; i++)
 			{
 				FieldInfo field = fields[i];
-				tfClass.Add("{0} = {1},", field.Name, System.Convert.ToInt64(field.GetValue(null)));
+                string v = "";
+                if (uType == typeof(ulong))
+                    v = System.Convert.ToUInt64(field.GetValue(null)).ToString();
+                else
+                    v = System.Convert.ToInt64(field.GetValue(null)).ToString();
+
+				tfClass.Add("{0} = {1},", field.Name, v);
 			}
         }
 
