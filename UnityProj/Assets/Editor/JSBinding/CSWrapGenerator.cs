@@ -325,7 +325,112 @@ namespace jsb
 			return (pi.ParameterType.IsArray && pi.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0);
 		}
 
-		static void handleMethods(TextFile tfClass, Type type, GeneratorHelp.ATypeInfo ti, Action<Type> OnNewType)
+		static void handleInterfaceProblems(TextFile tfClass, Type cType, Action<Type> OnNewType)
+		{
+			Type[] interfaces = cType.GetValidInterfaces();
+			Action<Type, MethodInfo> actionMethod = (iType, method) => 
+			{
+				StringBuilder sbDef = new StringBuilder();
+				
+				sbDef.Append("extern ");
+				if (!(method.IsSpecialName && method.Name == "op_Implicit"))
+				sbDef.Append(typefn(method.ReturnType, cType.Namespace, CsNameOption.CompilableWithT) + " ");
+				
+				OnNewType(method.ReturnType);
+
+				sbDef.Append(iType.CsFullName(CsNameOption.CompilableWithT) + "."); // 这句是重点
+				sbDef.Append(MethodNameString(cType, method));
+				
+				if (method.IsGenericMethodDefinition)
+				{
+					Type[] argus = method.GetGenericArguments();
+					args t_args = new args();
+					foreach (var a in argus)
+						t_args.Add(a.Name);
+					
+					sbDef.Append(t_args.Format(args.ArgsFormat.GenericT));
+				}
+				
+				sbDef.Append("(");
+				ParameterInfo[] ps = method.GetParameters();
+				{
+					sbDef.Append(Ps2String(cType, ps));
+					sbDef.Append(");");
+					
+					foreach (var p in ps)
+						OnNewType(p.ParameterType);
+				}
+				
+				tfClass.Add(sbDef.ToString());
+			};
+
+			Action<Type, PropertyInfo> actionPro = (iType, pro) =>
+			{
+				OnNewType(pro.PropertyType);
+				ParameterInfo[] ps = pro.GetIndexParameters();
+				
+				args iargs = new args();
+				bool isIndexer = (ps.Length > 0);
+				if (isIndexer)
+				{
+					for (int j = 0; j < ps.Length; j++)
+					{
+						iargs.AddFormat("{0} {1}", typefn(ps[j].ParameterType, cType.Namespace), ps[j].Name);
+						OnNewType(ps[j].ParameterType);
+					}
+				}
+				
+				MethodInfo getm = pro.GetGetMethod();
+				MethodInfo setm = pro.GetSetMethod();
+				
+				bool canGet = getm != null && getm.IsPublic;
+				bool canSet = setm != null && setm.IsPublic;
+				
+				string getset = "";
+				{
+					if (canGet) getset += "get;";
+					if (canSet) getset += " set;";
+				}
+				
+				string vo = string.Empty;
+				
+				if (isIndexer)
+				{
+//					tfClass.Add("{3}{0} this{1} {{ {2} }}",
+//					            typefn(pro.PropertyType, cType.Namespace), iargs.Format(args.ArgsFormat.Indexer),
+//					            getset,
+//					            vo);
+				}
+                else
+                {
+                    tfClass.Add("{3}{0} {1} {{ {2} }}",
+					            typefn(pro.PropertyType, cType.Namespace), 
+					            iType.CsFullName(CsNameOption.CompilableWithT) + "." + // 这句是重点
+                                pro.Name,
+                                getset,
+                                vo);
+                }
+            };
+            
+            foreach (Type iType in interfaces)
+            {
+                GeneratorHelp.ATypeInfo ti = GeneratorHelp.CreateTypeInfo(iType);
+                for (int i = 0; i < ti.Methods.Count; i++)
+                {
+                    MemberInfoEx infoEx = ti.Methods[i];
+                    MethodInfo method = infoEx.member as MethodInfo;
+                    actionMethod(iType, method);
+				}
+				for (int i = 0; i < ti.Pros.Count; i++)
+				{
+					MemberInfoEx infoEx = ti.Pros[i];
+					PropertyInfo pro = infoEx.member as PropertyInfo;
+					actionPro(iType, pro);
+                }
+            }
+        }
+        
+        static void handleMethods(TextFile tfClass, Type type, GeneratorHelp.ATypeInfo ti, Action<Type> OnNewType)
 		{
 			Action<MethodInfo> action = (method) => 
 			{
@@ -353,9 +458,8 @@ namespace jsb
                         sbDef.Append("virtual ");
                 }
                 
-                
                 if (!(method.IsSpecialName && method.Name == "op_Implicit"))
-					sbDef.Append(typefn(method.ReturnType, type.Namespace) + " ");
+					sbDef.Append(typefn(method.ReturnType, type.Namespace, CsNameOption.CompilableWithT) + " ");
 
 				OnNewType(method.ReturnType);
 
@@ -410,25 +514,6 @@ namespace jsb
                     action(method);
                 }
             }
-
-            // 特殊处理
-            if (type == typeof(System.Collections.Hashtable))
-            {
-                tfClass.Add("extern IEnumerator IEnumerable.GetEnumerator();");
-            }
-            else if (type == typeof(System.Runtime.Serialization.SerializationInfoEnumerator))
-            {
-                tfClass.Add("object System.Collections.IEnumerator.Current { get { return null; } }");
-            }
-			else if (type.CsFullName() == "UnityEngine.Events.UnityEventBase")
-			{
-				tfClass.Add("public extern void OnAfterDeserialize();");
-				tfClass.Add("public extern void OnBeforeSerialize();");
-			}
-			else if (type.CsFullName() == "UnityEngine.TextGenerator")
-			{
-				tfClass.Add("public extern void Dispose();");
-			}
         }
         
 		static void GenInterfaceOrStructOrClass(Type type, TypeStatus ts, 
@@ -506,8 +591,8 @@ namespace jsb
 				}
 				sb.Append(className);
 
-                Type vBaseType = type.ValidBaseType();
-				Type[] interfaces = type.GetDelcaringInterfaces();
+				Type vBaseType = type.ValidBaseType();
+				Type[] interfaces = type.GetDeclaringInterfaces();
                 if (vBaseType != null || interfaces.Length > 0)
                 {
                     sb.Append(" : ");
@@ -584,6 +669,8 @@ namespace jsb
                 tfClass.AddLine();
 
 			handleMethods(tfClass, type, ti, onNewType);
+			if (!type.IsInterface)
+				handleInterfaceProblems(tfClass, type, onNewType);
         }
 
 		static bool ShouldIgnoreType(Type type)

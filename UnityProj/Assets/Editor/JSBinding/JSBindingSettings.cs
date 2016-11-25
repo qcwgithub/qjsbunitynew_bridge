@@ -169,7 +169,10 @@ namespace jsb
 			    (type == typeof(WebCamTexture) && (memberName == "isReadable" || memberName == "MarkNonReadable")) ||
 			    (type == typeof(StreamReader) && (memberName == "CreateObjRef" || memberName == "GetLifetimeService" || memberName == "InitializeLifetimeService")) ||
 			    (type == typeof(StreamWriter) && (memberName == "CreateObjRef" || memberName == "GetLifetimeService" || memberName == "InitializeLifetimeService")) ||
-			    (type == typeof(UnityEngine.Font) && memberName == "textureRebuildCallback")
+			    (type == typeof(UnityEngine.Font) && memberName == "textureRebuildCallback") ||
+
+			    // Bridge 没有这3个函数
+			    (type == typeof(System.Collections.ICollection) && (memberName == "IsSynchronized" || memberName == "SyncRoot" || memberName == "CopyTo"))
 			    #if UNITY_4_6 || UNITY_4_7
 			    || (type == typeof(UnityEngine.EventSystems.PointerEventData) && memberName == "lastPress")
 			    || (type == typeof(UnityEngine.UI.InputField) && memberName == "onValidateInput") // property delegate

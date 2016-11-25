@@ -1,26 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class TestDictionary : MonoBehaviour
+namespace jsb.Test.Logic
 {
-    void Start()
+    public class TestDictionary : MonoBehaviour
     {
-        Dictionary<string, int> dict = new Dictionary<string, int>();
-        dict.Add("liudh", 50);
-        dict.Add("wuyz", 27);
+        void Start()
+        {
+            Dictionary<string, int> dict = new Dictionary<string, int>();
+            dict.Add("liudh", 50);
+            dict.Add("wuyz", 27);
 
-        int age;
-        if (dict.TryGetValue("liudh", out age))
-        {
-            Debug.Log("age: " + age.ToString());
-        }
-        else
-        {
-            Debug.Log("not found");
-        }
-        foreach (var v in dict)
-        {
-            Debug.Log(v.Key.ToString() + "->" + v.Value.ToString());
+            int age;
+            if (dict.TryGetValue("liudh", out age))
+            {
+                Debug.Log("age: " + age.ToString());
+            }
+            else
+            {
+                Debug.Log("not found");
+            }
+            foreach (var v in dict)
+            {
+                Debug.Log(v.Key.ToString() + "->" + v.Value.ToString());
+            }
         }
     }
 }

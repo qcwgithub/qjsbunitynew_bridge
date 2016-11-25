@@ -18,6 +18,7 @@ namespace jsb.Test.Logic
             dict["TestVector3"] = () => { gameObject.AddComponent<TestVector3>(); };
             dict["TestDictionary"] = () => { gameObject.AddComponent<TestDictionary>(); };
             dict["TestInt64"] = () => { gameObject.AddComponent<TestInt64>(); };
+            dict["TestJSON"] = () => { gameObject.AddComponent<TestJSON>(); };
             // 注意 TestCallJs 是 C# 脚本
             dict["TestCallJs"] = () => { gameObject.AddComponent<TestCallJs>(); };
 

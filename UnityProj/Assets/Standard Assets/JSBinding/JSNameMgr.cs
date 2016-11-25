@@ -30,12 +30,12 @@ namespace jsb
 			return baseType;
 		}
 
-		public static Type[] GetDelcaringInterfaces(this Type type)
+		public static Type[] GetValidInterfaces(this Type type)
 		{
 			Type[] arr = type.GetInterfaces();
 			if (arr.Length == 0)
 				return arr;
-
+			
 			List<Type> lst = new List<Type>();
 			lst.AddRange(arr);
 			Type t = type;
@@ -44,12 +44,40 @@ namespace jsb
 				Type vBaseType = t.ValidBaseType();
 				if (vBaseType == null)
 					break;
-
+				
 				foreach (var i in vBaseType.GetInterfaces())
 					lst.Remove(i);
-
+				
 				t = vBaseType;
 			}
+
+			return lst.ToArray();
+		}
+
+		// 获得一个 type 的继承接口
+		// 1. 去掉父类的接口
+		// 2. 如果此类继承A接口，A又继承自B接口，在这个类中只要写继承A就可以了
+		public static Type[] GetDeclaringInterfaces(this Type type)
+		{
+			List<Type> lst = new List<Type>();
+			lst.AddRange(GetValidInterfaces(type));
+
+			while (true)
+			{
+				bool c = false;
+				foreach (var l in lst.ToArray())
+				{
+					var a = l.GetInterfaces();
+					foreach (var b in a)
+					{
+						if (lst.Remove(b))
+							c = true;
+					}
+				}
+				if (!c)
+					break;
+			}
+
 			return lst.ToArray();
 		}
 		
