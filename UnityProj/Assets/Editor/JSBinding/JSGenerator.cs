@@ -311,7 +311,17 @@ namespace jsb
                 for (int j = 0; j < L; j++)
                 {
                     sbFormalParam.AppendFormat("a{0}/* {1} */{2}", j, paramS[j].ParameterType.Name, (j == L - 1 ? "" : ", "));
-                    sbActualParam.AppendFormat(", a{0}", j);
+
+					// 特殊处理
+					// 配合 UnityEngineManual.GameObject_AddComponent__Type
+					if (j == 0 &&
+					    type == typeof(GameObject) && method.Name == "AddComponent" && 
+					    paramS.Length == 1 && paramS[j].ParameterType == typeof(Type))
+					{
+						sbActualParam.AppendFormat(", Bridge.Reflection.getTypeFullName(a{0})", j);
+					}
+					else
+                    	sbActualParam.AppendFormat(", a{0}", j);
                 }
 
                 //int TCount = method.GetGenericArguments().Length;

@@ -83,9 +83,7 @@ public partial class UnityEngineManual
         goFromComponent = ((UnityEngine.Component)vc.csObj).gameObject;
     }
 
-    /* 
-     * GameObject.AddComponent<T>()
-     */
+    // GameObject.AddComponent<T>()
     public static bool GameObject_AddComponentT1(JSVCall vc, int count)
     {
         help_getGoAndType(vc);
@@ -109,6 +107,15 @@ public partial class UnityEngineManual
         }
         return true;
     }
+	public static bool GameObject_AddComponent__String(JSVCall vc, int count)
+	{
+		return GameObject_AddComponentT1(vc, count);
+	}
+	public static bool GameObject_AddComponent__Type(JSVCall vc, int count)
+	{
+		return GameObject_AddComponentT1(vc, count);
+	}
+
     /*
      * GameObject.GetComponent<T>()
      */

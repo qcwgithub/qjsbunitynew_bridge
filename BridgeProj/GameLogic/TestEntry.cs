@@ -16,8 +16,8 @@ namespace jsb.Test.Logic
             dict["TestCoroutine"] = () => { gameObject.AddComponent<TestCoroutine>(); };
             dict["TestPerformance"] = () => { gameObject.AddComponent<TestPerformance>(); };
             dict["TestVector3"] = () => { gameObject.AddComponent<TestVector3>(); };
-            dict["TestDictionary"] = () => { gameObject.AddComponent<TestDictionary>(); };
-            dict["TestInt64"] = () => { gameObject.AddComponent<TestInt64>(); };
+            dict["TestDictionary"] = () => { gameObject.AddComponent(typeof(TestDictionary)); };
+            dict["TestInt64"] = () => { gameObject.AddComponent("jsb.Test.Logic.TestInt64"); };
             dict["TestJSON"] = () => { gameObject.AddComponent<TestJSON>(); };
             // 注意 TestCallJs 是 C# 脚本
             dict["TestCallJs"] = () => { gameObject.AddComponent<TestCallJs>(); };
