@@ -252,13 +252,13 @@ namespace jsb
 		}
 		
 		public static string csDir = Application.dataPath + "/JSBinding/CSharp";
-		public static string csGenDir = Application.dataPath + "/Standard Assets/JSBinding/G";
+		public static string csGenDir = Application.dataPath + "/Scripts/JSBinding/G";
 
         static HashSet<string> LoadBridgeDefinedTypes()
         {
             HashSet<string> types = new HashSet<string>();
 
-            string text = File.ReadAllText("Assets/Standard Assets/JSBinding/Editor/BridgeTypes.txt");
+            string text = File.ReadAllText("Assets/Scripts/JSBinding/Editor/BridgeTypes.txt");
             string[] lines = text.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             string ns = "";
             for (int i = 0; i < lines.Length; i++)
