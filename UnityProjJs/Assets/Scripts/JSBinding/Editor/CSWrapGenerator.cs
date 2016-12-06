@@ -427,6 +427,11 @@ namespace jsb
 					PropertyInfo pro = infoEx.member as PropertyInfo;
 					actionPro(iType, pro);
                 }
+                // 特殊处理，BridgeProj工程
+                if (iType == typeof(ICollection))
+                {
+                    tfClass.Add("bool System.Collections.ICollection.IsReadOnly { get; }");
+                }
             }
         }
         
