@@ -302,6 +302,15 @@ namespace jsb
 
             foreach (var e in enums)
             {
+                if (!e.IsEnum)
+                {
+                    sb.AppendFormat("非枚举 \"{0}\" 应放到 classes 里\n",
+                                    JSNameMgr.CsFullName(e));
+                    ok = false;
+
+                    continue;
+                }
+
                 if (bridgeTypes.Contains(e.FullName))
                 {
                     sb.AppendFormat("Bridge已包含\"{0}\"，无需导出", e.FullName);
@@ -319,6 +328,15 @@ namespace jsb
 
 	        foreach (var type in classes)
 	        {
+                if (type.IsEnum)
+                {
+                    sb.AppendFormat("枚举 \"{0}\" 应放到 enums 里\n",
+                                    JSNameMgr.CsFullName(type));
+                    ok = false;
+
+                    continue;
+                }
+
 	            if (typeof(System.Delegate).IsAssignableFrom(type))
 	            {
 	                sb.AppendFormat("Delegate \"{0}\" 不能导出\n",
