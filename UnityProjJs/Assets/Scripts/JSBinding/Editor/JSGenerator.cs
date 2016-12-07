@@ -506,7 +506,8 @@ namespace jsb
                 tfSta.Add("{0}: {1}{2}", fields[i].Name, v, i == fields.Length - 1 ? "" : ",");
             }
             tfSta.BraceOut();
-            tfDef.BraceOutSC();
+            //tfDef.BraceOutSC();
+            tfDef.Out().Add("});");
 
             return tf;
         }
