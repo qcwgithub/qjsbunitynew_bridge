@@ -31,6 +31,11 @@ namespace jsb.Test.Logic
             dict["TestJSON"] = () => { gameObject.AddComponent<TestJSON>(); };
             // 注意 TestCallJs 是 C# 脚本
             dict["TestCallJs"] = () => { gameObject.AddComponent<TestCallJs>(); };
+            dict["TestInherit"] = () => 
+            {
+                gameObject.AddComponent<TestInherit1>();
+                gameObject.AddComponent<TestInherit2>();
+            };
 
             GameObject btnPrefab = transform.Find("ButtonPrefab").gameObject;
             foreach (var KV in dict)

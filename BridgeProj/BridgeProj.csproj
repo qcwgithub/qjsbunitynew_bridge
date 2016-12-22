@@ -42,6 +42,8 @@
     <Compile Include="GameLogic\TestCoroutine.cs" />
     <Compile Include="GameLogic\TestDictionary.cs" />
     <Compile Include="GameLogic\TestEntry.cs" />
+    <Compile Include="GameLogic\TestInherit1.cs" />
+    <Compile Include="GameLogic\TestInherit2.cs" />
     <Compile Include="GameLogic\TestInt64.cs" />
     <Compile Include="GameLogic\TestJSON.cs" />
     <Compile Include="GameLogic\TestPerformance.cs" />

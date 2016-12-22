@@ -9,7 +9,7 @@ using jsb;
 
 public class Menus
 {
-	[MenuItem("JSB/Gen Bindings", false, 1)]
+	[MenuItem("JSB/Gen Bindings", false, 2)]
 	public static void GenBindings()
 	{
         //var d = typeof(UnityEngine.MonoBehaviour).GetConstructors();
@@ -42,7 +42,7 @@ public class Menus
         AssetDatabase.Refresh();
     }
 
-    [MenuItem("JSB/Update JavaScript", false, 2)]
+    [MenuItem("JSB/Update JavaScript", false, 1)]
     public static void UpdateJavaScript()
     {
         string dir = JSBindingSettings.BridgeOutputDir;
@@ -123,4 +123,11 @@ public class Menus
         else
             Debug.LogError("失败");
     }
+	
+//	[MenuItem("JSB/Gen Messages", false, 3)]
+    static void GenMsgs()
+	{
+		jsb.MessageGenerator.Gen();
+		AssetDatabase.Refresh();
+	}
 }

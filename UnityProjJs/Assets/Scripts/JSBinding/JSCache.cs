@@ -9,6 +9,27 @@ namespace jsb
 	
 	public class JSCache
 	{
+		static int bridgeJsID = -1;
+		public static int GetBridgeJsID()
+		{
+			if (bridgeJsID == -1)
+			{
+				JSApi.getProperty(0, "Bridge");
+				bridgeJsID = JSApi.getSaveID();
+				if (bridgeJsID != 0)
+					JSApi.setTraceS(bridgeJsID, true);
+
+				// bridgeJsID = JSApi.getObject((int)JSApi.GetType.SaveAndRemove);
+			}
+			
+			if (bridgeJsID == 0)
+            {
+                throw new Exception("bridgeJsID is 0");
+            }
+
+			return bridgeJsID;
+		}
+
 		#region MonoBehaviour Inheritance Relation
 		// 对继承关系做缓存
 		
@@ -22,12 +43,11 @@ namespace jsb
 			if (dictClassInheritanceRel.TryGetValue (key, out ret)) {
 				return ret;
 			}
-			
-			ret = false;
-			if (JSMgr.vCall.CallJSFunctionName(0 /*global*/, "jsb_IsInheritanceRel", baseClassName, subClassName))
-			{
-				ret = (System.Boolean)JSApi.getBooleanS((int)JSApi.GetType.JSFunRet);
-			}
+
+			if (!JSMgr.vCall.CallJSFunctionName(GetBridgeJsID(), "isInheritRel", baseClassName, subClassName))
+				throw new Exception("call Bridge.isInheritRel failed!");
+
+			ret = (System.Boolean)JSApi.getBooleanS((int)JSApi.GetType.JSFunRet);
 			dictClassInheritanceRel.Add (key, ret);
 			return ret;
 		}

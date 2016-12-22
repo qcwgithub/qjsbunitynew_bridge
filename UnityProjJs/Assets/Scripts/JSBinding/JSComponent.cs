@@ -23,10 +23,6 @@ public class JSComponent : JSSerializer
     int idAwake = 0;
     int idStart = 0;
     int idOnDestroy = 0;
-	int idFixedUpdate = 0;
-	int idUpdate = 0;
-	int idLateUpdate = 0;
-	int idOnEnable = 0;
 
     /// <summary>
     /// Initializes the member function.
@@ -36,10 +32,6 @@ public class JSComponent : JSSerializer
         idAwake = JSApi.getObjFunction(jsObjID, "Awake");
         idStart = JSApi.getObjFunction(jsObjID, "Start");
         idOnDestroy = JSApi.getObjFunction(jsObjID, "OnDestroy");
-		idFixedUpdate = JSApi.getObjFunction(jsObjID, "FixedUpdate");
-		idUpdate = JSApi.getObjFunction(jsObjID, "Update");
-		idLateUpdate = JSApi.getObjFunction(jsObjID, "LateUpdate");
-		idOnEnable = JSApi.getObjFunction(jsObjID, "OnEnable");
     }
     /// <summary>
     /// Removes if exist.
@@ -116,7 +108,10 @@ public class JSComponent : JSSerializer
             Debug.LogError("New MonoBehaviour \"" + this.jsClassName + "\" failed. Did you forget to export that class?");
             jsFail = true;
             return;
-        } 
+        }
+
+        jsb.M_Mgr.CreateMessages(jsClassName, gameObject);
+
 		JSApi.setTraceS(jsObjID, true);
         JSMgr.addJSCSRel(jsObjID, this);
         initMemberFunction();
@@ -247,23 +242,8 @@ public class JSComponent : JSSerializer
         }
     }
 
-     void FixedUpdate()
-     {
-         callIfExist(idFixedUpdate);
-     }
-
-     void Update()
-     {
-         callIfExist(idUpdate);
-     }
-
-     void LateUpdate()
-     {
-         callIfExist(idLateUpdate);
-     }
- 
-     void OnEnable()
-     {
-         callIfExist(idOnEnable);
-     }
+	public void RecvMsg(string msg, params object[] args)
+	{
+		JSMgr.vCall.CallJSFunctionName(jsObjID, msg, args);
+	}
 }

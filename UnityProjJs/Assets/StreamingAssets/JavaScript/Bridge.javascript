@@ -1392,6 +1392,33 @@
             }
             return null;
         },
+        
+        // name: js类全名
+        getLMsgs: function (name) {
+            var obj = Bridge.findObj(name),
+                pro,
+                arr = [], 
+                id;
+                
+            if (obj == null) {
+                throw new Error(name + " not found");
+            }
+            pro = obj.prototype;
+            for (var m in pro) {
+                if (typeof(pro[m]) == "function") {
+                    id = Bridge.MessageIDs[m];
+                    if (typeof(id) == "number") {
+                        arr.push(id);
+                    }
+                }
+            }
+            
+            if (arr.length == 0) {
+                return "";
+            }
+            
+            return arr.join(",");
+        },
     };
 
     globals.Bridge = core;
