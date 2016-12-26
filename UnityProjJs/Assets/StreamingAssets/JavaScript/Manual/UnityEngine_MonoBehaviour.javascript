@@ -63,9 +63,9 @@
         return this.$AddCoroutine(a0);
     });
 
-    replace("StartCoroutine_Auto", function(a0/*IEnumerator*/) {
-        return this.$AddCoroutine(a0);
-    });
+    //replace("StartCoroutine_Auto", function(a0/*IEnumerator*/) {
+    //    return this.$AddCoroutine(a0);
+    //});
 
     replace("StopAllCoroutines", function() {
         return this.$RemoveAllCoroutines();

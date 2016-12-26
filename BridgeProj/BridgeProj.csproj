@@ -37,17 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="csw.cs" />
-    <Compile Include="GameLogic\JSBinding\Misc.cs" />
-    <Compile Include="GameLogic\TestCallFromCs.cs" />
-    <Compile Include="GameLogic\TestCoroutine.cs" />
-    <Compile Include="GameLogic\TestDictionary.cs" />
-    <Compile Include="GameLogic\TestEntry.cs" />
-    <Compile Include="GameLogic\TestInherit1.cs" />
-    <Compile Include="GameLogic\TestInherit2.cs" />
-    <Compile Include="GameLogic\TestInt64.cs" />
-    <Compile Include="GameLogic\TestJSON.cs" />
-    <Compile Include="GameLogic\TestPerformance.cs" />
-    <Compile Include="GameLogic\TestVector3.cs" />
+    <Compile Include="GameLogic\**\*.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

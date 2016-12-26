@@ -30,6 +30,7 @@ namespace jsb
 		
 	    public static Type[] classes = new Type[]
 	    {
+            typeof(EditorEnv),
 			typeof(jsb.Test.Framwork.TestPerformance),
 			typeof(jsb.Test.Framwork.TestMisc),
 			typeof(jsb.Test.Framwork.TestRF),
