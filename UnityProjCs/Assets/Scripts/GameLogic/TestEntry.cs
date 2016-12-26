@@ -27,7 +27,7 @@ namespace jsb.Test.Logic
 			string scriptName = "TestInt64";
 #endif
 
-			dict["TestInt64"] = () => { gameObject.AddComponent(scriptName); };
+			dict["TestInt64"] = () => { gameObject.AddComponent<TestInt64>(); };
             dict["TestJSON"] = () => { gameObject.AddComponent<TestJSON>(); };
             // 注意 TestCallJs 是 C# 脚本
             dict["TestCallJs"] = () => { gameObject.AddComponent<TestCallJs>(); };
