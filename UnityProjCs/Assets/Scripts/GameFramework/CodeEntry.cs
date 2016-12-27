@@ -11,7 +11,7 @@ public class CodeEntry : MonoBehaviour
         // 逻辑代码不能直接在Inspector中挂上去，那么总得有一个入口点，就是这里
         // 
         // 
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Login.prefab");
+		GameObject prefab = (GameObject)EditorEnv.LoadMainAssetAtPath("Assets/Prefabs/Login.prefab");
         GameObject go = (GameObject) Instantiate(prefab);
 #if JS
         Instantiate(AssetDatabase.LoadMainAssetAtPath("Assets/Scripts/JSBinding/_JSEngine.prefab"));
