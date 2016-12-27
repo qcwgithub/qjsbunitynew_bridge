@@ -7,7 +7,7 @@ public class Login : MonoBehaviour {
 
     void Awake()
     {
-        Button btn = transform.FindChild("Canvas/Button").GetComponent<Button>();
+        Button btn = transform.FindChild("Button").GetComponent<Button>();
         btn.onClick.AddListener(OnLoginClick);
     }
 
@@ -18,6 +18,7 @@ public class Login : MonoBehaviour {
         gameObject.SetActive(false);
         GameObject prefab = (GameObject)EditorEnv.LoadMainAssetAtPath("Assets/Prefabs/Game.prefab");
         GameObject go = (GameObject) Instantiate(prefab);
+        go.transform.SetParent(transform.parent, false);
         Transform te = go.transform.FindChild("TestEntry");
         te.gameObject.AddComponent<jsb.Test.Logic.TestEntry>();
     }
