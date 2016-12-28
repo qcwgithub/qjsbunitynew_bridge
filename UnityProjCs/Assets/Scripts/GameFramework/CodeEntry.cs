@@ -13,6 +13,7 @@ public class CodeEntry : MonoBehaviour
         // 
 		GameObject prefab = (GameObject)EditorEnv.LoadMainAssetAtPath("Assets/Prefabs/Login.prefab");
         GameObject go = (GameObject) Instantiate(prefab);
+        go.transform.SetParent(transform, false);
 #if JS
         Instantiate(AssetDatabase.LoadMainAssetAtPath("Assets/Scripts/JSBinding/_JSEngine.prefab"));
 
