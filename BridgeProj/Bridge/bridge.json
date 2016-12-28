@@ -1,5 +1,6 @@
 {
   "output": "Bridge/output",
+  "outputBy": "Project",
   "preserveMemberCase": true,
     
     // Uncomment to add TypeScript Definition file (.d.ts) generation to your project.

@@ -486,8 +486,8 @@ namespace jsb
                 typeName = typeName.Substring(lastDot + 1);
             }
 
-            if (typeName.IndexOf('+') >= 0)
-                return null;
+            //if (typeName.IndexOf('+') >= 0)
+            //    return null;
 
             TextFile tfDef = tf.Add("Bridge.define(\"{0}\", {{", JSNameMgr.JsFullName(type)).In();
             tfDef.Add("$kind: \"enum\",");
