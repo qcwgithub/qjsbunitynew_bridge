@@ -85,7 +85,7 @@ namespace jsb
             }
             return name;
         }
-        static string Member_AddSuffix(string methodName, int overloadIndex, int TCounts = 0)
+        static string Pro_AddSuffix(string methodName, int overloadIndex, int TCounts = 0)
         {
             string name = methodName;
             //if (TCounts > 0)
@@ -96,8 +96,34 @@ namespace jsb
                 name += "$" + overloadIndex;
             }
             return name;
-		}
-		static string Ctor_Name(int overloadIndex)
+        }
+        static string Field_firstLetter(Type type, FieldInfo field)
+        {
+            string name = field.Name;
+            bool constant = field.IsLiteral && !field.IsInitOnly;
+            if (!constant && type.FullName.StartsWith("System."))
+            {
+                name = name.Substring(0, 1).ToLower() + name.Substring(1);
+            }
+
+            return name;
+        }
+        static string Method_fistLetter_suffix(Type type, string methodName, int overloadIndex, int TCounts = 0)
+        {
+            string name = methodName;
+            if (type.FullName.StartsWith("System."))
+                name = name.Substring(0, 1).ToLower() + name.Substring(1);
+
+            //if (TCounts > 0)
+            //    name += "$" + TCounts.ToString();
+
+            if (overloadIndex > 0)
+            {
+                name += "$" + overloadIndex;
+            }
+            return name;
+        }
+        static string Ctor_Name(int overloadIndex)
 		{
 			string name = "ctor";			
 			if (overloadIndex > 0)
@@ -147,7 +173,7 @@ namespace jsb
                 FieldInfo field = infoEx.member as FieldInfo;
 
                 TextFile tf = field.IsStatic ? tfStatic2 : tfInst2;
-                tf.Add("{0}: {{", field.Name).In()
+                tf.Add("{0}: {{", Field_firstLetter(type, field)).In()
                     .Add("get: function () {{ return CS.Call({0}, {1}, {2}, {3}{4}); }},", (int)JSVCall.Oper.GET_FIELD, slot, i, (field.IsStatic ? "true" : "false"), (field.IsStatic ? "" : ", this"))
                     .Add("set: function (v) {{ return CS.Call({0}, {1}, {2}, {3}{4}, v); }}", (int)JSVCall.Oper.SET_FIELD, slot, i, (field.IsStatic ? "true" : "false"), (field.IsStatic ? "" : ", this"))
                 .Out().Add("},");
@@ -180,7 +206,7 @@ namespace jsb
                 bool isStatic = accessors[0].IsStatic;
 
                 // 特殊情况，当[]时，property.Name=Item
-                string mName = Member_AddSuffix(property.Name, infoEx.GetOverloadIndex());
+                string mName = Pro_AddSuffix(property.Name, infoEx.GetOverloadIndex());
 
                 TextFile tf = isStatic ? tfStatic : tfInst;
                 tf.Add("get{0}: function ({1}) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}); }},",
@@ -330,7 +356,7 @@ namespace jsb
 
                 // if (methodName == "ToString") { methodName = "toString"; }
 
-                string mName = Member_AddSuffix(methodName, infoEx.GetOverloadIndex(), TCount);
+                string mName = Method_fistLetter_suffix(type, methodName, infoEx.GetOverloadIndex(), TCount);
 
                 TextFile tf = method.IsStatic ? tfStatic : tfInst;
 
@@ -486,8 +512,8 @@ namespace jsb
                 typeName = typeName.Substring(lastDot + 1);
             }
 
-            //if (typeName.IndexOf('+') >= 0)
-            //    return null;
+//             if (typeName.IndexOf('+') >= 0)
+//                 return null;
 
             TextFile tfDef = tf.Add("Bridge.define(\"{0}\", {{", JSNameMgr.JsFullName(type)).In();
             tfDef.Add("$kind: \"enum\",");
