@@ -162,6 +162,69 @@ namespace jsb
             return string.Compare(MethodToString(m1), MethodToString(m2));
         }
 
+        // 参数typeM是一个method的声明中使用到的类型，比如返回值，参数
+        // ShouldIgnoreTypeInM判断这个typeM是否是Bridge中已经有定义了
+        // 如果有，表示这个类型在逻辑代码中应当是纯Js的类型，其对象不应该传递到C#中
+        // 那么这个method就应该对Js不可见
+        static bool ShouldIgnoreTypeInM(Type classType, MethodInfo method, Type typeM)
+        {
+            Type t = typeM;
+            while (t.IsArray)
+                t = t.GetElementType();
+            if (t.IsByRef)
+                t = t.GetElementType();
+            if (t.IsGenericType)
+                t = t.GetGenericTypeDefinition();
+            while (t.DeclaringType != null)
+                t = t.DeclaringType;
+
+            if (t == typeof(void) || 
+                t.IsPrimitive || 
+                t == typeof(string) || 
+                t.IsEnum ||
+                t == typeof(System.Object) ||
+                // 这2个暂且不算吧
+                t == typeof(IEnumerable) || t == typeof(IEnumerator) ||
+                typeof(Delegate).IsAssignableFrom(t))
+            {
+                return false;
+            }
+
+            if (classType == typeof(MonoBehaviour) && (method.Name == "StartCoroutine" || method.Name == "StopCoroutine"))
+            {
+                return false;
+            }
+            if (classType == typeof(GameObject) && method.Name == "AddComponent")
+            {
+                return false;
+            }
+
+            HashSet<string> bridgeTypes = JSBindingSettings.LoadBridgeDefinedTypes(false);
+            if (bridgeTypes.Contains(t.FullName))
+                return true;
+            return false;
+        }
+
+        static bool TypeIsPtr(Type type)
+        {
+            Type t = type;
+            while (true)
+            {
+                if (t.IsPointer)
+                    return true;
+
+                if (t == typeof(System.IntPtr))
+                    return true;
+
+                else if (t.HasElementType)
+                    t = t.GetElementType();
+
+                else
+                    break;
+            }
+            return false;
+        }
+
         public static ATypeInfo CreateTypeInfo(Type type)
         {
             ATypeInfo ti = new ATypeInfo();
@@ -258,6 +321,7 @@ namespace jsb
 
                 // Skip Obsolete
                 if (IsMemberObsolete(pro) ||
+                    TypeIsPtr(pro.PropertyType) ||
                     JSBindingSettings.IsDiscard(type, pro)
                     )
                 {
@@ -352,31 +416,52 @@ namespace jsb
                     }
                 }
 
+                if (ShouldIgnoreTypeInM(type, method, method.ReturnType))
+                {
+                    Debug.Log(type.Name + "." + method.Name + " 忽略，因为返回值类型是逻辑类型");
+                    infoEx.Ignored = true;
+                    continue;
+                }
+
+                if (TypeIsPtr(method.ReturnType))
+                {
+                    Debug.Log(type.Name + "." + method.Name + " 忽略，因为返回值类型是 IntPtr");
+                    infoEx.Ignored = true;
+                    continue;
+                }
+
                 // 是否有 unsafe 的参数？
                 bDiscard = false;
                 ps = method.GetParameters();
                 for (var k = 0; k < ps.Length; k++)
                 {
                     Type pt = ps[k].ParameterType;
-                    while (true)
+                    if (TypeIsPtr(pt))
                     {
-                        if (pt.IsPointer)
-                        {
-                            bDiscard = true;
-                            break;
-                        }
-                        else if (pt.HasElementType)
-                            pt = pt.GetElementType();
-                        else
-                            break;
-                    }
-
-                    if (bDiscard)
+                        bDiscard = true;
                         break;
+                    }
                 }
                 if (bDiscard)
                 {
                     Debug.Log(type.Name + "." + method.Name + " 忽略，因为他有 IsPointer = true 的参数");
+                    infoEx.Ignored = true;
+                    continue;
+                }
+
+                bDiscard = false;
+                for (var k = 0; k < ps.Length; k++)
+                {
+                    Type pt = ps[k].ParameterType;
+                    if (ShouldIgnoreTypeInM(type, method, pt))
+                    {
+                        bDiscard = true;
+                        break;
+                    }
+                }
+                if (bDiscard)
+                {
+                    Debug.Log(type.Name + "." + method.Name + " 忽略，因为他的参数有逻辑类型");
                     infoEx.Ignored = true;
                     continue;
                 }
