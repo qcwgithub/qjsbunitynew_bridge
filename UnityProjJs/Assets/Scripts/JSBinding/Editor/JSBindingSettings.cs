@@ -255,9 +255,13 @@ namespace jsb
 		public static string csDir = Application.dataPath + "/JSBinding/CSharp";
 		public static string csGenDir = Application.dataPath + "/Scripts/JSBinding/G";
 
-        static HashSet<string> LoadBridgeDefinedTypes()
+        static HashSet<string> bridgeTypes = null;
+        public static HashSet<string> LoadBridgeDefinedTypes(bool forceReload)
         {
-            HashSet<string> types = new HashSet<string>();
+            if (!forceReload && bridgeTypes != null)
+                return bridgeTypes;
+
+            bridgeTypes = new HashSet<string>();
 
             string text = File.ReadAllText("Assets/Scripts/JSBinding/Editor/BridgeTypes.txt");
             string[] lines = text.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -283,11 +287,11 @@ namespace jsb
                         int tCount = name.Substring(index1 + 1, index2 - index1 - 1).Count((c) => c == ',');
                         name = line.Substring(0, index1) + "`" + (tCount + 1);
                     }
-                    types.Add(ns + "." + name);
+                    bridgeTypes.Add(ns + "." + name);
                 }
             }
 
-            return types;
+            return bridgeTypes;
         }
 
 	    public static bool CheckClasses(out Type[] arrEnums, out Type[] arrClasses,
@@ -299,7 +303,7 @@ namespace jsb
             var sb = new StringBuilder();
             bool ok = true;
 
-            bridgeTypes = LoadBridgeDefinedTypes();
+            bridgeTypes = LoadBridgeDefinedTypes(true);
 
             foreach (var e in enums)
             {
