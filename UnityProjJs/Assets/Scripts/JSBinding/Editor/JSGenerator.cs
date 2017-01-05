@@ -300,8 +300,28 @@ namespace jsb
             }
         }
 
+        static string shouldAddAlias(Type type, MethodInfo method, Type[] declInterfaces, int olIndex)
+        {
+            if (type.IsInterface)
+                return null;
+            foreach (var di in declInterfaces)
+            {
+                var map = type.GetInterfaceMap(di);
+                foreach (var m in map.TargetMethods)
+                {
+                    if (m == method)
+                    {
+                        return di.CsFullName().Replace('.', '$').Replace('[','$').Replace(']', '$').Replace('`', '$').Replace('+','$').Replace('<','$').Replace('>','$')
+                            + "$" + Method_fistLetter_suffix(di, method.Name, olIndex);
+                    }
+                }
+            }
+            return null;
+        }
+
         // can handle all methods
         public static void BuildMethods(TextFile tfStatic, TextFile tfInst,
+            TextFile tfAlias, Type[] declInterfs,
             Type type, List<MemberInfoEx> methods, int slot)
         {
             for (int i = 0; i < methods.Count; i++)
@@ -352,11 +372,16 @@ namespace jsb
 
                 //int TCount = method.GetGenericArguments().Length;
 
-                string methodName = method.Name;
+                //string methodName = method.Name;
 
                 // if (methodName == "ToString") { methodName = "toString"; }
 
-                string mName = Method_fistLetter_suffix(type, methodName, infoEx.GetOverloadIndex(), TCount);
+                string mName = Method_fistLetter_suffix(type, method.Name, infoEx.GetOverloadIndex(), TCount);
+                string alias = tfAlias != null ? shouldAddAlias(type, method, declInterfs, infoEx.GetOverloadIndex()) : null;
+                if (!string.IsNullOrEmpty(alias))
+                {
+                    tfAlias.Add("{0}: \"{1}\",", mName, alias);
+                }
 
                 TextFile tf = method.IsStatic ? tfStatic : tfInst;
 
@@ -432,6 +457,18 @@ namespace jsb
             else if (type.IsValueType)
                 tfClass.Add("$kind: \"struct\",");
 
+            TextFile tfConfig = null;
+            TextFile tfAlias = null;
+            Type[] declInterfs = type.GetDeclaringInterfaces();
+            if (declInterfs != null && declInterfs.Length > 0)
+            {
+                tfConfig = tfClass.Add("config: {").In();
+                tfConfig.Out().Add("},");
+
+                tfAlias = tfConfig.Add("alias: {").In();
+                tfAlias.Out().Add("},");
+            }
+
             TextFile tfStatic = tfClass.Add("statics: {").In();
             tfStatic.Out().Add("},");
 
@@ -493,7 +530,7 @@ namespace jsb
             BuildConstructors(tfInst, type, ti.Cons, slot);
             BuildFields(tfStatic, tfInst, type, ti.Fields, slot);
             BuildProperties(tfStatic, tfInst, type, ti.Pros, slot);
-            BuildMethods(tfStatic, tfInst, type, ti.Methods, slot);
+            BuildMethods(tfStatic, tfInst, tfAlias, declInterfs, type, ti.Methods, slot);
 
             return tfDef;
         }
