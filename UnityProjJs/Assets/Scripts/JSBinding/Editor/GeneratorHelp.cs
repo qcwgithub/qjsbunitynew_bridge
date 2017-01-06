@@ -184,7 +184,7 @@ namespace jsb
                 t.IsEnum ||
                 t == typeof(System.Object) ||
                 // 这2个暂且不算吧
-                t == typeof(IEnumerable) || t == typeof(IEnumerator) ||
+                t == typeof(IEnumerable) || t == typeof(IEnumerator) || t == typeof(IEnumerator<>) || t == typeof(IEnumerable<>) ||
                 typeof(Delegate).IsAssignableFrom(t))
             {
                 return false;
@@ -280,6 +280,18 @@ namespace jsb
                     )
                 {
                     infoEx.Ignored = true;
+                    continue;
+                }
+
+                ParameterInfo[] ps = con.GetParameters();
+                for (var k = 0; k < ps.Length; k++)
+                {
+                    Type pt = ps[k].ParameterType;
+                    if (TypeIsPtr(pt))
+                    {
+                        infoEx.Ignored = true;
+                        continue;
+                    }
                 }
             }
 

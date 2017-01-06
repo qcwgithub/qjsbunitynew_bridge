@@ -110,9 +110,7 @@ namespace jsb
         }
         static string Method_fistLetter_suffix(Type type, string methodName, int overloadIndex, int TCounts = 0)
         {
-            string name = methodName;
-            if (type.FullName.StartsWith("System."))
-                name = name.Substring(0, 1).ToLower() + name.Substring(1);
+            string name = Method_firstLetter(type, methodName);
 
             //if (TCounts > 0)
             //    name += "$" + TCounts.ToString();
@@ -121,6 +119,14 @@ namespace jsb
             {
                 name += "$" + overloadIndex;
             }
+            return name;
+        }
+        static string Method_firstLetter(Type type, string methodName)
+        {
+			// 与 Bridge 的规则保持一致
+            string name = methodName;
+            if (type.FullName.StartsWith("System."))
+                name = name.Substring(0, 1).ToLower() + name.Substring(1);
             return name;
         }
         static string Ctor_Name(int overloadIndex)
@@ -180,6 +186,7 @@ namespace jsb
             }
         }
         public static void BuildProperties(TextFile tfStatic, TextFile tfInst,
+            TextFile tfAlias, Type[] declInterfs,
             Type type, List<MemberInfoEx> properties, int slot)
         {
             for (int i = 0; i < properties.Count; i++)
@@ -207,6 +214,20 @@ namespace jsb
 
                 // 特殊情况，当[]时，property.Name=Item
                 string mName = Pro_AddSuffix(property.Name, infoEx.GetOverloadIndex());
+
+
+                if (tfAlias != null)
+                {
+                    Type iType;
+                    if (shouldAddAlias(type, accessors[0], declInterfs, out iType))
+                    {
+                        tfAlias.Add("\"get{0}\", \"{1}\",", mName, getAliasName(iType, "get" + mName));
+                    }
+                    if (accessors.Length > 1 && shouldAddAlias(type, accessors[1], declInterfs, out iType))
+                    {
+                        tfAlias.Add("\"set{0}\", \"{1}\",", mName, getAliasName(iType, "set" + mName));
+                    }
+                }
 
                 TextFile tf = isStatic ? tfStatic : tfInst;
                 tf.Add("get{0}: function ({1}) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}); }},",
@@ -300,10 +321,13 @@ namespace jsb
             }
         }
 
-        static string shouldAddAlias(Type type, MethodInfo method, Type[] declInterfaces, int olIndex)
+        static bool shouldAddAlias(Type type, MethodInfo method, Type[] declInterfaces,
+            out Type iType)
         {
+            iType = null;
             if (type.IsInterface)
-                return null;
+                return false;
+
             foreach (var di in declInterfaces)
             {
                 var map = type.GetInterfaceMap(di);
@@ -311,12 +335,17 @@ namespace jsb
                 {
                     if (m == method)
                     {
-                        return di.CsFullName().Replace('.', '$').Replace('[','$').Replace(']', '$').Replace('`', '$').Replace('+','$').Replace('<','$').Replace('>','$')
-                            + "$" + Method_fistLetter_suffix(di, method.Name, olIndex);
+                        iType = di;
+                        return true;
                     }
                 }
             }
-            return null;
+            return false;
+        }
+        static string getAliasName(Type iType, string methodName)
+        {
+            return iType.CsFullName().Replace('.', '$').Replace('[', '$').Replace(']', '$').Replace('`', '$').Replace('+', '$').Replace('<', '$').Replace('>', '$')
+                            + "$" + methodName;
         }
 
         // can handle all methods
@@ -377,10 +406,12 @@ namespace jsb
                 // if (methodName == "ToString") { methodName = "toString"; }
 
                 string mName = Method_fistLetter_suffix(type, method.Name, infoEx.GetOverloadIndex(), TCount);
-                string alias = tfAlias != null ? shouldAddAlias(type, method, declInterfs, infoEx.GetOverloadIndex()) : null;
-                if (!string.IsNullOrEmpty(alias))
+                
+                if (tfAlias != null)
                 {
-                    tfAlias.Add("{0}: \"{1}\",", mName, alias);
+                    Type iType;
+                    if (shouldAddAlias(type, method, declInterfs, out iType))
+                        tfAlias.Add("\"{0}\", \"{1}\",", mName, getAliasName(iType, Method_firstLetter(iType, mName)));
                 }
 
                 TextFile tf = method.IsStatic ? tfStatic : tfInst;
@@ -465,8 +496,8 @@ namespace jsb
                 tfConfig = tfClass.Add("config: {").In();
                 tfConfig.Out().Add("},");
 
-                tfAlias = tfConfig.Add("alias: {").In();
-                tfAlias.Out().Add("},");
+                tfAlias = tfConfig.Add("alias: [").In();
+                tfAlias.Out().Add("],");
             }
 
             TextFile tfStatic = tfClass.Add("statics: {").In();
@@ -529,7 +560,7 @@ namespace jsb
 
             BuildConstructors(tfInst, type, ti.Cons, slot);
             BuildFields(tfStatic, tfInst, type, ti.Fields, slot);
-            BuildProperties(tfStatic, tfInst, type, ti.Pros, slot);
+            BuildProperties(tfStatic, tfInst, tfAlias, declInterfs, type, ti.Pros, slot);
             BuildMethods(tfStatic, tfInst, tfAlias, declInterfs, type, ti.Methods, slot);
 
             return tfDef;

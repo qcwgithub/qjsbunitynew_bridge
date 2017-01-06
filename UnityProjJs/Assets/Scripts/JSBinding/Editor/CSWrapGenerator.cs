@@ -269,11 +269,14 @@ namespace jsb
 						vo += "static ";
 					}
 
-					if ((getm != null && getm.IsVirtual) ||
-					    (setm != null && setm.IsVirtual))
-					{
-						vo += ((getm != null && getm.GetBaseDefinition() != getm) || (setm != null && setm.GetBaseDefinition() != setm))
-							? "override " : "virtual ";
+                    if (!type.IsValueType)
+                    {
+                        if ((getm != null && getm.IsVirtual) ||
+                                                (setm != null && setm.IsVirtual))
+                        {
+                            vo += ((getm != null && getm.GetBaseDefinition() != getm) || (setm != null && setm.GetBaseDefinition() != setm))
+                                ? "override " : "virtual ";
+                        }
                     }
                 }
                 
@@ -396,14 +399,16 @@ namespace jsb
 				
 				if (isIndexer)
 				{
-//					tfClass.Add("{3}{0} this{1} {{ {2} }}",
-//					            typefn(pro.PropertyType, cType.Namespace), iargs.Format(args.ArgsFormat.Indexer),
-//					            getset,
-//					            vo);
+					tfClass.Add("extern {4}{0} {1}{2} {{ {3} }}",
+					            typefn(pro.PropertyType, cType.Namespace),
+                                iType.CsFullName(CsNameOption.CompilableWithT) + ".this", // 这句是重点
+                                iargs.Format(args.ArgsFormat.Indexer),
+					            getset,
+					            vo);
 				}
                 else
                 {
-                    tfClass.Add("{3}{0} {1} {{ {2} }}",
+                    tfClass.Add("extern {3}{0} {1} {{ {2} }}",
 					            typefn(pro.PropertyType, cType.Namespace), 
 					            iType.CsFullName(CsNameOption.CompilableWithT) + "." + // 这句是重点
                                 pro.Name,
@@ -457,9 +462,9 @@ namespace jsb
 
 					sbDef.Append("extern ");
 
-					if (method.GetBaseDefinition() != method)
-						sbDef.Append("override ");
-					else if (method.IsVirtual && !type.IsValueType)
+                    if (method.GetBaseDefinition() != method)
+                        sbDef.Append("override ");
+                    else if (!type.IsValueType && method.IsVirtual && !type.IsValueType)
                         sbDef.Append("virtual ");
                 }
                 
@@ -579,6 +584,8 @@ namespace jsb
                     //    sb.Append("abstract ");
                     //else if (type.IsSealed)
                     //    sb.Append("sealed ");
+
+                    //if (type.is)
                 }
 
                 if (type.IsInterface)

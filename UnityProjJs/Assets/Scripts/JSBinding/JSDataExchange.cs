@@ -518,20 +518,27 @@ public class JSDataExchangeMgr
         Type t = null;
         if (!typeCache.TryGetValue(typeName, out t))
         {
-            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+            if (typeName == "String")
             {
-                t = a.GetType(typeName);
-                if (t != null)
+                t = typeof(string);
+            }
+            else
+            {
+                foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
                 {
-                    // !!!
-                    // if a type is marked with JsTypeAttribute
-                    // don't return it
-					// TODO
-//                    if (t.GetCustomAttributes(typeof(SharpKit.JavaScript.JsTypeAttribute), false).Length > 0)
-//                    {
-//                        t = null;
-//                    }
-                    break;
+                    t = a.GetType(typeName);
+                    if (t != null)
+                    {
+                        // !!!
+                        // if a type is marked with JsTypeAttribute
+                        // don't return it
+                        // TODO
+                        //                    if (t.GetCustomAttributes(typeof(SharpKit.JavaScript.JsTypeAttribute), false).Length > 0)
+                        //                    {
+                        //                        t = null;
+                        //                    }
+                        break;
+                    }
                 }
             }
             typeCache[typeName] = t; // perhaps null
