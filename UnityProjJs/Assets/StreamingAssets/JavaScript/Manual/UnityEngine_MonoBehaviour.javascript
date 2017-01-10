@@ -201,6 +201,7 @@
             waitForSeconds: undefined, // WaitForSeconds
             www: undefined,            // WWW
             asyncOp: undefined,         // AsyncOperation
+            ie: undefined,  // IEnumerator
             waitForCoroutine: undefined, // Coroutine
         };
 
@@ -237,14 +238,20 @@
                 }
             }
             else if (cn.www) {
-                if (cn.www.get_isDone()) {
+                if (cn.www.getisDone()) {
                     cn.www = undefined;
                     this.$UpdateCoroutine(cn);
                 }
             }
             else if (cn.asyncOp) {
-                if (cn.asyncOp.get_isDone()) {
+                if (cn.asyncOp.getisDone()) {
                     cn.asyncOp = undefined;
+                    this.$UpdateCoroutine(cn);
+                }
+            }
+            else if (cn.ie) {
+                if (!cn.ie.MoveNext()) {
+                    cn.ie = undefined;
                     this.$UpdateCoroutine(cn);
                 }
             }
@@ -270,20 +277,26 @@
                 cn.waitForFrames = 1;
             }
             else {
-                if (yieldCommand instanceof UnityEngine.WaitForSeconds) {
+                if (Bridge.is(yieldCommand, UnityEngine.WaitForSeconds)) {
                     cn.waitForSeconds = yieldCommand;
                 } 
-                else if (yieldCommand instanceof UnityEngine.WWW) {
+                else if (Bridge.is(yieldCommand, UnityEngine.WWW)) {
                     cn.www = yieldCommand;
                 }
-                else if (yieldCommand instanceof UnityEngine.AsyncOperation) {
+                else if (Bridge.is(yieldCommand, UnityEngine.AsyncOperation)) {
                     cn.asyncOp = yieldCommand;
+                }
+                else if (Bridge.is(yieldCommand, System.Collections.IEnumerator)) {
+                    cn.ie = yieldCommand;
                 }
                 else if (yieldCommand.$__CN === true/*yieldCommand.toString() == "[object Generator]"*/) {
                     cn.waitForCoroutine = yieldCommand;
                 }
+                else if (yieldCommand.toString() == "[object Generator]") {
+                    cn.waitForCoroutine = this.$AddCoroutine(yieldCommand);
+                }
                 else {
-                    throw "Unexpected coroutine yield type: " + yieldCommand.GetType();
+                    throw "Unexpected coroutine yield type: " + Bridge.Reflection.getTypeFullName(Bridge.getType(yieldCommand));
                 }
             }
         } 
