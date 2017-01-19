@@ -57,6 +57,7 @@ Exception
 FlagsAttribute
 FormatException
 FormattableString
+Func<T>
 Guid
 ICloneable
 IComparable
