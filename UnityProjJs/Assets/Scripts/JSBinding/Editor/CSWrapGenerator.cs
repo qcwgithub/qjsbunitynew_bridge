@@ -167,6 +167,52 @@ namespace jsb
 			return fn;
 		}
 
+        static bool ParamHasDefaultValue(ParameterInfo p)
+        {
+            bool hasDefault = (p.Attributes & ParameterAttributes.HasDefault) == ParameterAttributes.HasDefault;
+            return hasDefault;
+        }
+
+        static string ParamDefaultValue2String(ParameterInfo p)
+        {
+            object v = p.DefaultValue;
+
+            if (v == null)
+                return "null";
+
+            Type t = v.GetType();
+
+            if (t.IsArray)
+            {
+                return "null/* ? */";
+            }
+
+            if (t == typeof(string))
+                return "\"" + v + "\"";
+
+            if (t.IsPrimitive)
+            {
+                if (t == typeof(float))
+                    return v.ToString() + "f";
+                if (t == typeof(bool))
+                    return ((bool)v) ? "true" : "false";
+
+                return v.ToString();
+            }
+
+            if (t.IsEnum)
+            {
+                return t.CsFullName() + "." + v.ToString();
+            }
+
+            if (t.IsClass)
+            {
+                return "null/* ? */";
+            }
+
+            return string.Format("default({0})/* ? */", t.CsFullName());
+        }
+
 		static string Ps2String(Type type, ParameterInfo[] ps, bool hasExtensionAttribute = false)
 		{
 			args f_args = new args();
@@ -189,7 +235,14 @@ namespace jsb
 					s += "params ";
 				s += typefn(p.ParameterType, p.ParameterType.DeclaringType == type ? "no-namespace" : type.Namespace) + " ";
 				s += p.Name;
-				f_args.Add(s);
+
+                if (ParamHasDefaultValue(p))
+                {
+                    string ds = ParamDefaultValue2String(p);
+                    s += " = " + ds;
+                }
+
+                f_args.Add(s);
 			};
 			return f_args.ToString();
 		}
