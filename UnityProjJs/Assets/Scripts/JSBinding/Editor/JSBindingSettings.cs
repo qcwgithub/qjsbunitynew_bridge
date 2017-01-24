@@ -397,13 +397,17 @@ namespace jsb
 	            while (vBaseType != null)
 	            {
                     if (!bridgeTypes.Contains(vBaseType.FullName) && 
-                        !wanted.Contains(vBaseType) &&
-	                    !(vBaseType.IsGenericType && !vBaseType.IsGenericTypeDefinition)
+                        !wanted.Contains(vBaseType) 
+                        //&&
+	                    //!(vBaseType.IsGenericType && !vBaseType.IsGenericTypeDefinition)
 	                    //&&
 	                    //!IsDiscardType(baseType)
 	                    )
 	                {
-	                    wanted.Add(vBaseType);
+                        if (vBaseType.IsGenericType)
+                            wanted.Add(vBaseType.GetGenericTypeDefinition());
+                        else
+	                        wanted.Add(vBaseType);
 	                }
 	                vBaseType = vBaseType.ValidBaseType();
 	            }
@@ -482,6 +486,8 @@ namespace jsb
                         }
 
                         Type baseType = type.ValidBaseType();
+                        if (baseType != null && baseType.IsGenericType)
+                            baseType = baseType.GetGenericTypeDefinition();
                         if (allParentResolved)
                         {
                             if (baseType != null &&

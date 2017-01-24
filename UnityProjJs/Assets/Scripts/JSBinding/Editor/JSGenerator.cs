@@ -215,26 +215,31 @@ namespace jsb
                 // 特殊情况，当[]时，property.Name=Item
                 string mName = Pro_AddSuffix(property.Name, infoEx.GetOverloadIndex());
 
-
+                
                 if (tfAlias != null)
                 {
                     Type iType;
-                    if (shouldAddAlias(type, accessors[0], declInterfs, out iType))
+                    if (property.CanRead && shouldAddAlias(type, accessors[0], declInterfs, out iType))
                     {
                         tfAlias.Add("\"get{0}\", \"{1}\",", mName, getAliasName(iType, "get" + mName));
                     }
-                    if (accessors.Length > 1 && shouldAddAlias(type, accessors[1], declInterfs, out iType))
+                    if (property.CanWrite && accessors.Length > 1 && shouldAddAlias(type, accessors[1], declInterfs, out iType))
                     {
                         tfAlias.Add("\"set{0}\", \"{1}\",", mName, getAliasName(iType, "set" + mName));
                     }
                 }
 
                 TextFile tf = isStatic ? tfStatic : tfInst;
-                tf.Add("get{0}: function ({1}) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}); }},",
-                    mName, indexerParamA, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
-
-                tf.Add("set{0}: function ({1}v) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}, v); }},",
-                    mName, indexerParamB, (int)JSVCall.Oper.SET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
+                if (property.CanRead)
+                {
+                    tf.Add("get{0}: function ({1}) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}); }},",
+                                        mName, indexerParamA, (int)JSVCall.Oper.GET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
+                }
+                if (property.CanWrite)
+                {
+                    tf.Add("set{0}: function ({1}v) {{ return CS.Call({2}, {3}, {4}, {5}{6}{7}, v); }},",
+                                        mName, indexerParamB, (int)JSVCall.Oper.SET_PROPERTY, slot, i, (isStatic ? "true" : "false"), (isStatic ? "" : ", this"), indexerParamC);
+                }
             }
         }
         public static void BuildConstructors(TextFile tfInst, Type type, List<MemberInfoEx> constructors, int slot)
@@ -476,7 +481,19 @@ namespace jsb
                     //     extend = [Object].concat(interfaces);
                     // }
                     if (vBaseType != null)
-                        a.Add(JSNameMgr.JsFullName(vBaseType));
+                    {
+                        string btName = JSNameMgr.JsFullName(vBaseType);
+                        if (vBaseType.IsGenericType)
+                        {
+                            args TNames = new args();
+                            foreach (var T in vBaseType.GetGenericArguments())
+                            {
+                                TNames.Add(T.JsFullName());
+                            }
+                            btName += TNames.Format(args.ArgsFormat.Call);
+                        }
+                        a.Add(btName);
+                    }
                     foreach (var i in interfaces)
                         a.Add(JSNameMgr.JsFullName(i));
                     tfClass.Add("inherits: [{0}],", a.ToString());

@@ -311,7 +311,7 @@ namespace jsb
             
             if (type.IsGenericParameter)
             {
-                return "object";
+                return type.Name;
             }
             else if (!type.IsGenericType && !type.IsGenericTypeDefinition)
             {
