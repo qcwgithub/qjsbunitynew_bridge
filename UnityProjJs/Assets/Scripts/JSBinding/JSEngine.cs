@@ -106,7 +106,8 @@ public class JSEngine : MonoBehaviour
             {
                 foreach (Action action in lstThreadSafeActions)
                 {
-                    action();
+                    if (action != null)
+                        action();
                 }
                 lstThreadSafeActions.Clear();
                 hasThreadSafeActions = false;
