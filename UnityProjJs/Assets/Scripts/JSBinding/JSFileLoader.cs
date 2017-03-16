@@ -2,11 +2,11 @@
 using System.Collections;
 using System.IO;
 
-
-/*
- * JSFileLoader
- * All js files are loaded by this class.
- */
+/// <summary>
+/// JSFileLoader
+/// 一个加载JS文件的加载器，简单版
+/// 在正式版的游戏中，需要另外写一个
+/// </summary>
 public class JSFileLoader : MonoBehaviour 
 {
     //public bool Async = true;
@@ -28,11 +28,8 @@ public class JSFileLoader : MonoBehaviour
         byte[] bytes = null;
 
         //
-        // Android
-        // streaming assets are in apk file
-        // only way to load file from streamingAssetsPath synchronously is to loop waiting for WWW to finish
-        // (as far as I know, if you have a better way, please tell me)
-        //
+        // 在安卓平台，StreamingAssets 文件是在 apk 内部的，从他里面同步加载文件的唯一方式是死循环等待 WWW 完成
+        // 
 #if UNITY_ANDROID && !UNITY_EDITOR_WIN && !UNITY_EDITOR_OSX
         WWW w = new WWW(fullName);
         while (true)
@@ -56,17 +53,6 @@ public class JSFileLoader : MonoBehaviour
         {
             Debug.LogError(exp.ToString());
         }
-        //
-        // FileStream does not work on iOS, UnauthorizedAccessException
-        // I don't know why
-        // 
-        /* FileStream fs = new FileStream(fullName, FileMode.Open);
-        if (fs != null)
-        {
-            bytes = new byte[fs.Length];
-            fs.Read(bytes, 0, (int)fs.Length);
-            fs.Close();
-        } */ 
 #endif
         return bytes;
     }

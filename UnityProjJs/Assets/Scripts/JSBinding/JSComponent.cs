@@ -11,8 +11,7 @@ using jsval = JSApi.jsval;
 
 /// <summary>
 /// JSComponent
-/// A class redirect event functions (Awake, Start, Update, etc.) to JavaScript
-/// Support serializations
+/// 负责把Unity的事件通知到Js
 /// </summary>
 public class JSComponent : JSSerializer
 {
@@ -46,34 +45,27 @@ public class JSComponent : JSSerializer
     }
     void removeMemberFunction()
     {
-        // ATTENSION
-        // same script have same idAwake idStart ... values
-        // if these lines are executed in OnDestroy (for example  for gameObject A)
-        // other gameObjects (for example B) with the same script
-        // will also miss these functions
-        // 
-        // and if another C (with the same script) is born later   
-        // it will re-get these values  but they are new values 
-        // 
-        // 
-        // but if they are not removed in OnDestroy 
-        // C valueMap may grow to a very big size
+        // 注意
+        // 相同脚本的不同对象具有相同的 idAwake idStart ... 
+        // 如果下面这些行在 OnDestroy 期间执行,绑定相同脚本的其他 gameObject 也会同时丢失这些函数
+        // 如果之后再有一个新的 gameObject 被生成，并且绑定相同脚本，他会再次去取 idAwake idStart，但是会得到和之前不一样的值
+        // 但是如果不移除的话，就会一直遗留在 C 的 valueMap 中
         //
-//         removeIfExist(idAwake);
-//         removeIfExist(idStart);
-//         removeIfExist(idFixedUpdate);
-//         removeIfExist(idUpdate);
-//         removeIfExist(idOnDestroy);
-//         removeIfExist(idOnGUI);
-//         removeIfExist(idOnEnable);
-//         removeIfExist(idOnTriggerEnter2D);
-//         removeIfExist(idOnTriggerStay);
-//         removeIfExist(idOnTriggerExit);
-//         removeIfExist(idOnAnimatorMove);
-//         removeIfExist(idOnAnimatorIK);
-//         removeIfExist(idDestroyChildGameObject);
-//         removeIfExist(idDisableChildGameObject);
-//         removeIfExist(idDestroyGameObject);
+        //         removeIfExist(idAwake);
+        //         removeIfExist(idStart);
+        //         removeIfExist(idFixedUpdate);
+        //         removeIfExist(idUpdate);
+        //         removeIfExist(idOnDestroy);
+        //         removeIfExist(idOnGUI);
+        //         removeIfExist(idOnEnable);
+        //         removeIfExist(idOnTriggerEnter2D);
+        //         removeIfExist(idOnTriggerStay);
+        //         removeIfExist(idOnTriggerExit);
+        //         removeIfExist(idOnAnimatorMove);
+        //         removeIfExist(idOnAnimatorIK);
+        //         removeIfExist(idDestroyChildGameObject);
+        //         removeIfExist(idDisableChildGameObject);
+        //         removeIfExist(idDestroyGameObject);
     }
 
     int jsState = 0;
@@ -98,10 +90,10 @@ public class JSComponent : JSSerializer
             return;
         }
 
-        // ATTENSION
-        // cannot use createJSClassObject here
+        // 注意
+        // 这里不能用 createJSClassObject
         // because we have to call ctor, to run initialization code
-        // this object will not have finalizeOp
+        // 这个对象不会有 finalizeOp
         jsObjID = JSApi.newJSClassObject(this.jsClassName);
         if (jsObjID == 0)
         {
@@ -119,28 +111,28 @@ public class JSComponent : JSSerializer
     }
 
     //
-    // things to do:
+    // 这里一共有3件事要做
     // A) initJS()
     // B) initSerializedData(jsObjID)
     // C) callIfExist(idAwake)
     //
-    // assume we have 2 classes X and Y
-    // case 1) if X is not referenced by other classes, during X.Awake(): A + B + C
-	//
-	// case 2) if a public variable of Y is found during X.initSerializedData(), Y.A() will be called immediately(see GetJSObjID). 
-	//         after that, during Y.Awake(): B + C
-	//
-	// case 3) what happens during AddComponent<X>()
-	//           i  X.Awake() -> jsFail == true because jsClassName is empty
-	//           ii manually set jsFail = false -> call init(true) and callAwake() (equals to A + B + C)
-	//
-	//        see GameObject_AddComponentT1 in Components.cs
-	//
-	// case 4) what happends during GetComponent<X>()
-	//         if X.Awake() is not called yet, we manually call X.init(true) (equals to A + B)
-	//         after that, during X.Awake(): C
-	//
-	//         see help_searchAndRetCom and help_searchAndRetComs in Components.cs
+    // 假设有2个类 X 和 Y
+    // 情况 1) 如果 X 没有被其他人引用，在 X.Awake 期间，会执行: A + B + C
+    //
+    // 情况 2) 如果 X 里有一个 Y 的 public 变量（在 X.B() 期间会发现）, 那么 Y.A() 会立刻被调用(看 GetJSObjID). 
+    //         后来，在 Y.Awake() 中，会执行： Y.B + Y.C
+    //
+    // 情况 3) 如果调用 AddComponent<X>()，会发生什么事情？
+    //           i  X.Awake() -> jsFail == true 因为 jsClassName 是空
+    //           ii 手动设置 jsFail = false -> 调用 init(true) 和 callAwake() (也就是 A + B + C)
+    //
+    //        参考：Components.cs 中的 GameObject_AddComponentT1 函数
+    //
+    // 情况 4) 如果调用 GetComponent<X>()，会发生什么事情？
+    //         如果 X.Awake() 还没有被调用, 那么手动调用 X.init(true) (也就是 A + B)
+    //         后来，X.Awake() 时: C
+    //
+    //         参考：Components.cs 中的 help_searchAndRetCom 和 help_searchAndRetComs 函数
     // 
     public void init(bool callSerialize)
     {
@@ -188,12 +180,10 @@ public class JSComponent : JSSerializer
         callAwake();
     }
     /// <summary>
-    /// get javascript object id of this JSComponent.
-    /// jsObjID may == 0 when this function is called, because other scripts refer to this JSComponent.
-    /// in this case, we call initJS() for this JSComponent immediately.
+    /// 获取 JSComponent 对应的 Js 对象 Id.
+    /// jsObjID 此时可能为0，当其他脚本引用此对象
+    /// 在这种情况下，手动调用 initJS()
     /// </summary>
-    /// <returns></returns>
-    /// 
     public int GetJSObjID(bool callSerialize)
     {
         if (jsObjID == 0)
@@ -232,11 +222,8 @@ public class JSComponent : JSSerializer
             JSApi.setTraceS(jsObjID, false);
             // JSMgr.removeJSCSRel(jsObjID); // Move upwards
 
-            //
-            // jsObj doesn't have finalize
-            // we must remove it here
-            // having a finalize is another approach
-            //
+            // jsObjID 并没有 finalize（Js那边的析构回调）
+            // 所以在这里必须手动移除
             JSApi.removeByID(jsObjID);
             removeMemberFunction();
         }
@@ -246,4 +233,14 @@ public class JSComponent : JSSerializer
 	{
 		JSMgr.vCall.CallJSFunctionName(jsObjID, msg, args);
 	}
+
+    public static JSComponent s_AddComponent(GameObject go, string jsName)
+    {
+        JSComponent jsComp = go.AddComponent<JSComponent>();
+        jsComp.jsClassName = jsName;
+        jsComp.jsFail = false;
+        jsComp.init(true);
+        jsComp.callAwake(); // 要调用 js 的 Awake
+        return jsComp;
+    }
 }

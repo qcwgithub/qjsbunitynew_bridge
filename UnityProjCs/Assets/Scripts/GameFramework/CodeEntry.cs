@@ -15,8 +15,6 @@ public class CodeEntry : MonoBehaviour
         GameObject go = (GameObject) Instantiate(prefab);
         go.transform.SetParent(transform, false);
 #if JS
-        Instantiate(AssetDatabase.LoadMainAssetAtPath("Assets/Scripts/JSBinding/_JSEngine.prefab"));
-
         JSComponent jsComp = go.AddComponent<JSComponent>();
         jsComp.jsClassName = "Login";
         jsComp.jsFail = false;

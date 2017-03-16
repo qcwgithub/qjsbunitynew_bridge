@@ -4,16 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using jsval = JSApi.jsval;
-/// <summary>
-/// JSEngine
-/// Represents a JavaScript Engine object
-/// In order to run JavaScript, there must be one and only one JSEngine object in the scene
-/// You can find JSEngine prefab at path 'JSBinding/Prefabs/_JSEngine.prefab'
-/// 
-/// JSEngine must have a lower execution order than JSComponent.
-/// You can set script execution order by click menu Edit | Project Settings | Script Execution Order
-/// for example, set JSEngine to 400, set JSComponent to 500
-/// </summary>
+
+// JSEngine：代表 Js 引擎
 public class JSEngine : MonoBehaviour
 {
     public static JSEngine inst;
@@ -21,75 +13,51 @@ public class JSEngine : MonoBehaviour
     public static bool initSuccess { get { return initState == 1; } set { if (value) initState = 1; } }
     public static bool initFail { get { return initState == 2; } set { if (value) initState = 2; else initState = 0; } }
     
-    /*
-     * Garbage Collection setting
-     * if GCInterval < 0, will not call GC (default value, SpiderMonkey will automatically call GC)
-     * if GCInterval >= 0, will call GC every GCInterval seconds
-     */
-    public float GCInterval = -1f;
-    public JSFileLoader jsLoader;
-
-    /*
-     * 
-     */
-    public string[] InitLoadScripts = new string[0];
-
     public void OnInitJSEngine(bool bSuccess)
     {
         if (bSuccess)
         {
-            if (InitLoadScripts != null)
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
             {
-                for (var i = 0; i < InitLoadScripts.Length; i++)
-                {
-                    // JSMgr.ExecuteFile(InitLoadScripts[i]);
-                    JSMgr.evaluate(InitLoadScripts[i]);
-                }
+                JSMgr.evaluate("Includes");
             }
+            sw.Stop();
 
-            if (JSApi.initErrorHandler() == 1)
-                Debug.Log("JS: print error stack: YES");
-            else
-                Debug.Log("JS: print error stack: NO");
+            print(string.Format("JS: Init OK. Loading js cost {0} ms. Enable printing error stack: {1}.",
+                sw.ElapsedMilliseconds,
+                (JSApi.initErrorHandler() == 1 ? "Yes" : "No")));
 
             initSuccess = true;
-            Debug.Log("JS: Init JSEngine OK");
         }
         else
         {
             initFail = true;
-            Debug.Log("JS: Init JSEngine FAIL");
+            Debug.LogError("JS: Init failed.");
         }
     }
 
-    // FirstInit may be called from JSComponent!
+    // 这个函数可能从 JSComponent 调用过来
     public static void FirstInit(JSEngine jse = null)
     {
         if (!initSuccess && !initFail)
         {
             if (jse == null)
             {
-                GameObject jseGO = GameObject.Find("_JSEngine");
-                if (jseGO == null)
-                {
-                    initFail = true;
-                    Debug.LogError("_JSEngine gameObject not found. Drag a \"JSBinding/Prefabs/_JSEngine.prefab\" to the scene.");
-                }
-                else
-                {
-                    jse = jseGO.GetComponent<JSEngine>();
-                }
+                var goEngine = new GameObject("_JSEngine");
+                goEngine.AddComponent<JSEngine>();
+                return;
             }
 
             if (jse != null)
             {
-                /*
-                * Don't destroy this GameObject on load
-                */
                 DontDestroyOnLoad(jse.gameObject);
                 inst = jse;
 
-                JSMgr.InitJSEngine(jse.jsLoader, jse.OnInitJSEngine);
+                JSFileLoader jsLoader = jse.gameObject.GetComponent<JSFileLoader>();
+                if (jsLoader == null)
+                    jsLoader = jse.gameObject.AddComponent<JSFileLoader>();
+                JSMgr.InitJSEngine(jsLoader, jse.OnInitJSEngine);
             }
         }
     }
@@ -146,25 +114,6 @@ public class JSEngine : MonoBehaviour
         }
     }
 
-    float accum = 0f;
-    void LateUpdate()
-    {
-        if (this != JSEngine.inst)
-            return;
-
-        if (initSuccess && GCInterval >= 0f)
-        {
-            accum += Time.deltaTime;
-            if (accum > GCInterval)
-            {
-                accum = 0f;
-                //Debug.Log("_GC_Begin");
-                JSApi.gc();
-                //Debug.Log("_GC_End");
-            }
-        }
-    }
-
 //     void OnApplicationQuit()
 //     {
 //         Debug.Log("OnApplicationQuit");
@@ -183,11 +132,6 @@ public class JSEngine : MonoBehaviour
 	public bool showStatistics = true;
     public int guiX = 0;
 
-
-
-    /// <summary>
-    /// OnGUI: Output some statistics
-    /// </summary>
     void OnGUI()
     {
         if (this != JSEngine.inst)
