@@ -13,13 +13,15 @@ using jsval = JSApi.jsval;
 /// JSComponent
 /// 负责把Unity的事件通知到Js
 /// </summary>
-public class JSComponent : JSSerializer
+public class JSComponent : MonoBehaviour// : JSSerializer
 {
+    public string jsClassName = string.Empty;
     [HideInInspector]
     [NonSerialized]
     protected int jsObjID = 0;
 
     int idAwake = 0;
+    int idOnAwake = 0;
     int idStart = 0;
     int idOnDestroy = 0;
 
@@ -29,6 +31,7 @@ public class JSComponent : JSSerializer
     protected virtual void initMemberFunction()
     {
         idAwake = JSApi.getObjFunction(jsObjID, "Awake");
+        idOnAwake = JSApi.getObjFunction(jsObjID, "OnAwake");
         idStart = JSApi.getObjFunction(jsObjID, "Start");
         idOnDestroy = JSApi.getObjFunction(jsObjID, "OnDestroy");
     }
@@ -147,31 +150,38 @@ public class JSComponent : JSSerializer
 
         initJS();
 
-        if (jsSuccess && callSerialize && !DataSerialized)
-        {
-            initSerializedData(jsObjID);
-        }
+//         if (jsSuccess && callSerialize && !DataSerialized)
+//         {
+//             initSerializedData(jsObjID);
+//         }
     }
 
-	public override void initSerializedData(int jsObjID)
-	{
-		if (DataSerialized)
-			return;
-		base.initSerializedData(jsObjID);
-		
-		// init child
-		for (int i = 0; waitSerialize != null && i < waitSerialize.Count; i++)
-		{
-			waitSerialize[i].initSerializedData(waitSerialize[i].jsObjID);
-		}
-		waitSerialize = null;
-	}
+// 	public override void initSerializedData(int jsObjID)
+// 	{
+// 		if (DataSerialized)
+// 			return;
+// 		base.initSerializedData(jsObjID);
+// 		
+// 		// init child
+// 		for (int i = 0; waitSerialize != null && i < waitSerialize.Count; i++)
+// 		{
+// 			waitSerialize[i].initSerializedData(waitSerialize[i].jsObjID);
+// 		}
+// 		waitSerialize = null;
+// 	}
 		
     public void callAwake()
     {
         if (jsSuccess)
         {
             callIfExist(idAwake);
+        }
+    }
+    public void callOnAwake()
+    {
+        if (jsSuccess)
+        {
+            callIfExist(idOnAwake);
         }
     }
     void Awake()

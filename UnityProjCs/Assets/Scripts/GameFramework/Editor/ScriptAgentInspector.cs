@@ -254,7 +254,7 @@ public class ScriptAgentInspector : Editor
 
         if (!File.Exists(outputPath))
         {
-            Debug.LogError("Update Failed");
+            Debug.LogError("更新失败，类不存在");
         }
         else
         {
@@ -263,11 +263,11 @@ public class ScriptAgentInspector : Editor
 
             if (DoUpdate(script, lines))
             {
-                Debug.Log("变了");
+                Debug.Log("更新成功，变了");
                 EditorFix.SetObjectDirty(script);
             }
             else
-                Debug.Log("没变");
+                Debug.Log("更新成功，没变");
         }
     }
 
