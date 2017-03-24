@@ -41,6 +41,7 @@ namespace jsb
             if (ids == null)
                 return;
          
+            // ID号 JS和CS保持一致才不会错
             for (int i = 0; i < ids.Length; i++)
             {
                 Type type = MessageTypes[ids[i]];
@@ -56,7 +57,6 @@ namespace jsb
             typeof(jsb.M_FixedUpdate),
             typeof(jsb.M_OnGUI),
             typeof(jsb.M_OnDisable),
-            typeof(jsb.M_OnEnable),
             typeof(jsb.M_OnBecameInvisible),
             typeof(jsb.M_OnBecameVisible),
             typeof(jsb.M_OnTransformChildrenChanged),

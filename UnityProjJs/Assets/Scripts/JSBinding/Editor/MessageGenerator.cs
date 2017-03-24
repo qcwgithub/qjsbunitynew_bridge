@@ -239,7 +239,7 @@ public static void CreateMessages(string jsFullName, GameObject go)
 			new Info("OnGUI()"),
 			
 			new Info("OnDisable()"),
-			new Info("OnEnable()"),
+			//new Info("OnEnable()"),
 			new Info("OnBecameInvisible()"),
 			new Info("OnBecameVisible()"),
 			

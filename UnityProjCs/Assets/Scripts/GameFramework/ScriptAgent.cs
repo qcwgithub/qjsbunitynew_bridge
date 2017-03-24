@@ -149,6 +149,7 @@ public class ScriptAgent : MonoBehaviour
 
             script.callAwake();
             script.callOnAwake();
+            script.callOnEnable();
 
             Destroy(this);
         }

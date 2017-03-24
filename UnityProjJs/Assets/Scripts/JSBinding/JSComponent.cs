@@ -21,6 +21,7 @@ public class JSComponent : MonoBehaviour// : JSSerializer
     protected int jsObjID = 0;
 
     int idAwake = 0;
+    int idOnEnable = 0;
     int idOnAwake = 0;
     int idStart = 0;
     int idOnDestroy = 0;
@@ -31,6 +32,7 @@ public class JSComponent : MonoBehaviour// : JSSerializer
     protected virtual void initMemberFunction()
     {
         idAwake = JSApi.getObjFunction(jsObjID, "Awake");
+        idOnEnable = JSApi.getObjFunction(jsObjID, "OnEnable");
         idOnAwake = JSApi.getObjFunction(jsObjID, "OnAwake");
         idStart = JSApi.getObjFunction(jsObjID, "Start");
         idOnDestroy = JSApi.getObjFunction(jsObjID, "OnDestroy");
@@ -188,6 +190,18 @@ public class JSComponent : MonoBehaviour// : JSSerializer
     {
         init(true);
         callAwake();
+    }
+
+    public void callOnEnable()
+    {
+        if (jsSuccess)
+        {
+            callIfExist(idOnEnable);
+        }
+    }
+    void OnEnable()
+    {
+        callOnEnable();
     }
     /// <summary>
     /// 获取 JSComponent 对应的 Js 对象 Id.
