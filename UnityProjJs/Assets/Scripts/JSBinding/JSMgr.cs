@@ -234,12 +234,7 @@ public static class JSMgr
 
     static public string getJSFullName(string shortName)
     {
-        string fullName = jsDir + "/" + shortName;// + JSBindingSettings.jsExtension;
-        // don't append, if extension already exist
-        if (shortName.IndexOf('.') < 0)
-        {
-            fullName += jsExtension;
-        }
+        string fullName = jsDir + "/" + shortName + jsExtension;
         return fullName;
     }
 
